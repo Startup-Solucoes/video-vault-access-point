@@ -38,9 +38,8 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
   ({ selectedClients, onClientChange }, ref) => {
     const [open, setOpen] = useState(false);
     const [clients, setClients] = useState<Client[]>([]);
-    const [filteredClients, setFilteredClients] = useState<Client[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [searchValue, setSearchValue] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
 
     const fetchClients = async () => {
       console.log('Buscando clientes...');
@@ -59,7 +58,6 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
         
         console.log('Clientes encontrados:', data);
         setClients(data || []);
-        setFilteredClients(data || []);
       } catch (error) {
         console.error('Erro ao buscar clientes:', error);
       } finally {
@@ -67,19 +65,16 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
       }
     };
 
-    // Filtrar clientes baseado na busca
-    useEffect(() => {
-      if (!searchValue.trim()) {
-        setFilteredClients(clients);
-        return;
-      }
-
-      const filtered = clients.filter(client => 
-        client.full_name.toLowerCase().includes(searchValue.toLowerCase()) ||
-        client.email.toLowerCase().includes(searchValue.toLowerCase())
+    // Filtrar clientes baseado no termo de busca
+    const filteredClients = clients.filter(client => {
+      if (!searchTerm.trim()) return true;
+      
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        client.full_name.toLowerCase().includes(searchLower) ||
+        client.email.toLowerCase().includes(searchLower)
       );
-      setFilteredClients(filtered);
-    }, [searchValue, clients]);
+    });
 
     // Expor função para refresh via ref
     useImperativeHandle(ref, () => ({
@@ -126,21 +121,26 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-full p-0">
-            <Command>
+            <Command shouldFilter={false}>
               <CommandInput 
                 placeholder="Buscar clientes por nome ou e-mail..." 
-                value={searchValue}
-                onValueChange={setSearchValue}
+                value={searchTerm}
+                onValueChange={setSearchTerm}
               />
               <CommandList>
                 <CommandEmpty>
-                  {isLoading ? "Carregando..." : filteredClients.length === 0 && clients.length === 0 ? "Nenhum cliente cadastrado ainda." : "Nenhum cliente encontrado."}
+                  {isLoading 
+                    ? "Carregando..." 
+                    : clients.length === 0 
+                      ? "Nenhum cliente cadastrado ainda." 
+                      : "Nenhum cliente encontrado."
+                  }
                 </CommandEmpty>
                 <CommandGroup>
                   {filteredClients.map((client) => (
                     <CommandItem
                       key={client.id}
-                      value={`${client.full_name} ${client.email}`}
+                      value={client.id}
                       onSelect={() => handleClientSelect(client.id)}
                     >
                       <Check
