@@ -2,6 +2,8 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
 import { 
   fetchClientUsers, 
   addClientUser, 
@@ -26,15 +28,50 @@ export const useClientUsers = (clientId: string | null) => {
     staleTime: 30000,
   });
 
+  const handleCopyPassword = async (password: string) => {
+    try {
+      await navigator.clipboard.writeText(password);
+      toast({
+        title: "Senha copiada!",
+        description: "A senha foi copiada para a área de transferência",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível copiar a senha",
+        variant: "destructive"
+      });
+    }
+  };
+
   const addUserMutation = useMutation({
     mutationFn: ({ userEmail }: { userEmail: string }) =>
       addClientUser(clientId!, userEmail, user!.id),
     onSuccess: (result: CreateUserResult) => {
       queryClient.invalidateQueries({ queryKey });
+      
+      const copyButton = (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleCopyPassword(result.password)}
+          className="ml-2"
+        >
+          <Copy className="h-3 w-3 mr-1" />
+          Copiar Senha
+        </Button>
+      );
+
       toast({
         title: "Usuário criado com sucesso",
-        description: `Email: ${result.user.email} | Senha: ${result.password}`,
-        duration: 10000, // Show for longer so they can copy the password
+        description: (
+          <div className="space-y-2">
+            <p>Email: {result.user.email}</p>
+            <p>Senha: {result.password}</p>
+            <div>{copyButton}</div>
+          </div>
+        ),
+        duration: 15000, // Show for longer so they can copy the password
       });
     },
     onError: (error: Error) => {
