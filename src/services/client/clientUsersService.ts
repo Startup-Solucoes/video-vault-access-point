@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -13,32 +14,6 @@ export interface CreateUserResult {
   user: any;
   password: string;
 }
-
-// Generate a strong password with requirements
-const generatePassword = (): string => {
-  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const numbers = '0123456789';
-  const specialChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-  
-  const length = 14; // Increased length for better security
-  
-  // Ensure at least one character from each type
-  let password = '';
-  password += lowercase[Math.floor(Math.random() * lowercase.length)];
-  password += uppercase[Math.floor(Math.random() * uppercase.length)];
-  password += numbers[Math.floor(Math.random() * numbers.length)];
-  password += specialChars[Math.floor(Math.random() * specialChars.length)];
-  
-  // Fill the rest of the password
-  const allChars = lowercase + uppercase + numbers + specialChars;
-  for (let i = password.length; i < length; i++) {
-    password += allChars[Math.floor(Math.random() * allChars.length)];
-  }
-  
-  // Shuffle the password so required characters aren't always at the beginning
-  return password.split('').sort(() => Math.random() - 0.5).join('');
-};
 
 export const fetchClientUsers = async (clientId: string): Promise<ClientUser[]> => {
   console.log('Buscando usuários do cliente:', clientId);
@@ -65,96 +40,52 @@ export const addClientUser = async (
   console.log('Adicionando usuário ao cliente:', { clientId, userEmail, createdBy });
   
   const email = userEmail.toLowerCase().trim();
-  const password = generatePassword();
   
-  // First, create the user in Supabase Auth
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email: email,
-    password: password,
-    email_confirm: true, // Auto-confirm the email
-    user_metadata: {
-      role: 'client'
+  // Call the Edge Function to create the user
+  const { data, error } = await supabase.functions.invoke('create-client-user', {
+    body: {
+      clientId,
+      userEmail: email,
+      createdBy
     }
   });
 
-  if (authError) {
-    console.error('Erro ao criar usuário na autenticação:', authError);
-    if (authError.message.includes('already registered')) {
-      throw new Error('Este e-mail já está registrado no sistema');
-    }
-    throw authError;
+  if (error) {
+    console.error('Erro ao criar usuário:', error);
+    throw new Error(error.message || 'Erro ao criar usuário');
   }
 
-  // Then, add to client_users table
-  const { error: clientUserError } = await supabase
-    .from('client_users')
-    .insert({
-      client_id: clientId,
-      user_email: email,
-      created_by: createdBy
-    });
-
-  if (clientUserError) {
-    console.error('Erro ao adicionar usuário ao cliente:', clientUserError);
-    
-    // If adding to client_users fails, we should clean up the auth user
-    if (authData.user) {
-      await supabase.auth.admin.deleteUser(authData.user.id);
-    }
-    
-    if (clientUserError.code === '23505') {
-      throw new Error('Este e-mail já está associado a este cliente');
-    }
-    throw clientUserError;
+  if (data.error) {
+    console.error('Erro retornado pela função:', data.error);
+    throw new Error(data.error);
   }
 
   console.log('Usuário adicionado com sucesso');
   
   return {
-    user: authData.user,
-    password: password
+    user: data.user,
+    password: data.password
   };
 };
 
 export const removeClientUser = async (clientUserId: string): Promise<void> => {
   console.log('Removendo usuário do cliente:', clientUserId);
   
-  // First get the user email to find the auth user
-  const { data: clientUser, error: fetchError } = await supabase
-    .from('client_users')
-    .select('user_email')
-    .eq('id', clientUserId)
-    .maybeSingle();
-
-  if (fetchError) {
-    console.error('Erro ao buscar usuário do cliente:', fetchError);
-    throw fetchError;
-  }
-
-  if (!clientUser) {
-    throw new Error('Usuário do cliente não encontrado');
-  }
-
-  // Remove from client_users table
-  const { error: deleteError } = await supabase
-    .from('client_users')
-    .delete()
-    .eq('id', clientUserId);
-
-  if (deleteError) {
-    console.error('Erro ao remover usuário do cliente:', deleteError);
-    throw deleteError;
-  }
-
-  // Find and delete the auth user
-  const { data: authUsers, error: authFetchError } = await supabase.auth.admin.listUsers();
-  
-  if (!authFetchError && authUsers && authUsers.users) {
-    const authUser = authUsers.users.find((user: any) => user.email === clientUser.user_email);
-    if (authUser && authUser.id) {
-      await supabase.auth.admin.deleteUser(authUser.id);
-      console.log('Usuário removido da autenticação também');
+  // Call the Edge Function to delete the user
+  const { data, error } = await supabase.functions.invoke('delete-client-user', {
+    body: {
+      clientUserId
     }
+  });
+
+  if (error) {
+    console.error('Erro ao remover usuário:', error);
+    throw new Error(error.message || 'Erro ao remover usuário');
+  }
+
+  if (data.error) {
+    console.error('Erro retornado pela função:', data.error);
+    throw new Error(data.error);
   }
 
   console.log('Usuário removido com sucesso');
