@@ -41,17 +41,17 @@ export const platforms = [
   {
     id: 'yampi',
     name: 'Yampi',
-    logo: 'https://www.yampi.com.br/favicon.ico'
+    logo: 'https://play-lh.googleusercontent.com/-oNcXnQ_0Kk4MyL4WWR56Se7fIPhPv65YWNwpF9PuyzRgmlezG0MiS6KYujQXka3yA=w240-h480-rw'
   },
   {
     id: 'bagy',
     name: 'Bagy',
-    logo: 'https://www.bagy.com.br/favicon.ico'
+    logo: 'https://bagy.com.br/blog/wp-content/uploads/2023/05/logo_3.png'
   },
   {
     id: 'woocommerce',
     name: 'Woocommerce',
-    logo: 'https://woocommerce.com/favicon.ico'
+    logo: 'https://s.w.org/style/images/about/WordPress-logotype-wmark.png'
   },
   {
     id: 'olist-tiny',
@@ -66,6 +66,6 @@ export const platforms = [
   {
     id: 'outros',
     name: 'Outros',
-    logo: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=32&h=32&fit=crop'
+    logo: ''
   }
 ];
