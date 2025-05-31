@@ -6,7 +6,8 @@ import {
   fetchClientUsers, 
   addClientUser, 
   removeClientUser,
-  ClientUser 
+  ClientUser,
+  CreateUserResult
 } from '@/services/client/clientUsersService';
 
 export const useClientUsers = (clientId: string | null) => {
@@ -28,11 +29,12 @@ export const useClientUsers = (clientId: string | null) => {
   const addUserMutation = useMutation({
     mutationFn: ({ userEmail }: { userEmail: string }) =>
       addClientUser(clientId!, userEmail, user!.id),
-    onSuccess: () => {
+    onSuccess: (result: CreateUserResult) => {
       queryClient.invalidateQueries({ queryKey });
       toast({
-        title: "Sucesso",
-        description: "Usuário adicionado com sucesso",
+        title: "Usuário criado com sucesso",
+        description: `Email: ${result.user.email} | Senha: ${result.password}`,
+        duration: 10000, // Show for longer so they can copy the password
       });
     },
     onError: (error: Error) => {

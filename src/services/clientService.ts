@@ -5,4 +5,4 @@ export { updateClientInDB } from './client/clientUpdateService';
 export { approveClientInDB } from './client/clientApprovalService';
 export { deleteClientFromDB } from './client/clientDeletionService';
 export { fetchClientUsers, addClientUser, removeClientUser } from './client/clientUsersService';
-export type { ClientUser } from './client/clientUsersService';
+export type { ClientUser, CreateUserResult } from './client/clientUsersService';

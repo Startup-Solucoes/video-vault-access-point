@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { X, Plus, Mail } from 'lucide-react';
+import { X, Plus, Mail, Key } from 'lucide-react';
 import { useClientUsers } from '@/hooks/useClientUsers';
 
 interface ClientUsersManagerProps {
@@ -39,22 +39,30 @@ export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
       <Label className="text-sm font-medium">Usuários Associados</Label>
       
       {/* Add new user */}
-      <div className="flex gap-2">
-        <Input
-          placeholder="email@exemplo.com"
-          value={newUserEmail}
-          onChange={(e) => setNewUserEmail(e.target.value)}
-          onKeyPress={handleKeyPress}
-          type="email"
-          disabled={isLoading}
-        />
-        <Button 
-          onClick={handleAddUser}
-          disabled={isLoading || !newUserEmail.trim()}
-          size="sm"
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <Input
+            placeholder="email@exemplo.com"
+            value={newUserEmail}
+            onChange={(e) => setNewUserEmail(e.target.value)}
+            onKeyPress={handleKeyPress}
+            type="email"
+            disabled={isLoading}
+          />
+          <Button 
+            onClick={handleAddUser}
+            disabled={isLoading || !newUserEmail.trim()}
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            <Key className="h-4 w-4" />
+          </Button>
+        </div>
+        <p className="text-xs text-blue-600 flex items-center gap-1">
+          <Key className="h-3 w-3" />
+          Uma senha será gerada automaticamente e exibida após a criação
+        </p>
       </div>
 
       {/* List of current users */}
@@ -87,9 +95,13 @@ export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
         )}
       </div>
 
-      <p className="text-xs text-gray-500">
-        Adicione e-mails de usuários que terão acesso aos recursos deste cliente
-      </p>
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+        <p className="text-xs text-yellow-800 flex items-center gap-2">
+          <Key className="h-4 w-4" />
+          <strong>Importante:</strong> Quando um usuário for criado, a senha gerada será exibida na notificação. 
+          Certifique-se de copiar e compartilhar com segurança.
+        </p>
+      </div>
     </div>
   );
 };
