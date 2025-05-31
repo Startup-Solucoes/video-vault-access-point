@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -37,13 +38,6 @@ export const ClientVideoView = ({ clientId, clientName }: ClientVideoViewProps) 
   const handleEditVideo = (videoId: string) => {
     setEditingVideoId(videoId);
     setIsEditModalOpen(true);
-  };
-
-  const handleRemoveVideoFromClient = (videoId: string, videoTitle: string) => {
-    if (confirm(`Tem certeza que deseja remover o acesso do cliente "${clientName}" ao vídeo "${videoTitle}"?`)) {
-      // TODO: Implementar função de remover permissão
-      console.log('Removendo permissão do vídeo:', videoId, 'para cliente:', clientId);
-    }
   };
 
   const handleCloseEditModal = () => {
@@ -158,14 +152,6 @@ export const ClientVideoView = ({ clientId, clientName }: ClientVideoViewProps) 
                             className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                           >
                             <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleRemoveVideoFromClient(video.id, video.title)}
-                            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                          >
-                            <User className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="outline" 
