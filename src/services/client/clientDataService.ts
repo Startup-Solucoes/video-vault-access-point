@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types/client';
+import { getUserAuthInfo } from '@/services/emailNotificationService';
 
 export const fetchClientsFromDB = async (): Promise<Client[]> => {
   console.log('clientDataService: Buscando clientes...');
@@ -29,14 +30,12 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       return [];
     }
 
-    // Para cada perfil, buscar informações de autenticação via função RPC
+    // Para cada perfil, buscar informações de autenticação via função personalizada
     const clientsWithAuthInfo = await Promise.all(
       profiles.map(async (profile) => {
         try {
           // Buscar informações de auth do usuário via função personalizada
-          const { data: authData, error: authError } = await supabase.rpc('get_user_auth_info', {
-            user_id: profile.id
-          });
+          const authData = await getUserAuthInfo(profile.id);
 
           const client: Client = {
             id: profile.id,

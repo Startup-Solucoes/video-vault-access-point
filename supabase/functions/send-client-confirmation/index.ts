@@ -123,8 +123,8 @@ serve(async (req) => {
 
     console.log('Sending client confirmation email to:', clientEmail)
 
-    // Create confirmation URL (you may need to adjust this based on your app's URL structure)
-    const confirmationUrl = 'https://rgdrbimchwxbfyourqgy.supabase.co'
+    // URL de confirmação que redireciona para a tela de login com parâmetro de confirmação
+    const confirmationUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token={confirmation_token}&type=email&redirect_to=${encodeURIComponent(window.location.origin + '/?type=email')}`
 
     const emailBody = createClientConfirmationTemplate(clientName, confirmationUrl)
     
