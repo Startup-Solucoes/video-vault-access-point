@@ -10,7 +10,6 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const [initialData, setInitialData] = useState<any>(null);
   
   const {
     formData,
@@ -20,9 +19,9 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
     handleClientChange,
     handleDateTimeChange,
     handlePlatformChange
-  } = useEditVideoFormState(initialData);
+  } = useEditVideoFormState();
 
-  // Carregar dados do vídeo
+  // Carregar dados do vídeo apenas uma vez
   useEffect(() => {
     const loadData = async () => {
       if (!videoId) return;
@@ -31,7 +30,7 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
         console.log('🔄 Carregando dados do vídeo:', videoId);
         const data = await loadVideoData(videoId);
         console.log('✅ Dados carregados:', data);
-        setInitialData(data);
+        console.log('🔄 Inicializando formData com dados carregados');
         setFormData(data);
       } catch (error) {
         console.error('❌ Erro ao carregar dados:', error);
@@ -41,15 +40,7 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
     };
 
     loadData();
-  }, [videoId]);
-
-  // Atualizar formData quando initialData mudar
-  useEffect(() => {
-    if (initialData) {
-      console.log('🔄 Atualizando formData com dados iniciais:', initialData);
-      setFormData(initialData);
-    }
-  }, [initialData, setFormData]);
+  }, [videoId, setFormData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

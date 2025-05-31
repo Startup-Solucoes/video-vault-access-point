@@ -2,34 +2,42 @@
 import { useState } from 'react';
 import { EditVideoFormData } from './EditVideoFormTypes';
 
-export const useEditVideoFormState = (initialData?: EditVideoFormData) => {
-  const [formData, setFormData] = useState<EditVideoFormData>(
-    initialData || {
-      title: '',
-      description: '',
-      video_url: '',
-      thumbnail_url: '',
-      selectedCategories: [],
-      selectedClients: [],
-      publishDateTime: new Date(),
-      platform: 'outros'
-    }
-  );
+const initialFormData: EditVideoFormData = {
+  title: '',
+  description: '',
+  video_url: '',
+  thumbnail_url: '',
+  selectedCategories: [],
+  selectedClients: [],
+  publishDateTime: new Date(),
+  platform: 'outros'
+};
+
+export const useEditVideoFormState = () => {
+  const [formData, setFormData] = useState<EditVideoFormData>(initialFormData);
 
   const handleFieldChange = (field: keyof EditVideoFormData, value: string) => {
+    console.log(`🔄 Alterando campo ${field} para:`, value);
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleCategoryChange = (category: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedCategories: checked
+    console.log(`🔄 Alterando categoria ${category} para: ${checked}`);
+    setFormData(prev => {
+      const newCategories = checked
         ? [...prev.selectedCategories, category]
-        : prev.selectedCategories.filter(c => c !== category)
-    }));
+        : prev.selectedCategories.filter(c => c !== category);
+      
+      console.log('📋 Novas categorias:', newCategories);
+      return {
+        ...prev,
+        selectedCategories: newCategories
+      };
+    });
   };
 
   const handleClientChange = (clientIds: string[]) => {
+    console.log('🔄 Alterando clientes para:', clientIds);
     setFormData(prev => ({
       ...prev,
       selectedClients: clientIds
@@ -37,6 +45,7 @@ export const useEditVideoFormState = (initialData?: EditVideoFormData) => {
   };
 
   const handleDateTimeChange = (publishDateTime: Date) => {
+    console.log('🔄 Alterando data para:', publishDateTime);
     setFormData(prev => ({
       ...prev,
       publishDateTime
@@ -44,6 +53,7 @@ export const useEditVideoFormState = (initialData?: EditVideoFormData) => {
   };
 
   const handlePlatformChange = (platform: string) => {
+    console.log('🔄 Alterando plataforma para:', platform);
     setFormData(prev => ({
       ...prev,
       platform
@@ -51,6 +61,7 @@ export const useEditVideoFormState = (initialData?: EditVideoFormData) => {
   };
 
   const updateFormData = (data: EditVideoFormData) => {
+    console.log('🔄 Atualizando formData completo:', data);
     setFormData(data);
   };
 
