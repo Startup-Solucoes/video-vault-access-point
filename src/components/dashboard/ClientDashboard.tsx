@@ -6,6 +6,7 @@ import { ClientHeader } from './client/ClientHeader';
 import { CategoryFilter } from './client/CategoryFilter';
 import { VideoFilters } from './client/VideoFilters';
 import { VideoGrid } from './client/VideoGrid';
+import { PlatformFilter } from './client/PlatformFilter';
 import { format } from 'date-fns';
 
 export const ClientDashboard = () => {
@@ -13,9 +14,10 @@ export const ClientDashboard = () => {
   const { videos, isLoading } = useClientVideos(profile?.id || '');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedPlatform, setSelectedPlatform] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
 
-  // Filtrar vídeos baseado na busca, categoria e data
+  // Filtrar vídeos baseado na busca, categoria, plataforma e data
   const filteredVideos = useMemo(() => {
     let filtered = videos;
 
@@ -32,6 +34,11 @@ export const ClientDashboard = () => {
       filtered = filtered.filter(video => video.category === selectedCategory);
     }
 
+    // Filtrar por plataforma
+    if (selectedPlatform) {
+      filtered = filtered.filter(video => video.platform === selectedPlatform);
+    }
+
     // Filtrar por data de publicação
     if (selectedDate) {
       const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -42,7 +49,7 @@ export const ClientDashboard = () => {
     }
 
     return filtered;
-  }, [videos, searchTerm, selectedCategory, selectedDate]);
+  }, [videos, searchTerm, selectedCategory, selectedPlatform, selectedDate]);
 
   // Obter categorias disponíveis dos vídeos do cliente
   const availableCategories = useMemo(() => {
@@ -62,37 +69,49 @@ export const ClientDashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header com informações do cliente */}
-      <ClientHeader profile={profile} videoCount={videos.length} />
+    <div className="flex gap-6">
+      {/* Sidebar esquerda com filtros */}
+      <div className="w-64 flex-shrink-0 space-y-4">
+        <PlatformFilter
+          selectedPlatform={selectedPlatform}
+          onPlatformChange={setSelectedPlatform}
+          videos={videos}
+        />
+      </div>
 
-      {/* Filtro de Categorias */}
-      <CategoryFilter
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        availableCategories={availableCategories}
-        videos={videos}
-      />
+      {/* Conteúdo principal */}
+      <div className="flex-1 space-y-6">
+        {/* Header com informações do cliente */}
+        <ClientHeader profile={profile} videoCount={videos.length} />
 
-      {/* Filtros e Busca */}
-      <VideoFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        availableCategories={availableCategories}
-        videos={videos}
-        selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
-      />
+        {/* Filtro de Categorias */}
+        <CategoryFilter
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          availableCategories={availableCategories}
+          videos={videos}
+        />
 
-      {/* Lista de Vídeos */}
-      <VideoGrid
-        videos={filteredVideos}
-        isLoading={isLoading}
-        searchTerm={searchTerm}
-        selectedCategory={selectedCategory}
-      />
+        {/* Filtros e Busca */}
+        <VideoFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          availableCategories={availableCategories}
+          videos={videos}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+        />
+
+        {/* Lista de Vídeos */}
+        <VideoGrid
+          videos={filteredVideos}
+          isLoading={isLoading}
+          searchTerm={searchTerm}
+          selectedCategory={selectedCategory}
+        />
+      </div>
     </div>
   );
 };

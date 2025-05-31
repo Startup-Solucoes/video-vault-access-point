@@ -10,6 +10,7 @@ interface ClientVideo {
   video_url: string;
   thumbnail_url: string | null;
   category: string | null;
+  platform: string | null;
   created_at: string;
   permission_created_at: string;
 }
@@ -39,6 +40,7 @@ export const useClientVideos = (clientId: string) => {
             video_url,
             thumbnail_url,
             category,
+            platform,
             created_at
           )
         `)
@@ -58,6 +60,7 @@ export const useClientVideos = (clientId: string) => {
         video_url: permission.videos.video_url,
         thumbnail_url: permission.videos.thumbnail_url,
         category: permission.videos.category,
+        platform: permission.videos.platform,
         created_at: permission.videos.created_at,
         permission_created_at: permission.created_at
       })) || [];
