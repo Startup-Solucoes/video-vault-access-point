@@ -4,6 +4,8 @@ import { toast } from '@/hooks/use-toast';
 import { Client, EditClientForm } from '@/types/client';
 
 export const fetchClientsFromDB = async (): Promise<Client[]> => {
+  console.log('Iniciando busca de clientes...');
+  
   // Buscar dados de todos os perfis (admin e client)
   const { data: profilesData, error: profilesError } = await supabase
     .from('profiles')
@@ -15,15 +17,18 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
     throw profilesError;
   }
 
+  console.log('Perfis encontrados:', profilesData?.length || 0);
+
   // Tentar buscar dados de auth.users para verificar confirmação de email
   let authUsersData: any[] = [];
   try {
     const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
     if (!authError && authData?.users) {
       authUsersData = authData.users;
+      console.log('Dados de auth encontrados:', authUsersData.length);
     }
   } catch (error) {
-    // Fallback silencioso se não conseguir acessar auth.users
+    console.log('Fallback: não foi possível acessar dados de auth, usando dados do perfil');
   }
 
   // Mapear os dados para determinar se estão aprovados
@@ -43,15 +48,10 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       lastSignIn = authUser.last_sign_in_at;
       isDeleted = !!authUser.banned_until || !!authUser.deleted_at;
     } else {
-      // Fallback: verificar se houve algum update significativo após criação
-      const createdAt = new Date(profile.created_at);
-      const updatedAt = new Date(profile.updated_at);
-      const timeDiff = updatedAt.getTime() - createdAt.getTime();
-      
-      // Considera verificado se teve update significativo (mais de 1 minuto após criação)
-      isVerified = timeDiff > 60 * 1000; // 1 minuto
-      emailConfirmedAt = isVerified ? profile.updated_at : null;
-      lastSignIn = isVerified ? profile.updated_at : null;
+      // Fallback: considerar verificado se o perfil existe (foi criado via trigger)
+      isVerified = true;
+      emailConfirmedAt = profile.created_at;
+      lastSignIn = profile.updated_at;
       isDeleted = false;
     }
     
@@ -63,6 +63,7 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
     };
   }) || [];
 
+  console.log('Dados combinados processados:', combinedData.length);
   return combinedData;
 };
 

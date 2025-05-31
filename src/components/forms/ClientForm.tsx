@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 interface ClientFormProps {
   open: boolean;
@@ -81,6 +82,8 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
     setIsLoading(true);
 
     try {
+      console.log('Iniciando cadastro de cliente:', formData.email);
+      
       // Criar usuário no Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -93,17 +96,24 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
         }
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error('Erro na criação do usuário:', authError);
+        throw authError;
+      }
+
+      console.log('Usuário criado no auth:', authData.user?.id);
 
       if (authData.user) {
         let logoUrl = null;
         
         // Fazer upload da logo se foi selecionada
         if (logoFile) {
+          console.log('Fazendo upload da logo...');
           logoUrl = await uploadLogo(logoFile, authData.user.id);
+          console.log('Logo URL:', logoUrl);
         }
 
-        // Atualizar o perfil com a URL da logo
+        // Atualizar o perfil com a URL da logo se necessário
         if (logoUrl) {
           const { error: updateError } = await supabase
             .from('profiles')
@@ -112,6 +122,8 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
 
           if (updateError) {
             console.error('Erro ao atualizar logo do perfil:', updateError);
+          } else {
+            console.log('Logo atualizada no perfil');
           }
         }
 
@@ -134,6 +146,7 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
         
         // Chamar callback para atualizar lista de clientes
         if (onClientCreated) {
+          console.log('Chamando callback para atualizar lista');
           onClientCreated();
         }
         

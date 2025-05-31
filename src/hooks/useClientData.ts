@@ -15,8 +15,10 @@ export const useClientData = () => {
 
   const fetchClients = async () => {
     try {
+      console.log('useClientData: Iniciando busca de clientes...');
       setIsLoading(true);
       const data = await fetchClientsFromDB();
+      console.log('useClientData: Clientes carregados:', data.length);
       setClients(data);
     } catch (error) {
       console.error('Erro ao carregar clientes:', error);
@@ -33,7 +35,7 @@ export const useClientData = () => {
   const updateClient = async (clientId: string, editForm: EditClientForm) => {
     try {
       await updateClientInDB(clientId, editForm);
-      fetchClients();
+      await fetchClients(); // Recarregar lista
     } catch (error) {
       console.error('Erro ao atualizar cliente:', error);
       toast({
@@ -47,7 +49,7 @@ export const useClientData = () => {
   const approveClient = async (clientId: string, clientEmail: string) => {
     try {
       await approveClientInDB(clientId, clientEmail);
-      fetchClients();
+      await fetchClients(); // Recarregar lista
     } catch (error) {
       console.error('Erro ao aprovar cliente:', error);
       toast({
@@ -61,7 +63,7 @@ export const useClientData = () => {
   const deleteClient = async (clientId: string, clientName: string) => {
     try {
       await deleteClientFromDB(clientId, clientName);
-      fetchClients();
+      await fetchClients(); // Recarregar lista
     } catch (error) {
       console.error('Erro ao remover cliente:', error);
       toast({
