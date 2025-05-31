@@ -110,7 +110,7 @@ export const removeClientUser = async (clientUserId: string): Promise<void> => {
     .from('client_users')
     .select('user_email')
     .eq('id', clientUserId)
-    .single();
+    .maybeSingle();
 
   if (fetchError) {
     console.error('Erro ao buscar usuário do cliente:', fetchError);
