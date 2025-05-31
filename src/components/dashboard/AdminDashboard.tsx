@@ -1,14 +1,23 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Video, Shield, Plus } from 'lucide-react';
 import { VideoForm } from '@/components/forms/VideoForm';
 import { ClientForm } from '@/components/forms/ClientForm';
+import { ClientSelectorRef } from '@/components/forms/ClientSelector';
 
 export const AdminDashboard = () => {
   const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
   const [isClientFormOpen, setIsClientFormOpen] = useState(false);
+  const clientSelectorRef = useRef<ClientSelectorRef>(null);
+
+  const handleClientCreated = () => {
+    // Atualizar lista de clientes no seletor quando um novo cliente for criado
+    console.log('Cliente criado, atualizando lista...');
+    if (clientSelectorRef.current) {
+      clientSelectorRef.current.refreshClients();
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -112,6 +121,7 @@ export const AdminDashboard = () => {
       <ClientForm 
         open={isClientFormOpen} 
         onOpenChange={setIsClientFormOpen}
+        onClientCreated={handleClientCreated}
       />
     </div>
   );

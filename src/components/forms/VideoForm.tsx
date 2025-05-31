@@ -1,14 +1,14 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ClientSelector } from './ClientSelector';
+import { ClientSelector, ClientSelectorRef } from './ClientSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/components/ui/use-toast';
 
 interface VideoFormProps {
   open: boolean;
@@ -28,6 +28,7 @@ const categories = [
 
 export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
   const { user } = useAuth();
+  const clientSelectorRef = useRef<ClientSelectorRef>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -101,6 +102,13 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
       }
 
       console.log('Vídeo cadastrado com sucesso:', videoData);
+      
+      // Mostrar mensagem de sucesso
+      toast({
+        title: "Sucesso!",
+        description: "Vídeo cadastrado com sucesso",
+      });
+      
       setFormData({
         title: '',
         description: '',
@@ -112,6 +120,11 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
       onOpenChange(false);
     } catch (error) {
       console.error('Erro ao cadastrar vídeo:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao cadastrar vídeo. Tente novamente.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -190,6 +203,7 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
           <div className="space-y-2">
             <Label>Clientes com Acesso</Label>
             <ClientSelector
+              ref={clientSelectorRef}
               selectedClients={formData.selectedClients}
               onClientChange={handleClientChange}
             />

@@ -1,17 +1,18 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 
 interface ClientFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onClientCreated?: () => void; // Callback para atualizar a lista
 }
 
-export const ClientForm = ({ open, onOpenChange }: ClientFormProps) => {
+export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormProps) => {
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -25,12 +26,20 @@ export const ClientForm = ({ open, onOpenChange }: ClientFormProps) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 500 * 1024) { // 500KB
-        alert('A imagem deve ter no máximo 500KB');
+        toast({
+          title: "Erro",
+          description: "A imagem deve ter no máximo 500KB",
+          variant: "destructive"
+        });
         return;
       }
       
       if (!file.type.startsWith('image/')) {
-        alert('Por favor, selecione apenas arquivos de imagem');
+        toast({
+          title: "Erro",
+          description: "Por favor, selecione apenas arquivos de imagem",
+          variant: "destructive"
+        });
         return;
       }
 
@@ -108,6 +117,12 @@ export const ClientForm = ({ open, onOpenChange }: ClientFormProps) => {
 
         console.log('Cliente cadastrado com sucesso!');
         
+        // Mostrar mensagem de sucesso
+        toast({
+          title: "Sucesso!",
+          description: "Cliente cadastrado com sucesso",
+        });
+        
         // Resetar formulário
         setFormData({
           full_name: '',
@@ -116,11 +131,21 @@ export const ClientForm = ({ open, onOpenChange }: ClientFormProps) => {
         });
         setLogoFile(null);
         setLogoPreview(null);
+        
+        // Chamar callback para atualizar lista de clientes
+        if (onClientCreated) {
+          onClientCreated();
+        }
+        
         onOpenChange(false);
       }
     } catch (error) {
       console.error('Erro ao cadastrar cliente:', error);
-      alert('Erro ao cadastrar cliente. Verifique os dados e tente novamente.');
+      toast({
+        title: "Erro",
+        description: "Erro ao cadastrar cliente. Verifique os dados e tente novamente.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
