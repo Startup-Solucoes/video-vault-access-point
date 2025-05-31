@@ -14,7 +14,8 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
     thumbnail_url: '',
     selectedCategories: [],
     selectedClients: [],
-    publishDateTime: new Date()
+    publishDateTime: new Date(),
+    platform: 'outros'
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -52,7 +53,8 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
           thumbnail_url: videoData.thumbnail_url || '',
           selectedCategories: categories,
           selectedClients: clientIds,
-          publishDateTime: videoData.created_at ? new Date(videoData.created_at) : new Date()
+          publishDateTime: videoData.created_at ? new Date(videoData.created_at) : new Date(),
+          platform: videoData.platform || 'outros'
         });
       } catch (error) {
         console.error('Erro ao carregar dados do vídeo:', error);
@@ -96,6 +98,13 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
     }));
   };
 
+  const handlePlatformChange = (platform: string) => {
+    setFormData(prev => ({
+      ...prev,
+      platform
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -136,6 +145,7 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
         thumbnail_url: formData.thumbnail_url.trim() || null,
         category: formData.selectedCategories.join(', ') || null,
         tags: formData.selectedCategories.length > 0 ? formData.selectedCategories : null,
+        platform: formData.platform,
         updated_at: new Date().toISOString()
       };
 
@@ -196,6 +206,7 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
     handleCategoryChange,
     handleClientChange,
     handleDateTimeChange,
+    handlePlatformChange,
     handleSubmit
   };
 };

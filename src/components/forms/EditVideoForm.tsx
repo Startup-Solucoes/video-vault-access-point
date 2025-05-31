@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { ClientSelector, ClientSelectorRef } from './ClientSelector';
 import { VideoFormFields } from './video-form/VideoFormFields';
 import { CategorySelector } from './video-form/CategorySelector';
+import { PlatformSelector } from './video-form/PlatformSelector';
 import { PublishDateTimeSelector } from './video-form/PublishDateTimeSelector';
 import { useEditVideoForm } from './video-form/useEditVideoForm';
 import { EditVideoFormProps } from './video-form/EditVideoFormTypes';
@@ -20,6 +21,7 @@ export const EditVideoForm = ({ open, onOpenChange, videoId }: EditVideoFormProp
     handleCategoryChange,
     handleClientChange,
     handleDateTimeChange,
+    handlePlatformChange,
     handleSubmit
   } = useEditVideoForm(videoId, () => onOpenChange(false));
 
@@ -60,6 +62,11 @@ export const EditVideoForm = ({ open, onOpenChange, videoId }: EditVideoFormProp
           <CategorySelector
             selectedCategories={formData.selectedCategories}
             onCategoryChange={handleCategoryChange}
+          />
+
+          <PlatformSelector
+            selectedPlatform={formData.platform}
+            onPlatformChange={handlePlatformChange}
           />
 
           <div className="space-y-2">

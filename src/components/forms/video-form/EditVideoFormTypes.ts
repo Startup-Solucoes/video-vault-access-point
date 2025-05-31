@@ -7,6 +7,7 @@ export interface EditVideoFormData {
   selectedCategories: string[];
   selectedClients: string[];
   publishDateTime: Date;
+  platform: string;
 }
 
 export interface EditVideoFormProps {
