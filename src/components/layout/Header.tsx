@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { LogOut, User, Video } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { ResetPasswordButton } from './ResetPasswordButton';
 
 export const Header = () => {
   const { profile, signOut } = useAuth();
@@ -26,6 +27,7 @@ export const Header = () => {
                 {profile?.role === 'admin' ? 'Admin' : 'Cliente'}
               </span>
             </div>
+            <ResetPasswordButton />
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="h-4 w-4 mr-1" />
               Sair

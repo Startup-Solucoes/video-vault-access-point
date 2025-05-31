@@ -1,5 +1,6 @@
 
 import { toast } from '@/hooks/use-toast';
+import { validatePasswordStrength } from '@/utils/passwordGenerator';
 
 export interface ClientFormData {
   full_name: string;
@@ -47,10 +48,12 @@ export const validateClientForm = (formData: ClientFormData): boolean => {
     return false;
   }
 
-  if (formData.password.length < 6) {
+  // Validação de força da senha
+  const passwordValidation = validatePasswordStrength(formData.password);
+  if (!passwordValidation.isStrong) {
     toast({
-      title: "Erro",
-      description: "A senha deve ter pelo menos 6 caracteres",
+      title: "Senha muito fraca",
+      description: "A senha deve conter: letra maiúscula, minúscula, número e caractere especial",
       variant: "destructive"
     });
     return false;
