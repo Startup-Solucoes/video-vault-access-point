@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import nodemailer from "npm:nodemailer@6.9.7"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,11 +24,24 @@ const sendEmail = async (emailData: EmailData): Promise<boolean> => {
       return false;
     }
 
-    // Simulated email sending using Gmail SMTP
-    console.log(`Sending email from ${gmailUser} to ${emailData.to}`);
-    console.log(`Subject: ${emailData.subject}`);
-    console.log('Email would be sent with Gmail SMTP credentials');
-    
+    // Create transporter using Gmail SMTP
+    const transporter = nodemailer.createTransporter({
+      service: 'gmail',
+      auth: {
+        user: gmailUser,
+        pass: gmailPassword
+      }
+    });
+
+    // Send email
+    const result = await transporter.sendMail({
+      from: gmailUser,
+      to: emailData.to,
+      subject: emailData.subject,
+      html: emailData.body
+    });
+
+    console.log('Email sent successfully:', result.messageId);
     return true;
   } catch (error) {
     console.error('Error sending email:', error);
