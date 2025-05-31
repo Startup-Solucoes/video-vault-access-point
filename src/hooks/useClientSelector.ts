@@ -9,7 +9,7 @@ export const useClientSelector = () => {
   const [searchValue, setSearchValue] = useState('');
 
   const fetchClients = async () => {
-    console.log('=== INICIANDO BUSCA DE CLIENTES NO SELECTOR ===');
+    console.log('=== INICIANDO BUSCA DE CLIENTES NO SELECTOR (SEM CACHE) ===');
     
     setIsLoading(true);
     try {
@@ -21,17 +21,29 @@ export const useClientSelector = () => {
         role: user.user?.user_metadata?.role
       });
 
-      // Usar o serviço de dados de clientes que tem diagnóstico completo
-      const { fetchClientsFromDB } = await import('@/services/client/clientDataService');
-      const clientsData = await fetchClientsFromDB();
-      
-      console.log('Dados retornados do serviço:', {
-        length: clientsData.length,
+      // Buscar dados frescos sempre, sem cache
+      const { data: clientsData, error } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          email,
+          full_name
+        `)
+        .eq('role', 'client')
+        .order('full_name', { ascending: true });
+
+      if (error) {
+        console.error('Erro ao buscar clientes:', error);
+        throw error;
+      }
+
+      console.log('Dados retornados diretamente do Supabase:', {
+        length: clientsData?.length || 0,
         clients: clientsData
       });
 
       // Processar para o formato do seletor
-      const processedClients = clientsData.map(client => ({
+      const processedClients = (clientsData || []).map(client => ({
         id: client.id,
         full_name: client.full_name || client.email.split('@')[0] || 'Usuário',
         email: client.email

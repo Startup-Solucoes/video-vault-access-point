@@ -53,10 +53,18 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
     };
 
     const handleModalOpen = () => {
-      console.log('Abrindo modal de seleção de clientes');
-      console.log('Clientes disponíveis no momento da abertura:', clients.length);
-      console.log('Lista de clientes:', clients.map(c => `${c.full_name} (${c.email})`));
+      console.log('Abrindo modal de seleção de clientes - buscando dados frescos');
+      // Buscar dados frescos sempre que abrir o modal
+      fetchClients();
       setModalOpen(true);
+    };
+
+    const handleModalClose = (open: boolean) => {
+      setModalOpen(open);
+      if (!open) {
+        // Limpar busca quando fechar o modal
+        setSearchValue('');
+      }
     };
 
     return (
@@ -78,7 +86,7 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
 
         <ClientSelectionModal
           open={modalOpen}
-          onOpenChange={setModalOpen}
+          onOpenChange={handleModalClose}
           clients={clients}
           selectedClients={selectedClients}
           onClientToggle={handleClientToggle}
