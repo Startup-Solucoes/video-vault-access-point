@@ -2,17 +2,19 @@
 import { useState } from 'react';
 import { EditVideoFormData } from './EditVideoFormTypes';
 
-export const useEditVideoFormState = () => {
-  const [formData, setFormData] = useState<EditVideoFormData>({
-    title: '',
-    description: '',
-    video_url: '',
-    thumbnail_url: '',
-    selectedCategories: [],
-    selectedClients: [],
-    publishDateTime: new Date(),
-    platform: 'outros'
-  });
+export const useEditVideoFormState = (initialData?: EditVideoFormData) => {
+  const [formData, setFormData] = useState<EditVideoFormData>(
+    initialData || {
+      title: '',
+      description: '',
+      video_url: '',
+      thumbnail_url: '',
+      selectedCategories: [],
+      selectedClients: [],
+      publishDateTime: new Date(),
+      platform: 'outros'
+    }
+  );
 
   const handleFieldChange = (field: keyof EditVideoFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -48,13 +50,13 @@ export const useEditVideoFormState = () => {
     }));
   };
 
-  const setFormData_ = (data: EditVideoFormData) => {
+  const updateFormData = (data: EditVideoFormData) => {
     setFormData(data);
   };
 
   return {
     formData,
-    setFormData: setFormData_,
+    setFormData: updateFormData,
     handleFieldChange,
     handleCategoryChange,
     handleClientChange,
