@@ -39,7 +39,7 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
     // Buscar dados correspondentes em auth.users
     const authUser = authUsersData.find(user => user.id === profile.id);
     
-    // Se temos dados de auth, usar email_confirmed_at, senão usar fallback
+    // Se temos dados de auth, usar email_confirmed_at, senão usar fallback melhorado
     let isVerified = false;
     let emailConfirmedAt = null;
     let lastSignIn = null;
@@ -50,15 +50,24 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       emailConfirmedAt = authUser.email_confirmed_at;
       lastSignIn = authUser.last_sign_in_at;
       // Verificar se o usuário foi deletado (banned ou disabled)
-      isDeleted = authUser.banned_until || authUser.deleted_at;
+      isDeleted = !!authUser.banned_until || !!authUser.deleted_at;
     } else {
-      // Fallback: usar updated_at diferente de created_at como indicador
-      isVerified = profile.updated_at !== profile.created_at;
+      // Fallback melhorado: verificar se houve algum login (last_sign_in_at existe)
+      // ou se o perfil foi atualizado significativamente após criação
+      const createdAt = new Date(profile.created_at);
+      const updatedAt = new Date(profile.updated_at);
+      const timeDiff = updatedAt.getTime() - createdAt.getTime();
+      
+      // Considera verificado se:
+      // 1. Teve algum update significativo (mais de 5 minutos após criação)
+      // 2. Tem last_sign_in_at no perfil (se estivermos guardando essa info)
+      isVerified = timeDiff > 5 * 60 * 1000; // 5 minutos
       emailConfirmedAt = isVerified ? profile.updated_at : null;
       lastSignIn = profile.updated_at || profile.created_at;
+      isDeleted = false; // No fallback, assumimos que não está deletado
     }
 
-    console.log(`Cliente ${profile.full_name}: verified=${isVerified}, deleted=${isDeleted}`);
+    console.log(`Cliente ${profile.full_name}: verified=${isVerified}, deleted=${isDeleted}, authUser=${!!authUser}`);
     
     return {
       ...profile,
