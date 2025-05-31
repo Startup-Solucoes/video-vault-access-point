@@ -19,6 +19,7 @@ export const useClientData = () => {
       setIsLoading(true);
       const data = await fetchClientsFromDB();
       console.log('useClientData: Clientes carregados:', data.length);
+      console.log('useClientData: Dados dos clientes:', data);
       setClients(data);
     } catch (error) {
       console.error('Erro ao carregar clientes:', error);
@@ -34,6 +35,7 @@ export const useClientData = () => {
 
   const updateClient = async (clientId: string, editForm: EditClientForm) => {
     try {
+      console.log('useClientData: Atualizando cliente:', clientId);
       await updateClientInDB(clientId, editForm);
       await fetchClients(); // Recarregar lista
     } catch (error) {
@@ -48,6 +50,7 @@ export const useClientData = () => {
 
   const approveClient = async (clientId: string, clientEmail: string) => {
     try {
+      console.log('useClientData: Aprovando cliente:', clientId);
       await approveClientInDB(clientId, clientEmail);
       await fetchClients(); // Recarregar lista
     } catch (error) {
@@ -62,6 +65,7 @@ export const useClientData = () => {
 
   const deleteClient = async (clientId: string, clientName: string) => {
     try {
+      console.log('useClientData: Removendo cliente:', clientId);
       await deleteClientFromDB(clientId, clientName);
       await fetchClients(); // Recarregar lista
     } catch (error) {
@@ -74,9 +78,27 @@ export const useClientData = () => {
     }
   };
 
+  // Buscar clientes na inicialização
   useEffect(() => {
+    console.log('useClientData: Componente montado, buscando clientes...');
     fetchClients();
   }, []);
+
+  // Polling para verificar novos clientes a cada 5 segundos quando não está carregando
+  useEffect(() => {
+    if (!isLoading) {
+      console.log('useClientData: Configurando polling para verificar novos clientes...');
+      const interval = setInterval(() => {
+        console.log('useClientData: Verificando novos clientes (polling)...');
+        fetchClients();
+      }, 5000);
+
+      return () => {
+        console.log('useClientData: Limpando polling...');
+        clearInterval(interval);
+      };
+    }
+  }, [isLoading]);
 
   return {
     clients,

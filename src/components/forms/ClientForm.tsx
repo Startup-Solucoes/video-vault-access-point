@@ -10,7 +10,7 @@ import { toast } from '@/hooks/use-toast';
 interface ClientFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onClientCreated?: () => void; // Callback para atualizar a lista
+  onClientCreated?: () => void;
 }
 
 export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormProps) => {
@@ -57,6 +57,8 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
 
   const uploadLogo = async (file: File, userId: string): Promise<string | null> => {
     try {
+      console.log('Iniciando upload da logo para usuário:', userId);
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}_${Date.now()}.${fileExt}`;
       
@@ -64,12 +66,18 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
         .from('client-logos')
         .upload(fileName, file);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro no upload da logo:', error);
+        throw error;
+      }
+
+      console.log('Logo enviada com sucesso:', data.path);
 
       const { data: { publicUrl } } = supabase.storage
         .from('client-logos')
         .getPublicUrl(fileName);
 
+      console.log('URL pública da logo:', publicUrl);
       return publicUrl;
     } catch (error) {
       console.error('Erro ao fazer upload da logo:', error);
@@ -79,12 +87,28 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.full_name.trim() || !formData.email.trim() || !formData.password.trim()) {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha todos os campos obrigatórios",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      console.log('Iniciando cadastro de cliente:', formData.email);
+      console.log('=== INICIANDO CADASTRO DE CLIENTE ===');
+      console.log('Dados do formulário:', {
+        full_name: formData.full_name,
+        email: formData.email,
+        hasLogo: !!logoFile
+      });
       
       // Criar usuário no Supabase Auth
+      console.log('Criando usuário no Auth...');
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -97,24 +121,63 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
       });
 
       if (authError) {
-        console.error('Erro na criação do usuário:', authError);
+        console.error('Erro na criação do usuário no Auth:', authError);
         throw authError;
       }
 
-      console.log('Usuário criado no auth:', authData.user?.id);
+      if (!authData.user) {
+        console.error('Usuário não foi criado - authData.user é null');
+        throw new Error('Falha na criação do usuário');
+      }
 
-      if (authData.user) {
-        let logoUrl = null;
-        
-        // Fazer upload da logo se foi selecionada
-        if (logoFile) {
-          console.log('Fazendo upload da logo...');
-          logoUrl = await uploadLogo(logoFile, authData.user.id);
-          console.log('Logo URL:', logoUrl);
+      console.log('Usuário criado no Auth com sucesso:', {
+        id: authData.user.id,
+        email: authData.user.email,
+        emailConfirmed: authData.user.email_confirmed_at
+      });
+
+      // Aguardar um pouco para o trigger criar o perfil
+      console.log('Aguardando criação do perfil...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Verificar se o perfil foi criado
+      console.log('Verificando se o perfil foi criado...');
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Erro ao verificar perfil:', profileError);
+        // Se o perfil não foi criado pelo trigger, criar manualmente
+        console.log('Criando perfil manualmente...');
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: authData.user.id,
+            email: formData.email,
+            full_name: formData.full_name,
+            role: 'client'
+          });
+
+        if (insertError) {
+          console.error('Erro ao criar perfil manualmente:', insertError);
+          throw insertError;
         }
+        console.log('Perfil criado manualmente com sucesso');
+      } else {
+        console.log('Perfil encontrado:', profileData);
+      }
 
-        // Atualizar o perfil com a URL da logo se necessário
+      // Fazer upload da logo se foi selecionada
+      let logoUrl = null;
+      if (logoFile) {
+        console.log('Fazendo upload da logo...');
+        logoUrl = await uploadLogo(logoFile, authData.user.id);
+        
         if (logoUrl) {
+          console.log('Atualizando perfil com URL da logo...');
           const { error: updateError } = await supabase
             .from('profiles')
             .update({ logo_url: logoUrl })
@@ -123,40 +186,57 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
           if (updateError) {
             console.error('Erro ao atualizar logo do perfil:', updateError);
           } else {
-            console.log('Logo atualizada no perfil');
+            console.log('Logo atualizada no perfil com sucesso');
           }
         }
-
-        console.log('Cliente cadastrado com sucesso!');
-        
-        // Mostrar mensagem de sucesso
-        toast({
-          title: "Sucesso!",
-          description: "Cliente cadastrado com sucesso",
-        });
-        
-        // Resetar formulário
-        setFormData({
-          full_name: '',
-          email: '',
-          password: ''
-        });
-        setLogoFile(null);
-        setLogoPreview(null);
-        
-        // Chamar callback para atualizar lista de clientes
-        if (onClientCreated) {
-          console.log('Chamando callback para atualizar lista');
-          onClientCreated();
-        }
-        
-        onOpenChange(false);
       }
-    } catch (error) {
-      console.error('Erro ao cadastrar cliente:', error);
+
+      console.log('=== CLIENTE CADASTRADO COM SUCESSO ===');
+      
+      // Mostrar mensagem de sucesso
+      toast({
+        title: "Sucesso!",
+        description: `Cliente ${formData.full_name} cadastrado com sucesso`,
+      });
+      
+      // Resetar formulário
+      setFormData({
+        full_name: '',
+        email: '',
+        password: ''
+      });
+      setLogoFile(null);
+      setLogoPreview(null);
+      
+      // Chamar callback para atualizar lista de clientes
+      if (onClientCreated) {
+        console.log('Chamando callback para atualizar lista...');
+        // Aguardar um pouco antes de atualizar a lista
+        setTimeout(() => {
+          onClientCreated();
+        }, 500);
+      }
+      
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error('=== ERRO NO CADASTRO ===');
+      console.error('Erro completo:', error);
+      console.error('Message:', error.message);
+      console.error('Code:', error.code);
+      
+      let errorMessage = "Erro ao cadastrar cliente. Tente novamente.";
+      
+      if (error.message?.includes('User already registered')) {
+        errorMessage = "Este e-mail já está cadastrado no sistema.";
+      } else if (error.message?.includes('Invalid email')) {
+        errorMessage = "E-mail inválido. Verifique o formato do e-mail.";
+      } else if (error.message?.includes('Password')) {
+        errorMessage = "Senha deve ter pelo menos 6 caracteres.";
+      }
+      
       toast({
         title: "Erro",
-        description: "Erro ao cadastrar cliente. Verifique os dados e tente novamente.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -173,7 +253,7 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="client-name">Nome do Cliente</Label>
+            <Label htmlFor="client-name">Nome do Cliente *</Label>
             <Input
               id="client-name"
               value={formData.full_name}
@@ -184,7 +264,7 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="client-email">E-mail</Label>
+            <Label htmlFor="client-email">E-mail *</Label>
             <Input
               id="client-email"
               type="email"
@@ -196,19 +276,20 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="client-password">Senha</Label>
+            <Label htmlFor="client-password">Senha * (mínimo 6 caracteres)</Label>
             <Input
               id="client-password"
               type="password"
               value={formData.password}
               onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
               placeholder="••••••••"
+              minLength={6}
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="client-logo">Logomarca (JPG, máx. 500KB)</Label>
+            <Label htmlFor="client-logo">Logomarca (JPG/PNG, máx. 500KB)</Label>
             <Input
               id="client-logo"
               type="file"
@@ -232,6 +313,7 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={isLoading}
             >
               Cancelar
             </Button>
