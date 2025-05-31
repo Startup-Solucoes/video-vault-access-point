@@ -1,22 +1,26 @@
 
-import React, { useState, useEffect } from 'react';
-import { AuthForm } from '@/components/auth/AuthForm';
-import { Dashboard } from '@/components/dashboard/Dashboard';
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { useAuth, AuthProvider } from "@/hooks/useAuth";
+import { Dashboard } from "@/components/dashboard/Dashboard";
+import { AuthForm } from "@/components/auth/AuthForm";
 
-const IndexContent = () => {
-  const { user, isLoading } = useAuth();
+const AppContent = () => {
+  const { user, profile, isLoading } = useAuth();
+
+  console.log('App render state:', { user: !!user, profile, isLoading });
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Carregando...</p>
+        </div>
       </div>
     );
   }
 
-  if (!user) {
-    return <AuthForm onSuccess={() => {}} />;
+  if (!user || !profile) {
+    return <AuthForm />;
   }
 
   return <Dashboard />;
@@ -25,7 +29,7 @@ const IndexContent = () => {
 const Index = () => {
   return (
     <AuthProvider>
-      <IndexContent />
+      <AppContent />
     </AuthProvider>
   );
 };
