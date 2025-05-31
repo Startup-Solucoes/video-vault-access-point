@@ -22,6 +22,23 @@ interface VideoCardProps {
   video: ClientVideo;
 }
 
+// Cores para cada categoria (mesmas do CategoryFilter)
+const getCategoryColor = (category: string) => {
+  const colors: { [key: string]: string } = {
+    'Gerais': 'bg-blue-600 text-white',
+    'Produto': 'bg-green-600 text-white',
+    'Financeiro': 'bg-yellow-600 text-white',
+    'Relatórios': 'bg-purple-600 text-white',
+    'Pedidos de venda': 'bg-orange-600 text-white',
+    'Fiscal': 'bg-red-600 text-white',
+    'Integrações': 'bg-teal-600 text-white',
+    'Serviços': 'bg-indigo-600 text-white'
+  };
+  
+  // Cor padrão se a categoria não estiver mapeada
+  return colors[category] || 'bg-gray-600 text-white';
+};
+
 // Função para extrair thumbnail de URLs de vídeo
 const getVideoThumbnail = (videoUrl: string): string | null => {
   if (!videoUrl) return null;
@@ -46,6 +63,7 @@ const getVideoThumbnail = (videoUrl: string): string | null => {
 export const VideoCard = ({ video }: VideoCardProps) => {
   const autoThumbnail = getVideoThumbnail(video.video_url);
   const thumbnailUrl = video.thumbnail_url || autoThumbnail;
+  const categoryColors = video.category ? getCategoryColor(video.category) : '';
 
   return (
     <Card className="hover:shadow-lg transition-shadow">
@@ -70,11 +88,10 @@ export const VideoCard = ({ video }: VideoCardProps) => {
             <Video className="h-12 w-12 text-blue-500" />
           )}
           
-          {/* Badge da categoria */}
+          {/* Badge da categoria com cores customizadas */}
           {video.category && (
             <Badge 
-              variant="secondary" 
-              className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm"
+              className={`absolute top-2 right-2 font-semibold border-0 ${categoryColors}`}
             >
               {video.category}
             </Badge>
