@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ClientSelector } from './ClientSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -32,7 +33,8 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
     description: '',
     video_url: '',
     thumbnail_url: '',
-    selectedCategories: [] as string[]
+    selectedCategories: [] as string[],
+    selectedClients: [] as string[]
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -53,13 +55,21 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
     }));
   };
 
+  const handleClientChange = (clientIds: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedClients: clientIds
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      // Primeiro, cadastrar o vídeo
+      const { data: videoData, error: videoError } = await supabase
         .from('videos')
         .insert({
           title: formData.title,
@@ -69,17 +79,35 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
           category: formData.selectedCategories.join(', '),
           tags: formData.selectedCategories,
           created_by: user.id
-        });
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (videoError) throw videoError;
 
-      console.log('Vídeo cadastrado com sucesso:', data);
+      // Em seguida, criar as permissões para os clientes selecionados
+      if (formData.selectedClients.length > 0 && videoData) {
+        const permissions = formData.selectedClients.map(clientId => ({
+          video_id: videoData.id,
+          client_id: clientId,
+          granted_by: user.id
+        }));
+
+        const { error: permissionError } = await supabase
+          .from('video_permissions')
+          .insert(permissions);
+
+        if (permissionError) throw permissionError;
+      }
+
+      console.log('Vídeo cadastrado com sucesso:', videoData);
       setFormData({
         title: '',
         description: '',
         video_url: '',
         thumbnail_url: '',
-        selectedCategories: []
+        selectedCategories: [],
+        selectedClients: []
       });
       onOpenChange(false);
     } catch (error) {
@@ -91,7 +119,7 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Adicionar Nova Vídeo Aula</DialogTitle>
         </DialogHeader>
@@ -157,6 +185,17 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Clientes com Acesso</Label>
+            <ClientSelector
+              selectedClients={formData.selectedClients}
+              onClientChange={handleClientChange}
+            />
+            <p className="text-xs text-gray-500">
+              Selecione quais clientes terão acesso a este vídeo
+            </p>
           </div>
 
           <div className="space-y-2">
