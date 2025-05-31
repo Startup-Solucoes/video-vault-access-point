@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { ClientSelector, ClientSelectorRef } from './ClientSelector';
 import { VideoFormFields } from './video-form/VideoFormFields';
 import { CategorySelector } from './video-form/CategorySelector';
+import { PublishDateTimeSelector } from './video-form/PublishDateTimeSelector';
 import { useEditVideoForm } from './video-form/useEditVideoForm';
 import { EditVideoFormProps } from './video-form/EditVideoFormTypes';
 
@@ -18,6 +19,7 @@ export const EditVideoForm = ({ open, onOpenChange, videoId }: EditVideoFormProp
     handleFieldChange,
     handleCategoryChange,
     handleClientChange,
+    handleDateTimeChange,
     handleSubmit
   } = useEditVideoForm(videoId, () => onOpenChange(false));
 
@@ -71,6 +73,11 @@ export const EditVideoForm = ({ open, onOpenChange, videoId }: EditVideoFormProp
               Selecione quais clientes terão acesso a este vídeo
             </p>
           </div>
+
+          <PublishDateTimeSelector
+            publishDateTime={formData.publishDateTime}
+            onDateTimeChange={handleDateTimeChange}
+          />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button

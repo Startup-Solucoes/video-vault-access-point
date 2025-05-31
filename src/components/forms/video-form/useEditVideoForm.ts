@@ -13,7 +13,8 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
     video_url: '',
     thumbnail_url: '',
     selectedCategories: [],
-    selectedClients: []
+    selectedClients: [],
+    publishDateTime: new Date()
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -50,7 +51,8 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
           video_url: videoData.video_url,
           thumbnail_url: videoData.thumbnail_url || '',
           selectedCategories: categories,
-          selectedClients: clientIds
+          selectedClients: clientIds,
+          publishDateTime: videoData.created_at ? new Date(videoData.created_at) : new Date()
         });
       } catch (error) {
         console.error('Erro ao carregar dados do vídeo:', error);
@@ -84,6 +86,13 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
     setFormData(prev => ({
       ...prev,
       selectedClients: clientIds
+    }));
+  };
+
+  const handleDateTimeChange = (publishDateTime: Date) => {
+    setFormData(prev => ({
+      ...prev,
+      publishDateTime
     }));
   };
 
@@ -186,6 +195,7 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
     handleFieldChange,
     handleCategoryChange,
     handleClientChange,
+    handleDateTimeChange,
     handleSubmit
   };
 };
