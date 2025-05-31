@@ -48,10 +48,6 @@ export const ClientManagement = () => {
 
   const counts = getTabCounts();
 
-  console.log('ClientManagement - Counts:', counts);
-  console.log('ClientManagement - Filtered clients:', filteredClients);
-  console.log('ClientManagement - Active tab:', activeTab);
-
   return (
     <div className="space-y-6">
       <Card>

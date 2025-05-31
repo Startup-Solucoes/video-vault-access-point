@@ -1,10 +1,9 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Client, EditClientForm } from '@/types/client';
 
 export const fetchClientsFromDB = async (): Promise<Client[]> => {
-  console.log('Buscando todos os usuários...');
-  
   // Buscar dados de todos os perfis (admin e client)
   const { data: profilesData, error: profilesError } = await supabase
     .from('profiles')
@@ -16,20 +15,15 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
     throw profilesError;
   }
 
-  console.log('Dados brutos dos perfis:', profilesData);
-
   // Tentar buscar dados de auth.users para verificar confirmação de email
   let authUsersData: any[] = [];
   try {
     const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
     if (!authError && authData?.users) {
       authUsersData = authData.users;
-      console.log('Dados de auth.users obtidos:', authUsersData.length, 'usuários');
-    } else {
-      console.log('Não foi possível acessar auth.users, usando fallback');
     }
   } catch (error) {
-    console.log('Erro ao acessar auth.users, usando fallback:', error);
+    // Fallback silencioso se não conseguir acessar auth.users
   }
 
   // Mapear os dados para determinar se estão aprovados
@@ -37,7 +31,7 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
     // Buscar dados correspondentes em auth.users
     const authUser = authUsersData.find(user => user.id === profile.id);
     
-    // Se temos dados de auth, usar email_confirmed_at, senão usar fallback melhorado
+    // Se temos dados de auth, usar email_confirmed_at, senão usar fallback
     let isVerified = false;
     let emailConfirmedAt = null;
     let lastSignIn = null;
@@ -47,25 +41,19 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       isVerified = !!authUser.email_confirmed_at;
       emailConfirmedAt = authUser.email_confirmed_at;
       lastSignIn = authUser.last_sign_in_at;
-      // Verificar se o usuário foi deletado (banned ou disabled)
       isDeleted = !!authUser.banned_until || !!authUser.deleted_at;
     } else {
-      // Fallback melhorado: verificar se houve algum login (last_sign_in_at existe)
-      // ou se o perfil foi atualizado significativamente após criação
+      // Fallback: verificar se houve algum update significativo após criação
       const createdAt = new Date(profile.created_at);
       const updatedAt = new Date(profile.updated_at);
       const timeDiff = updatedAt.getTime() - createdAt.getTime();
       
-      // Considera verificado se:
-      // 1. Teve algum update significativo (mais de 5 minutos após criação)
-      // 2. Tem last_sign_in_at no perfil (se estivermos guardando essa info)
-      isVerified = timeDiff > 5 * 60 * 1000; // 5 minutos
+      // Considera verificado se teve update significativo (mais de 1 minuto após criação)
+      isVerified = timeDiff > 60 * 1000; // 1 minuto
       emailConfirmedAt = isVerified ? profile.updated_at : null;
-      lastSignIn = profile.updated_at || profile.created_at;
-      isDeleted = false; // No fallback, assumimos que não está deletado
+      lastSignIn = isVerified ? profile.updated_at : null;
+      isDeleted = false;
     }
-
-    console.log(`Usuário ${profile.full_name}: role=${profile.role}, verified=${isVerified}, deleted=${isDeleted}, authUser=${!!authUser}`);
     
     return {
       ...profile,
@@ -75,13 +63,10 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
     };
   }) || [];
 
-  console.log('Usuários processados:', combinedData);
   return combinedData;
 };
 
 export const updateClientInDB = async (clientId: string, editForm: EditClientForm): Promise<void> => {
-  console.log('Atualizando cliente:', clientId, editForm);
-  
   const { error } = await supabase
     .from('profiles')
     .update({
@@ -104,8 +89,6 @@ export const updateClientInDB = async (clientId: string, editForm: EditClientFor
 };
 
 export const approveClientInDB = async (clientId: string, clientEmail: string): Promise<void> => {
-  console.log('Aprovando cliente:', clientId);
-  
   try {
     // Tentar confirmar email via auth admin
     const { error: authError } = await supabase.auth.admin.updateUserById(clientId, {
@@ -113,7 +96,6 @@ export const approveClientInDB = async (clientId: string, clientEmail: string): 
     });
 
     if (authError) {
-      console.log('Erro ao confirmar via auth admin, usando fallback:', authError);
       // Fallback: atualizar timestamp no perfil
       const { error: profileError } = await supabase
         .from('profiles')
@@ -142,8 +124,6 @@ export const deleteClientFromDB = async (clientId: string, clientName: string): 
     return;
   }
 
-  console.log('Removendo cliente:', clientId);
-  
   const { error } = await supabase
     .from('profiles')
     .delete()

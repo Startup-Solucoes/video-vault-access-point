@@ -41,7 +41,6 @@ export const useClientFilters = (clients: Client[]) => {
       );
     }
 
-    console.log(`Filtro ${activeTab}: ${filtered.length} usuários encontrados`);
     setFilteredClients(filtered);
   }, [searchTerm, clients, activeTab]);
 
@@ -53,7 +52,6 @@ export const useClientFilters = (clients: Client[]) => {
     const deleted = clients.filter(c => c.is_deleted).length;
     const all = admins + clientsOnly; // Todos = admins + clientes (sem os deletados)
     
-    console.log('Contadores:', { all, admins, clients: clientsOnly, verified, unverified, deleted });
     return { all, admins, clients: clientsOnly, verified, unverified, deleted };
   };
 
