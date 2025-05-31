@@ -27,6 +27,17 @@ export const validateClientForm = (formData: ClientFormData): boolean => {
     return false;
   }
 
+  // Validação básica de formato de email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(formData.email)) {
+    toast({
+      title: "Erro",
+      description: "Por favor, insira um e-mail válido",
+      variant: "destructive"
+    });
+    return false;
+  }
+
   if (!formData.password.trim()) {
     toast({
       title: "Erro",
@@ -63,5 +74,6 @@ export const validateClientForm = (formData: ClientFormData): boolean => {
     return false;
   }
 
+  console.log('Validação do formulário passou com sucesso');
   return true;
 };

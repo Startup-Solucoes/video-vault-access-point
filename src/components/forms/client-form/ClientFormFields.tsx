@@ -64,7 +64,10 @@ export const ClientFormFields = ({ formData, onFormDataChange }: ClientFormField
           required
         />
         {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
-          <p className="text-sm text-red-500">As senhas não coincidem</p>
+          <p className="text-sm text-red-500 mt-1">As senhas não coincidem</p>
+        )}
+        {formData.password && formData.confirmPassword && formData.password === formData.confirmPassword && formData.password.length >= 6 && (
+          <p className="text-sm text-green-600 mt-1">✓ Senhas coincidem</p>
         )}
       </div>
     </>
