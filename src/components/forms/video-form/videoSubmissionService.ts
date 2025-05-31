@@ -70,7 +70,9 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
         const emailSuccess = await sendVideoNotifications({
           videoTitle: formData.title,
           videoDescription: formData.description,
-          clientIds: formData.selectedClients
+          categories: formData.selectedCategories,
+          clientIds: formData.selectedClients,
+          adminId: user.id
         });
 
         if (emailSuccess) {
