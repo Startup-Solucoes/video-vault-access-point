@@ -9,120 +9,39 @@ export const useClientSelector = () => {
   const [searchValue, setSearchValue] = useState('');
 
   const fetchClients = async () => {
-    console.log('=== BUSCANDO CLIENTES NO SELECTOR ===');
-    const { data: user } = await supabase.auth.getUser();
-    console.log('Usuário atual autenticado:', user.user?.id);
-    console.log('Role do usuário atual:', user.user?.user_metadata?.role);
+    console.log('=== INICIANDO BUSCA DE CLIENTES NO SELECTOR ===');
     
     setIsLoading(true);
     try {
-      console.log('Testando acesso à tabela profiles...');
+      // Verificar usuário atual
+      const { data: user } = await supabase.auth.getUser();
+      console.log('Usuário autenticado:', {
+        id: user.user?.id,
+        email: user.user?.email,
+        role: user.user?.user_metadata?.role
+      });
+
+      // Usar o serviço de dados de clientes que tem diagnóstico completo
+      const { fetchClientsFromDB } = await import('@/services/client/clientDataService');
+      const clientsData = await fetchClientsFromDB();
       
-      // Tentar buscar todos os perfis primeiro
-      console.log('Tentativa 1: Buscar todos os perfis...');
-      const { data: allProfiles, error: allError } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, role')
-        .order('full_name');
+      console.log('Dados retornados do serviço:', {
+        length: clientsData.length,
+        clients: clientsData
+      });
 
-      console.log('Resultado da busca de todos os perfis:');
-      console.log('- Data:', allProfiles);
-      console.log('- Error:', allError);
-      console.log('- Quantidade:', allProfiles?.length || 0);
+      // Processar para o formato do seletor
+      const processedClients = clientsData.map(client => ({
+        id: client.id,
+        full_name: client.full_name || client.email.split('@')[0] || 'Usuário',
+        email: client.email
+      }));
 
-      if (allError) {
-        console.error('Erro ao buscar todos os perfis:', allError);
-        
-        // Se deu erro, tentar buscar apenas clientes
-        console.log('Tentativa 2: Buscar apenas clientes...');
-        const { data: clientsOnly, error: clientError } = await supabase
-          .from('profiles')
-          .select('id, full_name, email, role')
-          .eq('role', 'client')
-          .order('full_name');
-
-        console.log('Resultado da busca apenas de clientes:');
-        console.log('- Data:', clientsOnly);
-        console.log('- Error:', clientError);
-        
-        if (clientError) {
-          console.error('Erro ao buscar clientes:', clientError);
-          
-          // Última tentativa: buscar sem filtros
-          console.log('Tentativa 3: Buscar sem filtros...');
-          const { data: noFilter, error: noFilterError } = await supabase
-            .from('profiles')
-            .select('*');
-
-          console.log('Resultado sem filtros:');
-          console.log('- Data:', noFilter);
-          console.log('- Error:', noFilterError);
-          
-          if (noFilterError) {
-            throw noFilterError;
-          }
-          
-          // Usar dados sem filtro se disponível
-          if (noFilter && noFilter.length > 0) {
-            const processedClients = noFilter.map(client => ({
-              id: client.id,
-              full_name: client.full_name || client.email.split('@')[0] || 'Usuário',
-              email: client.email
-            }));
-            
-            console.log('Clientes processados (sem filtro):', processedClients);
-            setClients(processedClients);
-            return;
-          }
-        } else if (clientsOnly) {
-          // Usar apenas clientes se conseguiu buscar
-          const processedClients = clientsOnly.map(client => ({
-            id: client.id,
-            full_name: client.full_name || client.email.split('@')[0] || 'Usuário',
-            email: client.email
-          }));
-          
-          console.log('Clientes processados (apenas clientes):', processedClients);
-          setClients(processedClients);
-          return;
-        }
-      } else {
-        // Sucesso na busca de todos os perfis
-        console.log('TODOS os perfis encontrados na base:', allProfiles);
-        console.log('Quantidade total de perfis:', allProfiles?.length || 0);
-        
-        if (allProfiles && allProfiles.length > 0) {
-          allProfiles.forEach((profile, index) => {
-            console.log(`Perfil ${index + 1}: ID=${profile.id}, Nome="${profile.full_name}", Email="${profile.email}", Role="${profile.role}"`);
-          });
-          
-          // Processar os dados para garantir que temos nomes válidos
-          const processedClients = allProfiles.map(client => {
-            const processedName = client.full_name || client.email.split('@')[0] || 'Usuário';
-            console.log(`Processando cliente: ${client.email} -> Nome final: "${processedName}"`);
-            
-            return {
-              id: client.id,
-              full_name: processedName,
-              email: client.email
-            };
-          });
-          
-          console.log('Clientes processados para o seletor:', processedClients);
-          console.log('Total de clientes disponíveis:', processedClients.length);
-          setClients(processedClients);
-          return;
-        } else {
-          console.log('ATENÇÃO: Nenhum perfil foi retornado pela query de todos os perfis!');
-        }
-      }
-      
-      // Se chegou até aqui, não conseguiu buscar nenhum cliente
-      console.log('Nenhum cliente encontrado em nenhuma tentativa');
-      setClients([]);
+      console.log('Clientes processados para o seletor:', processedClients);
+      setClients(processedClients);
       
     } catch (error) {
-      console.error('Erro geral ao buscar clientes:', error);
+      console.error('Erro ao buscar clientes no selector:', error);
       setClients([]);
     } finally {
       setIsLoading(false);
@@ -158,7 +77,7 @@ export const useClientSelector = () => {
   }, [clients, searchValue]);
 
   useEffect(() => {
-    console.log('=== COMPONENTE MONTADO - BUSCANDO CLIENTES ===');
+    console.log('=== COMPONENTE SELECTOR MONTADO ===');
     fetchClients();
   }, []);
 
