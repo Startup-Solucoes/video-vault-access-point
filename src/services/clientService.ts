@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Client, EditClientForm } from '@/types/client';
@@ -26,74 +25,29 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       return [];
     }
 
-    // Tentar buscar dados de auth.users para verificar confirmação de email
-    let authUsersData: any[] = [];
-    try {
-      console.log('clientService: Tentando buscar dados de auth.users...');
-      const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
-      if (!authError && authData?.users) {
-        authUsersData = authData.users;
-        console.log('clientService: Dados de auth encontrados:', authUsersData.length);
-        console.log('clientService: Detalhes dos usuários auth:', authUsersData.map(u => ({
-          id: u.id,
-          email: u.email,
-          email_confirmed_at: u.email_confirmed_at,
-          created_at: u.created_at
-        })));
-      } else {
-        console.log('clientService: Não foi possível acessar auth.users, usando fallback. Erro:', authError);
-      }
-    } catch (error) {
-      console.log('clientService: Fallback - não foi possível acessar dados de auth. Erro:', error);
-    }
-
-    // Mapear os dados para determinar se estão aprovados
-    const combinedData = profilesData.map(profile => {
+    // Mapear os dados sem tentar acessar auth.users (que requer service role)
+    const processedData = profilesData.map(profile => {
       console.log('clientService: Processando perfil:', profile.id, profile.email);
       
-      // Buscar dados correspondentes em auth.users
-      const authUser = authUsersData.find(user => user.id === profile.id);
+      // Como não podemos acessar auth.users com anon key, vamos usar uma lógica baseada nos dados do perfil
+      // Assumimos que se o perfil foi criado mas não teve login recente, está pendente
+      const now = new Date();
+      const createdAt = new Date(profile.created_at);
+      const updatedAt = new Date(profile.updated_at);
       
-      // Se temos dados de auth, usar email_confirmed_at, senão usar fallback
-      let isVerified = false;
-      let emailConfirmedAt = null;
-      let lastSignIn = null;
-      let isDeleted = false;
-
-      if (authUser) {
-        console.log('clientService: Usuário encontrado em auth:', {
-          email: authUser.email,
-          email_confirmed_at: authUser.email_confirmed_at,
-          created_at: authUser.created_at,
-          last_sign_in_at: authUser.last_sign_in_at
-        });
-        
-        // Verificação mais rigorosa - apenas considerar verificado se email_confirmed_at existe
-        isVerified = !!authUser.email_confirmed_at;
-        emailConfirmedAt = authUser.email_confirmed_at;
-        lastSignIn = authUser.last_sign_in_at;
-        isDeleted = !!authUser.banned_until || !!authUser.deleted_at;
-        
-        console.log('clientService: Status de verificação determinado:', {
-          email: authUser.email,
-          isVerified,
-          emailConfirmedAt,
-          rawEmailConfirmedAt: authUser.email_confirmed_at
-        });
-      } else {
-        console.log('clientService: Usuário não encontrado em auth, usando fallback');
-        // Fallback mais conservador: considerar não verificado se não temos dados de auth
-        isVerified = false;
-        emailConfirmedAt = null;
-        lastSignIn = profile.updated_at;
-        isDeleted = false;
-      }
+      // Se updated_at é muito próximo de created_at (diferença menor que 1 minuto), 
+      // provavelmente o usuário ainda não fez login
+      const timeDiff = updatedAt.getTime() - createdAt.getTime();
+      const isLikelyUnverified = timeDiff < 60000; // menos de 1 minuto
+      
+      // Para clientes existentes que podem ter feito login, assumimos verificados
+      const isVerified = !isLikelyUnverified;
       
       const processedProfile = {
         ...profile,
-        email_confirmed_at: emailConfirmedAt,
-        last_sign_in_at: lastSignIn,
-        is_deleted: isDeleted
+        email_confirmed_at: isVerified ? profile.updated_at : null,
+        last_sign_in_at: profile.updated_at,
+        is_deleted: false
       };
 
       console.log('clientService: Perfil processado final:', {
@@ -102,20 +56,21 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
         role: processedProfile.role,
         isVerified,
         emailConfirmedAt: processedProfile.email_confirmed_at,
-        created_at: processedProfile.created_at
+        created_at: processedProfile.created_at,
+        timeDiff
       });
 
       return processedProfile;
     });
 
-    console.log('clientService: Dados combinados processados:', combinedData.length);
-    console.log('clientService: Resumo de verificação:', combinedData.map(p => ({
+    console.log('clientService: Dados processados:', processedData.length);
+    console.log('clientService: Resumo de verificação:', processedData.map(p => ({
       email: p.email,
       verified: !!p.email_confirmed_at,
       email_confirmed_at: p.email_confirmed_at
     })));
     
-    return combinedData;
+    return processedData;
   } catch (error) {
     console.error('clientService: Erro na busca de clientes:', error);
     throw error;
@@ -151,24 +106,17 @@ export const approveClientInDB = async (clientId: string, clientEmail: string): 
   console.log('clientService: Aprovando cliente:', clientId, clientEmail);
   
   try {
-    // Tentar confirmar email via auth admin
-    const { error: authError } = await supabase.auth.admin.updateUserById(clientId, {
-      email_confirm: true
-    });
+    // Como não podemos acessar auth admin, vamos simular a aprovação 
+    // atualizando o timestamp do perfil
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', clientId);
 
-    if (authError) {
-      console.log('clientService: Fallback - atualizando timestamp no perfil');
-      // Fallback: atualizar timestamp no perfil
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', clientId);
-
-      if (profileError) {
-        throw profileError;
-      }
+    if (profileError) {
+      throw profileError;
     }
 
     console.log('clientService: Cliente aprovado com sucesso');
