@@ -10,9 +10,10 @@ import { useVideoPermissions } from '@/hooks/useVideoPermissions';
 
 interface VideoHistoryProps {
   limit?: number;
+  getCategoryColor?: (category: string) => string;
 }
 
-export const VideoHistory = ({ limit = 10 }: VideoHistoryProps) => {
+export const VideoHistory = ({ limit = 10, getCategoryColor }: VideoHistoryProps) => {
   const { videos, isLoading } = useVideoHistory(limit);
   const { videoPermissions, isLoadingPermissions } = useVideoPermissions();
 
@@ -98,7 +99,11 @@ export const VideoHistory = ({ limit = 10 }: VideoHistoryProps) => {
                       </TableCell>
                       <TableCell>
                         {video.category ? (
-                          <Badge variant="secondary">{video.category}</Badge>
+                          <Badge 
+                            className={getCategoryColor ? getCategoryColor(video.category) : 'bg-gray-600 text-white'}
+                          >
+                            {video.category}
+                          </Badge>
                         ) : (
                           <span className="text-gray-400">Sem categoria</span>
                         )}
