@@ -31,27 +31,42 @@ export const useVideoPermissions = () => {
       console.log('🔐 Buscando permissões de vídeos...');
 
       try {
-        const { data, error } = await supabase
+        // Buscar permissões primeiro
+        const { data: permissions, error: permissionsError } = await supabase
           .from('video_permissions')
-          .select(`
-            *,
-            client:profiles(
-              id,
-              full_name,
-              email
-            )
-          `)
+          .select('*')
           .order('created_at', { ascending: false });
 
-        if (error) {
-          console.error('❌ Erro ao buscar permissões:', error);
-          throw error;
+        if (permissionsError) {
+          console.error('❌ Erro ao buscar permissões:', permissionsError);
+          throw permissionsError;
         }
 
-        console.log('✅ Permissões encontradas:', data?.length || 0);
-        console.log('Dados das permissões:', data);
+        // Buscar dados dos clientes separadamente
+        const clientIds = permissions?.map(p => p.client_id) || [];
+        const { data: clients, error: clientsError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', clientIds);
+
+        if (clientsError) {
+          console.error('❌ Erro ao buscar clientes:', clientsError);
+          throw clientsError;
+        }
+
+        // Combinar os dados
+        const permissionsWithClients: VideoPermission[] = permissions?.map(permission => {
+          const client = clients?.find(c => c.id === permission.client_id) || null;
+          return {
+            ...permission,
+            client
+          };
+        }) || [];
+
+        console.log('✅ Permissões encontradas:', permissionsWithClients.length);
+        console.log('Dados das permissões:', permissionsWithClients);
         
-        setVideoPermissions(data || []);
+        setVideoPermissions(permissionsWithClients);
       } catch (error) {
         console.error('💥 Erro no useVideoPermissions:', error);
         setVideoPermissions([]);
