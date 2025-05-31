@@ -33,6 +33,7 @@ jobs:
       run: |
         # Criar arquivo tar com os arquivos necessários
         tar -czf deploy.tar.gz dist/ package.json package-lock.json
+        echo "✅ Pacote de deploy criado"
         
     - name: Transfer files to server
       uses: appleboy/scp-action@v0.1.7
@@ -55,11 +56,24 @@ jobs:
           # Navegar para o diretório da aplicação
           cd /var/www/tutoriaiserp.com.br
           
+          echo "📂 Diretório atual: $(pwd)"
+          echo "📋 Conteúdo antes da atualização:"
+          ls -la dist/ 2>/dev/null || echo "Diretório dist não existe"
+          
           # Fazer backup da versão atual
           sudo cp -r dist dist_backup_$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
           
+          # Remover diretório dist antigo
+          sudo rm -rf dist/
+          
           # Extrair novos arquivos
           sudo tar -xzf /tmp/deploy.tar.gz
+          
+          echo "📋 Conteúdo após a atualização:"
+          ls -la dist/
+          
+          echo "🔍 Verificando conteúdo do index.html:"
+          head -20 dist/index.html
           
           # Criar arquivo .env se não existir
           if [ ! -f .env ]; then
@@ -73,8 +87,21 @@ jobs:
           sudo chown -R www-data:www-data /var/www/tutoriaiserp.com.br
           sudo chmod -R 755 /var/www/tutoriaiserp.com.br
           
-          # Reiniciar nginx
-          sudo systemctl reload nginx
+          # Limpar cache do Nginx
+          echo "🗑️ Limpando cache do Nginx..."
+          sudo nginx -s reload
+          
+          # Verificar configuração do Nginx
+          echo "⚙️ Testando configuração do Nginx:"
+          sudo nginx -t
+          
+          # Reiniciar nginx para garantir
+          echo "🔄 Reiniciando Nginx..."
+          sudo systemctl restart nginx
+          
+          # Verificar status do nginx
+          echo "✅ Status do Nginx:"
+          sudo systemctl status nginx --no-pager -l
           
           # Limpar backups antigos (manter apenas os 5 mais recentes)
           sudo find /var/www/tutoriaiserp.com.br -name "dist_backup_*" -type d | sort | head -n -5 | sudo xargs rm -rf 2>/dev/null || true
@@ -82,4 +109,5 @@ jobs:
           # Limpar arquivo temporário
           rm -f /tmp/deploy.tar.gz
           
-          echo "✅ Deploy concluído com sucesso!"
+          echo "✅ Deploy concluído com sucesso em $(date)!"
+          echo "🌐 Site: https://tutoriaiserp.com.br"
