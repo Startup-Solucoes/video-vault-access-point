@@ -117,6 +117,10 @@ export const removeClientUser = async (clientUserId: string): Promise<void> => {
     throw fetchError;
   }
 
+  if (!clientUser) {
+    throw new Error('Usuário do cliente não encontrado');
+  }
+
   // Remove from client_users table
   const { error: deleteError } = await supabase
     .from('client_users')
