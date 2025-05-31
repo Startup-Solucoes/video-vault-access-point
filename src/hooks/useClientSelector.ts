@@ -21,7 +21,10 @@ export const useClientSelector = () => {
         role: user.user?.user_metadata?.role
       });
 
-      // Buscar dados frescos sempre, sem cache
+      // Buscar dados frescos sempre, sem cache - incluindo timestamp para forçar refresh
+      const timestamp = Date.now();
+      console.log('Timestamp da busca:', timestamp);
+      
       const { data: clientsData, error } = await supabase
         .from('profiles')
         .select(`
@@ -38,6 +41,7 @@ export const useClientSelector = () => {
       }
 
       console.log('Dados retornados diretamente do Supabase:', {
+        timestamp,
         length: clientsData?.length || 0,
         clients: clientsData
       });
@@ -88,10 +92,11 @@ export const useClientSelector = () => {
     return filtered;
   }, [clients, searchValue]);
 
+  // Remover qualquer dependência de cache - sempre busca na montagem
   useEffect(() => {
-    console.log('=== COMPONENTE SELECTOR MONTADO ===');
+    console.log('=== COMPONENTE SELECTOR MONTADO - REMOVENDO CACHE ===');
     fetchClients();
-  }, []);
+  }, []); // Sem dependências para garantir execução única
 
   return {
     clients,

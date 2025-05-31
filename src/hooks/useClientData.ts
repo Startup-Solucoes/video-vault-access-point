@@ -14,7 +14,7 @@ const CLIENTS_QUERY_KEY = ['clients'];
 export const useClientData = () => {
   const queryClient = useQueryClient();
 
-  // Query para buscar clientes
+  // Query para buscar clientes - SEMPRE BUSCA DADOS FRESCOS
   const {
     data: clients = [],
     isLoading,
@@ -24,8 +24,9 @@ export const useClientData = () => {
     queryFn: fetchClientsFromDB,
     staleTime: 0, // Dados sempre considerados obsoletos
     gcTime: 0, // Não mantém cache
-    refetchOnMount: true, // Sempre busca ao montar
+    refetchOnMount: 'always', // Sempre busca ao montar
     refetchOnWindowFocus: true, // Busca quando volta para a aba
+    refetchOnReconnect: true, // Busca ao reconectar
   });
 
   // Mutation para atualizar cliente
@@ -34,6 +35,7 @@ export const useClientData = () => {
       updateClientInDB(clientId, editForm),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
+      queryClient.removeQueries({ queryKey: CLIENTS_QUERY_KEY });
       toast({
         title: "Sucesso",
         description: "Cliente atualizado com sucesso",
@@ -55,6 +57,7 @@ export const useClientData = () => {
       approveClientInDB(clientId, clientEmail),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
+      queryClient.removeQueries({ queryKey: CLIENTS_QUERY_KEY });
       toast({
         title: "Sucesso",
         description: "Cliente aprovado com sucesso",
@@ -76,6 +79,7 @@ export const useClientData = () => {
       deleteClientFromDB(clientId, clientName),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
+      queryClient.removeQueries({ queryKey: CLIENTS_QUERY_KEY });
       toast({
         title: "Sucesso",
         description: "Cliente removido com sucesso",
@@ -93,7 +97,8 @@ export const useClientData = () => {
 
   // Função para forçar atualização manual
   const refreshClients = () => {
-    console.log('useClientData: refreshClients chamado - invalidando queries');
+    console.log('useClientData: refreshClients chamado - removendo cache e invalidando queries');
+    queryClient.removeQueries({ queryKey: CLIENTS_QUERY_KEY });
     queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
   };
 
