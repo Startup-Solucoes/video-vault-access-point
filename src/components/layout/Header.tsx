@@ -15,7 +15,7 @@ export const Header = () => {
           <div className="flex items-center space-x-2">
             <Video className="h-8 w-8 text-blue-600" />
             <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Portal de Vídeos
+              Tutoriais ERP
             </h1>
           </div>
           
