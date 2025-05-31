@@ -2,7 +2,14 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { ClientFormData, validateClientForm } from './clientFormValidation';
+import { validateClientForm } from './clientFormValidation';
+
+interface ClientFormData {
+  full_name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
 
 export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open: boolean) => void) => {
   const [formData, setFormData] = useState<ClientFormData>({
@@ -112,7 +119,7 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Fazer upload da logo se foi selecionada
-      let logoUrl = null;
+      let logoUrl: string | null = null;
       if (logoFile) {
         console.log('Fazendo upload da logo...');
         logoUrl = await uploadLogo(logoFile, authData.user.id);
