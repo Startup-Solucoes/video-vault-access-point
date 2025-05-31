@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { Client, EditClientForm } from '@/types/client';
 import { toast } from '@/hooks/use-toast';
@@ -22,7 +23,7 @@ export const useClientData = () => {
     queryKey: CLIENTS_QUERY_KEY,
     queryFn: fetchClientsFromDB,
     staleTime: 0, // Dados sempre considerados obsoletos
-    cacheTime: 0, // Não mantém cache
+    gcTime: 0, // Não mantém cache
     refetchOnMount: true, // Sempre busca ao montar
     refetchOnWindowFocus: true, // Busca quando volta para a aba
   });
