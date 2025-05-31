@@ -1,0 +1,62 @@
+
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build application
+      run: npm run build
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          # Navegar para o diretório da aplicação
+          cd /var/www/tutoriaiserp.com.br
+          
+          # Fazer backup da versão atual
+          sudo cp -r dist dist_backup_$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
+          
+          # Baixar a nova versão do GitHub
+          sudo git fetch origin
+          sudo git reset --hard origin/main
+          
+          # Instalar dependências
+          sudo npm ci
+          
+          # Compilar a aplicação
+          sudo npm run build
+          
+          # Reiniciar nginx
+          sudo systemctl reload nginx
+          
+          # Limpar backups antigos (manter apenas os 5 mais recentes)
+          sudo find /var/www/tutoriaiserp.com.br -name "dist_backup_*" -type d | sort | head -n -5 | sudo xargs rm -rf 2>/dev/null || true
+          
+          echo "✅ Deploy concluído com sucesso!"
