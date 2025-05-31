@@ -43,6 +43,11 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
     if (allFilteredSelected) {
       // Se todos os filtrados estão selecionados, desmarcar todos os filtrados
       console.log('Desmarcando todos os clientes filtrados');
+      const filteredIds = filteredClients.map(c => c.id);
+      const newSelection = selectedClients.filter(id => !filteredIds.includes(id));
+      console.log('Nova seleção após desmarcar:', newSelection);
+      
+      // Simular o toggle para cada cliente que será desmarcado
       filteredClients.forEach(client => {
         if (selectedClients.includes(client.id)) {
           console.log('Desmarcando cliente:', client.full_name);
@@ -52,11 +57,13 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
     } else {
       // Selecionar todos os filtrados que ainda não estão selecionados
       console.log('Selecionando todos os clientes filtrados');
-      filteredClients.forEach(client => {
-        if (!selectedClients.includes(client.id)) {
-          console.log('Selecionando cliente:', client.full_name);
-          onClientToggle(client.id);
-        }
+      const clientsToSelect = filteredClients.filter(client => !selectedClients.includes(client.id));
+      console.log('Clientes que serão selecionados:', clientsToSelect.map(c => c.full_name));
+      
+      // Simular o toggle para cada cliente que será selecionado
+      clientsToSelect.forEach(client => {
+        console.log('Selecionando cliente:', client.full_name);
+        onClientToggle(client.id);
       });
     }
   };
