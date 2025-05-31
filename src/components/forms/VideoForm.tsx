@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ClientSelector, ClientSelectorRef } from './ClientSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 interface VideoFormProps {
   open: boolean;
@@ -48,6 +49,7 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
   });
 
   const handleCategoryChange = (category: string, checked: boolean) => {
+    console.log('Categoria alterada:', category, checked);
     setFormData(prev => ({
       ...prev,
       selectedCategories: checked
@@ -57,6 +59,7 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
   };
 
   const handleClientChange = (clientIds: string[]) => {
+    console.log('Clientes selecionados alterados:', clientIds);
     setFormData(prev => ({
       ...prev,
       selectedClients: clientIds
@@ -65,43 +68,101 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    console.log('=== INICIANDO PROCESSO DE CADASTRO DE VÍDEO ===');
+    console.log('Dados do formulário:', formData);
+    console.log('Usuário logado:', user);
+
+    if (!user) {
+      console.error('Usuário não logado');
+      toast({
+        title: "Erro",
+        description: "Você precisa estar logado para cadastrar vídeos",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validação básica
+    if (!formData.title.trim()) {
+      console.error('Título não preenchido');
+      toast({
+        title: "Erro",
+        description: "O título é obrigatório",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!formData.video_url.trim()) {
+      console.error('URL do vídeo não preenchida');
+      toast({
+        title: "Erro",
+        description: "A URL do vídeo é obrigatória",
+        variant: "destructive"
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {
+      console.log('Preparando dados para inserção no banco...');
+      
+      const videoData = {
+        title: formData.title.trim(),
+        description: formData.description.trim() || null,
+        video_url: formData.video_url.trim(),
+        thumbnail_url: formData.thumbnail_url.trim() || null,
+        category: formData.selectedCategories.join(', ') || null,
+        tags: formData.selectedCategories.length > 0 ? formData.selectedCategories : null,
+        created_by: user.id
+      };
+
+      console.log('Dados preparados para inserção:', videoData);
+
       // Primeiro, cadastrar o vídeo
-      const { data: videoData, error: videoError } = await supabase
+      console.log('Inserindo vídeo na tabela videos...');
+      const { data: insertedVideo, error: videoError } = await supabase
         .from('videos')
-        .insert({
-          title: formData.title,
-          description: formData.description,
-          video_url: formData.video_url,
-          thumbnail_url: formData.thumbnail_url,
-          category: formData.selectedCategories.join(', '),
-          tags: formData.selectedCategories,
-          created_by: user.id
-        })
+        .insert(videoData)
         .select()
         .single();
 
-      if (videoError) throw videoError;
+      if (videoError) {
+        console.error('Erro ao inserir vídeo:', videoError);
+        throw videoError;
+      }
+
+      console.log('Vídeo inserido com sucesso:', insertedVideo);
 
       // Em seguida, criar as permissões para os clientes selecionados
-      if (formData.selectedClients.length > 0 && videoData) {
+      if (formData.selectedClients.length > 0 && insertedVideo) {
+        console.log('Criando permissões para clientes...');
+        console.log('Clientes selecionados:', formData.selectedClients);
+        
         const permissions = formData.selectedClients.map(clientId => ({
-          video_id: videoData.id,
+          video_id: insertedVideo.id,
           client_id: clientId,
           granted_by: user.id
         }));
 
-        const { error: permissionError } = await supabase
-          .from('video_permissions')
-          .insert(permissions);
+        console.log('Permissões preparadas:', permissions);
 
-        if (permissionError) throw permissionError;
+        const { data: insertedPermissions, error: permissionError } = await supabase
+          .from('video_permissions')
+          .insert(permissions)
+          .select();
+
+        if (permissionError) {
+          console.error('Erro ao inserir permissões:', permissionError);
+          throw permissionError;
+        }
+
+        console.log('Permissões inseridas com sucesso:', insertedPermissions);
+      } else {
+        console.log('Nenhum cliente selecionado, pulando criação de permissões');
       }
 
-      console.log('Vídeo cadastrado com sucesso:', videoData);
+      console.log('=== VÍDEO CADASTRADO COM SUCESSO ===');
       
       // Mostrar mensagem de sucesso
       toast({
@@ -109,6 +170,7 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
         description: "Vídeo cadastrado com sucesso",
       });
       
+      // Limpar formulário
       setFormData({
         title: '',
         description: '',
@@ -117,16 +179,24 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
         selectedCategories: [],
         selectedClients: []
       });
+      
+      // Fechar modal
       onOpenChange(false);
+      
     } catch (error) {
-      console.error('Erro ao cadastrar vídeo:', error);
+      console.error('=== ERRO NO PROCESSO DE CADASTRO ===');
+      console.error('Erro completo:', error);
+      console.error('Tipo do erro:', typeof error);
+      console.error('Message:', error instanceof Error ? error.message : 'Erro desconhecido');
+      
       toast({
         title: "Erro",
-        description: "Erro ao cadastrar vídeo. Tente novamente.",
+        description: `Erro ao cadastrar vídeo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
+      console.log('=== FINALIZANDO PROCESSO ===');
     }
   };
 
@@ -143,7 +213,10 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) => {
+                console.log('Título alterado:', e.target.value);
+                setFormData(prev => ({ ...prev, title: e.target.value }));
+              }}
               placeholder="Digite o título da vídeo aula"
               required
             />
@@ -154,7 +227,10 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) => {
+                console.log('Descrição alterada:', e.target.value);
+                setFormData(prev => ({ ...prev, description: e.target.value }));
+              }}
               placeholder="Descrição da vídeo aula"
             />
           </div>
@@ -164,7 +240,10 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
             <Input
               id="video_url"
               value={formData.video_url}
-              onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
+              onChange={(e) => {
+                console.log('URL do vídeo alterada:', e.target.value);
+                setFormData(prev => ({ ...prev, video_url: e.target.value }));
+              }}
               placeholder="https://..."
               required
             />
@@ -175,7 +254,10 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
             <Input
               id="thumbnail_url"
               value={formData.thumbnail_url}
-              onChange={(e) => setFormData(prev => ({ ...prev, thumbnail_url: e.target.value }))}
+              onChange={(e) => {
+                console.log('URL da thumbnail alterada:', e.target.value);
+                setFormData(prev => ({ ...prev, thumbnail_url: e.target.value }));
+              }}
               placeholder="https://..."
             />
           </div>
