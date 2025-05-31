@@ -31,9 +31,9 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       
       const processedProfile = {
         ...profile,
-        // Usar dados reais se disponíveis
-        email_confirmed_at: profile.email_confirmed_at || profile.updated_at,
-        last_sign_in_at: profile.last_sign_in_at || profile.updated_at,
+        // Simular dados de verificação usando dados reais disponíveis
+        email_confirmed_at: profile.updated_at, // Usar updated_at como indicador de verificação
+        last_sign_in_at: profile.updated_at,
         is_deleted: false
       };
 
