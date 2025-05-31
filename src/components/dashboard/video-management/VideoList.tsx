@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Folder, Calendar, User, Trash2, Video } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Folder, Calendar, User, Trash2, Video, Search } from 'lucide-react';
 import { useVideoPermissions } from '@/hooks/useVideoPermissions';
 import { useClientData } from '@/hooks/useClientData';
 
@@ -14,6 +15,7 @@ interface VideoListProps {
 export const VideoList = ({ onClientSelect }: VideoListProps) => {
   const { videoPermissions, isLoadingPermissions } = useVideoPermissions();
   const { clients, deleteClient } = useClientData();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('pt-BR', {
@@ -27,10 +29,26 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
     return videoPermissions.filter(permission => permission.client_id === clientId).length;
   };
 
-  // Filtrar apenas clientes que têm vídeos
-  const clientsWithVideos = clients.filter(client => 
-    !client.is_deleted && getClientVideoCount(client.id) > 0
-  );
+  // Filtrar e ordenar clientes
+  const filteredAndSortedClients = useMemo(() => {
+    // Filtrar apenas clientes que têm vídeos
+    let clientsWithVideos = clients.filter(client => 
+      !client.is_deleted && getClientVideoCount(client.id) > 0
+    );
+
+    // Aplicar filtro de busca
+    if (searchTerm) {
+      clientsWithVideos = clientsWithVideos.filter(client =>
+        client.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Ordenar por data de criação (mais recente primeiro)
+    return clientsWithVideos.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [clients, videoPermissions, searchTerm]);
 
   const handleDeleteClient = async (clientId: string, clientName: string) => {
     if (confirm(`Tem certeza que deseja deletar todo o diretório de "${clientName}"? Esta ação removerá o cliente e todas as suas permissões de vídeos.`)) {
@@ -46,89 +64,107 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
     );
   }
 
-  if (clientsWithVideos.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        <Folder className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-        <p>Nenhum cliente com vídeos encontrado</p>
-        <p className="text-sm">Adicione permissões de vídeos para os clientes</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Clientes com Vídeos ({clientsWithVideos.length})</h3>
+        <h3 className="text-lg font-semibold">Clientes com Vídeos ({filteredAndSortedClients.length})</h3>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {clientsWithVideos.map((client) => {
-          const videoCount = getClientVideoCount(client.id);
-          return (
-            <Card key={client.id} className="hover:shadow-md transition-shadow cursor-pointer group">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div 
-                    className="flex items-center space-x-3 flex-1 cursor-pointer"
-                    onClick={() => onClientSelect(client.id, client.full_name)}
-                  >
-                    <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
-                      <Folder className="h-8 w-8 text-blue-600" />
+
+      {/* Barra de busca */}
+      <div className="flex items-center space-x-2 border rounded-md px-3 py-2 bg-white">
+        <Search className="h-4 w-4 text-gray-500" />
+        <Input
+          placeholder="Buscar por nome ou e-mail do cliente..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+        />
+      </div>
+
+      {filteredAndSortedClients.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <Folder className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          {searchTerm ? (
+            <>
+              <p>Nenhum cliente encontrado com "{searchTerm}"</p>
+              <p className="text-sm">Tente outro termo de busca</p>
+            </>
+          ) : (
+            <>
+              <p>Nenhum cliente com vídeos encontrado</p>
+              <p className="text-sm">Adicione permissões de vídeos para os clientes</p>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredAndSortedClients.map((client) => {
+            const videoCount = getClientVideoCount(client.id);
+            return (
+              <Card key={client.id} className="hover:shadow-md transition-shadow cursor-pointer group">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div 
+                      className="flex items-center space-x-3 flex-1 cursor-pointer"
+                      onClick={() => onClientSelect(client.id, client.full_name)}
+                    >
+                      <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+                        <Folder className="h-8 w-8 text-blue-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-gray-900 truncate">
+                          {client.full_name}
+                        </h4>
+                        <p className="text-sm text-gray-500 truncate">
+                          {client.email}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-900 truncate">
-                        {client.full_name}
-                      </h4>
-                      <p className="text-sm text-gray-500 truncate">
-                        {client.email}
-                      </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClient(client.id, client.full_name);
+                      }}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary" className="flex items-center space-x-1">
+                        <Video className="h-3 w-3" />
+                        <span>{videoCount} vídeo{videoCount !== 1 ? 's' : ''}</span>
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {client.role === 'admin' ? 'Admin' : 'Cliente'}
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex items-center text-xs text-gray-500">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      Criado em {formatDate(client.created_at)}
                     </div>
                   </div>
+
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteClient(client.id, client.full_name);
-                    }}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="w-full mt-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => onClientSelect(client.id, client.full_name)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <User className="h-4 w-4 mr-1" />
+                    Ver Vídeos
                   </Button>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="secondary" className="flex items-center space-x-1">
-                      <Video className="h-3 w-3" />
-                      <span>{videoCount} vídeo{videoCount !== 1 ? 's' : ''}</span>
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {client.role === 'admin' ? 'Admin' : 'Cliente'}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center text-xs text-gray-500">
-                    <Calendar className="h-3 w-3 mr-1" />
-                    Criado em {formatDate(client.created_at)}
-                  </div>
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full mt-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => onClientSelect(client.id, client.full_name)}
-                >
-                  <User className="h-4 w-4 mr-1" />
-                  Ver Vídeos
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
