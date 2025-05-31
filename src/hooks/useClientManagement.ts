@@ -28,12 +28,16 @@ export const useClientManagement = () => {
         throw profilesError;
       }
 
-      // Para dados de autenticação, simular status baseado em dados disponíveis
-      const combinedData = profilesData?.map(profile => ({
-        ...profile,
-        email_confirmed_at: profile.created_at, // Assumir que perfil criado = email confirmado
-        last_sign_in_at: profile.updated_at || profile.created_at
-      })) || [];
+      // Mapear os dados sem assumir que todos estão aprovados
+      // Vamos usar um campo 'approved' baseado no updated_at ser diferente do created_at
+      const combinedData = profilesData?.map(profile => {
+        const isApproved = profile.updated_at !== profile.created_at;
+        return {
+          ...profile,
+          email_confirmed_at: isApproved ? profile.updated_at : null,
+          last_sign_in_at: profile.updated_at || profile.created_at
+        };
+      }) || [];
 
       console.log('Clientes encontrados:', combinedData);
       setClients(combinedData);
@@ -89,7 +93,7 @@ export const useClientManagement = () => {
     try {
       console.log('Aprovando cliente:', clientId);
       
-      // Simular aprovação atualizando o timestamp
+      // Aprovar cliente atualizando o timestamp para ser diferente do created_at
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -159,7 +163,7 @@ export const useClientManagement = () => {
   useEffect(() => {
     let filtered = clients;
 
-    // Filtrar por status (simplificado)
+    // Filtrar por status
     if (activeTab === 'verified') {
       filtered = clients.filter(client => client.email_confirmed_at);
     } else if (activeTab === 'unverified') {

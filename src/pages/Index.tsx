@@ -20,7 +20,7 @@ const AppContent = () => {
   }
 
   if (!user || !profile) {
-    return <AuthForm />;
+    return <AuthForm onSuccess={() => {}} />;
   }
 
   return <Dashboard />;
