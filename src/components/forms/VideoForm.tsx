@@ -49,7 +49,8 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
   });
 
   const handleCategoryChange = (category: string, checked: boolean) => {
-    console.log('Categoria alterada:', category, checked);
+    console.log('=== CATEGORIA ALTERADA ===');
+    console.log('Categoria:', category, 'Checked:', checked);
     setFormData(prev => ({
       ...prev,
       selectedCategories: checked
@@ -59,7 +60,8 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
   };
 
   const handleClientChange = (clientIds: string[]) => {
-    console.log('Clientes selecionados alterados:', clientIds);
+    console.log('=== CLIENTES SELECIONADOS ALTERADOS ===');
+    console.log('Nova lista de clientes:', clientIds);
     setFormData(prev => ({
       ...prev,
       selectedClients: clientIds
@@ -73,7 +75,7 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
     console.log('Usuário logado:', user);
 
     if (!user) {
-      console.error('Usuário não logado');
+      console.error('❌ ERRO: Usuário não logado');
       toast({
         title: "Erro",
         description: "Você precisa estar logado para cadastrar vídeos",
@@ -84,7 +86,7 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
 
     // Validação básica
     if (!formData.title.trim()) {
-      console.error('Título não preenchido');
+      console.error('❌ ERRO: Título não preenchido');
       toast({
         title: "Erro",
         description: "O título é obrigatório",
@@ -94,7 +96,7 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
     }
 
     if (!formData.video_url.trim()) {
-      console.error('URL do vídeo não preenchida');
+      console.error('❌ ERRO: URL do vídeo não preenchida');
       toast({
         title: "Erro",
         description: "A URL do vídeo é obrigatória",
@@ -105,7 +107,7 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
 
     setIsLoading(true);
     try {
-      console.log('Preparando dados para inserção no banco...');
+      console.log('📋 Preparando dados para inserção no banco...');
       
       const videoData = {
         title: formData.title.trim(),
@@ -117,10 +119,11 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
         created_by: user.id
       };
 
-      console.log('Dados preparados para inserção:', videoData);
+      console.log('📄 Dados preparados para inserção:', videoData);
+      console.log('👤 ID do usuário criador:', user.id);
 
       // Primeiro, cadastrar o vídeo
-      console.log('Inserindo vídeo na tabela videos...');
+      console.log('💾 Inserindo vídeo na tabela videos...');
       const { data: insertedVideo, error: videoError } = await supabase
         .from('videos')
         .insert(videoData)
@@ -128,16 +131,19 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
         .single();
 
       if (videoError) {
-        console.error('Erro ao inserir vídeo:', videoError);
+        console.error('❌ ERRO ao inserir vídeo:', videoError);
+        console.error('Código do erro:', videoError.code);
+        console.error('Mensagem do erro:', videoError.message);
+        console.error('Detalhes do erro:', videoError.details);
         throw videoError;
       }
 
-      console.log('Vídeo inserido com sucesso:', insertedVideo);
+      console.log('✅ Vídeo inserido com sucesso:', insertedVideo);
 
       // Em seguida, criar as permissões para os clientes selecionados
       if (formData.selectedClients.length > 0 && insertedVideo) {
-        console.log('Criando permissões para clientes...');
-        console.log('Clientes selecionados:', formData.selectedClients);
+        console.log('🔑 Criando permissões para clientes...');
+        console.log('Lista de clientes selecionados:', formData.selectedClients);
         
         const permissions = formData.selectedClients.map(clientId => ({
           video_id: insertedVideo.id,
@@ -145,7 +151,7 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
           granted_by: user.id
         }));
 
-        console.log('Permissões preparadas:', permissions);
+        console.log('📋 Permissões preparadas:', permissions);
 
         const { data: insertedPermissions, error: permissionError } = await supabase
           .from('video_permissions')
@@ -153,16 +159,16 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
           .select();
 
         if (permissionError) {
-          console.error('Erro ao inserir permissões:', permissionError);
+          console.error('❌ ERRO ao inserir permissões:', permissionError);
           throw permissionError;
         }
 
-        console.log('Permissões inseridas com sucesso:', insertedPermissions);
+        console.log('✅ Permissões inseridas com sucesso:', insertedPermissions);
       } else {
-        console.log('Nenhum cliente selecionado, pulando criação de permissões');
+        console.log('ℹ️ Nenhum cliente selecionado, pulando criação de permissões');
       }
 
-      console.log('=== VÍDEO CADASTRADO COM SUCESSO ===');
+      console.log('🎉 === VÍDEO CADASTRADO COM SUCESSO ===');
       
       // Mostrar mensagem de sucesso
       toast({
@@ -184,19 +190,29 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
       onOpenChange(false);
       
     } catch (error) {
-      console.error('=== ERRO NO PROCESSO DE CADASTRO ===');
+      console.error('💥 === ERRO NO PROCESSO DE CADASTRO ===');
       console.error('Erro completo:', error);
       console.error('Tipo do erro:', typeof error);
       console.error('Message:', error instanceof Error ? error.message : 'Erro desconhecido');
       
-      toast({
-        title: "Erro",
-        description: `Erro ao cadastrar vídeo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
-        variant: "destructive"
-      });
+      // Análise específica para RLS
+      if (error instanceof Error && error.message.includes('row-level security')) {
+        console.error('🔒 ERRO DE RLS: O usuário não tem permissão para inserir na tabela videos');
+        toast({
+          title: "Erro de Permissão",
+          description: "Você não tem permissão para cadastrar vídeos. Verifique se você está logado como administrador.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: `Erro ao cadastrar vídeo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsLoading(false);
-      console.log('=== FINALIZANDO PROCESSO ===');
+      console.log('🏁 === FINALIZANDO PROCESSO ===');
     }
   };
 
