@@ -135,9 +135,9 @@ export const removeClientUser = async (clientUserId: string): Promise<void> => {
   // Find and delete the auth user
   const { data: authUsers, error: authFetchError } = await supabase.auth.admin.listUsers();
   
-  if (!authFetchError && authUsers) {
-    const authUser = authUsers.users.find(user => user.email === clientUser.user_email);
-    if (authUser) {
+  if (!authFetchError && authUsers && authUsers.users) {
+    const authUser = authUsers.users.find((user: any) => user.email === clientUser.user_email);
+    if (authUser && authUser.id) {
       await supabase.auth.admin.deleteUser(authUser.id);
       console.log('Usuário removido da autenticação também');
     }
