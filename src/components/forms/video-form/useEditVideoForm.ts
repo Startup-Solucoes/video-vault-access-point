@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { validateEditVideoForm } from './editVideoValidation';
 import { submitEditVideoData } from './editVideoSubmissionService';
@@ -10,6 +10,7 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const isDataLoadedRef = useRef(false);
   
   const {
     formData,
@@ -21,26 +22,32 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
     handlePlatformChange
   } = useEditVideoFormState();
 
-  // Carregar dados do vídeo apenas uma vez
-  useEffect(() => {
-    const loadData = async () => {
-      if (!videoId) return;
+  // Função para carregar dados apenas uma vez
+  const loadVideoDataOnce = useCallback(async () => {
+    if (!videoId || isDataLoadedRef.current) return;
 
-      try {
-        console.log('🔄 Carregando dados do vídeo:', videoId);
-        const data = await loadVideoData(videoId);
-        console.log('✅ Dados carregados:', data);
-        console.log('🔄 Inicializando formData com dados carregados');
-        setFormData(data);
-      } catch (error) {
-        console.error('❌ Erro ao carregar dados:', error);
-      } finally {
-        setIsLoadingData(false);
-      }
-    };
-
-    loadData();
+    console.log('🔄 Carregando dados do vídeo:', videoId);
+    setIsLoadingData(true);
+    
+    try {
+      const data = await loadVideoData(videoId);
+      console.log('✅ Dados carregados:', data);
+      setFormData(data);
+      isDataLoadedRef.current = true;
+    } catch (error) {
+      console.error('❌ Erro ao carregar dados:', error);
+    } finally {
+      setIsLoadingData(false);
+    }
   }, [videoId, setFormData]);
+
+  // Carregar dados apenas uma vez quando o modal abrir
+  useEffect(() => {
+    if (videoId) {
+      isDataLoadedRef.current = false;
+      loadVideoDataOnce();
+    }
+  }, [videoId, loadVideoDataOnce]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

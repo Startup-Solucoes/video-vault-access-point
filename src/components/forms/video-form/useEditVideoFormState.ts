@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { EditVideoFormData } from './EditVideoFormTypes';
 
 const initialFormData: EditVideoFormData = {
@@ -16,12 +16,12 @@ const initialFormData: EditVideoFormData = {
 export const useEditVideoFormState = () => {
   const [formData, setFormData] = useState<EditVideoFormData>(initialFormData);
 
-  const handleFieldChange = (field: keyof EditVideoFormData, value: string) => {
+  const handleFieldChange = useCallback((field: keyof EditVideoFormData, value: string) => {
     console.log(`🔄 Alterando campo ${field} para:`, value);
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
-  const handleCategoryChange = (category: string, checked: boolean) => {
+  const handleCategoryChange = useCallback((category: string, checked: boolean) => {
     console.log(`🔄 Alterando categoria ${category} para: ${checked}`);
     setFormData(prev => {
       const newCategories = checked
@@ -34,36 +34,36 @@ export const useEditVideoFormState = () => {
         selectedCategories: newCategories
       };
     });
-  };
+  }, []);
 
-  const handleClientChange = (clientIds: string[]) => {
+  const handleClientChange = useCallback((clientIds: string[]) => {
     console.log('🔄 Alterando clientes para:', clientIds);
     setFormData(prev => ({
       ...prev,
       selectedClients: clientIds
     }));
-  };
+  }, []);
 
-  const handleDateTimeChange = (publishDateTime: Date) => {
+  const handleDateTimeChange = useCallback((publishDateTime: Date) => {
     console.log('🔄 Alterando data para:', publishDateTime);
     setFormData(prev => ({
       ...prev,
       publishDateTime
     }));
-  };
+  }, []);
 
-  const handlePlatformChange = (platform: string) => {
+  const handlePlatformChange = useCallback((platform: string) => {
     console.log('🔄 Alterando plataforma para:', platform);
     setFormData(prev => ({
       ...prev,
       platform
     }));
-  };
+  }, []);
 
-  const updateFormData = (data: EditVideoFormData) => {
+  const updateFormData = useCallback((data: EditVideoFormData) => {
     console.log('🔄 Atualizando formData completo:', data);
     setFormData(data);
-  };
+  }, []);
 
   return {
     formData,
