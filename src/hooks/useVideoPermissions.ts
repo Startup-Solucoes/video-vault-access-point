@@ -9,11 +9,11 @@ interface VideoPermission {
   client_id: string;
   created_at: string;
   granted_by: string;
-  client?: {
+  client: {
     id: string;
     full_name: string;
     email: string;
-  };
+  } | null;
 }
 
 export const useVideoPermissions = () => {
@@ -35,7 +35,7 @@ export const useVideoPermissions = () => {
           .from('video_permissions')
           .select(`
             *,
-            client:profiles!video_permissions_client_id_fkey(
+            client:profiles(
               id,
               full_name,
               email

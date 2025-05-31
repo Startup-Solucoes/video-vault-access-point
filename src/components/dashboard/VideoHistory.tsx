@@ -1,11 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Video, Calendar, User, Eye, Users } from 'lucide-react';
+import { Video, Calendar, User, Eye } from 'lucide-react';
 import { useVideoHistory } from '@/hooks/useVideoHistory';
 import { useVideoPermissions } from '@/hooks/useVideoPermissions';
 
@@ -27,7 +26,7 @@ export const VideoHistory = ({ limit = 10 }: VideoHistoryProps) => {
     });
   };
 
-  const getVideoPermissions = (videoId: string) => {
+  const getVideoClients = (videoId: string) => {
     return videoPermissions.filter(permission => permission.video_id === videoId);
   };
 
@@ -40,7 +39,7 @@ export const VideoHistory = ({ limit = 10 }: VideoHistoryProps) => {
             Histórico de Vídeos
           </CardTitle>
           <CardDescription>
-            Últimos {limit} vídeos criados e suas permissões
+            Últimos {limit} vídeos criados e clientes especificados
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -60,7 +59,7 @@ export const VideoHistory = ({ limit = 10 }: VideoHistoryProps) => {
           Histórico de Vídeos
         </CardTitle>
         <CardDescription>
-          Últimos {limit} vídeos criados e suas permissões
+          Últimos {limit} vídeos criados e clientes especificados
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -71,30 +70,21 @@ export const VideoHistory = ({ limit = 10 }: VideoHistoryProps) => {
             <p className="text-sm">Comece criando seu primeiro vídeo!</p>
           </div>
         ) : (
-          <Tabs defaultValue="videos" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="videos">
-                <Video className="h-4 w-4 mr-2" />
-                Vídeos
-              </TabsTrigger>
-              <TabsTrigger value="permissions">
-                <Users className="h-4 w-4 mr-2" />
-                Permissões
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="videos">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Título</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>Data de Criação</TableHead>
-                    <TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {videos.map((video) => (
+          <div className="space-y-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Título</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Cliente Especificado</TableHead>
+                  <TableHead>Data de Criação</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {videos.map((video) => {
+                  const clients = getVideoClients(video.id);
+                  return (
                     <TableRow key={video.id}>
                       <TableCell>
                         <div className="space-y-1">
@@ -114,6 +104,27 @@ export const VideoHistory = ({ limit = 10 }: VideoHistoryProps) => {
                         )}
                       </TableCell>
                       <TableCell>
+                        {isLoadingPermissions ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        ) : clients.length > 0 ? (
+                          <div className="space-y-1">
+                            {clients.slice(0, 2).map((client) => (
+                              <div key={client.id} className="flex items-center text-sm">
+                                <User className="h-3 w-3 mr-1" />
+                                {client.client?.full_name || 'Cliente'}
+                              </div>
+                            ))}
+                            {clients.length > 2 && (
+                              <div className="text-xs text-gray-500">
+                                +{clients.length - 2} outros
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-sm">Nenhum cliente</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center text-sm text-gray-600">
                           <Calendar className="h-4 w-4 mr-1" />
                           {formatDate(video.created_at)}
@@ -130,78 +141,10 @@ export const VideoHistory = ({ limit = 10 }: VideoHistoryProps) => {
                         </Button>
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
-
-            <TabsContent value="permissions">
-              {isLoadingPermissions ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Vídeo</TableHead>
-                      <TableHead>Clientes com Acesso</TableHead>
-                      <TableHead>Data de Criação</TableHead>
-                      <TableHead>Total de Permissões</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {videos.map((video) => {
-                      const permissions = getVideoPermissions(video.id);
-                      return (
-                        <TableRow key={video.id}>
-                          <TableCell>
-                            <div className="space-y-1">
-                              <div className="font-medium">{video.title}</div>
-                              {video.category && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {video.category}
-                                </Badge>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {permissions.length > 0 ? (
-                              <div className="space-y-1">
-                                {permissions.slice(0, 3).map((permission) => (
-                                  <div key={permission.id} className="flex items-center text-sm">
-                                    <User className="h-3 w-3 mr-1" />
-                                    {permission.client?.full_name || 'Cliente'}
-                                  </div>
-                                ))}
-                                {permissions.length > 3 && (
-                                  <div className="text-xs text-gray-500">
-                                    +{permissions.length - 3} outros
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-gray-400 text-sm">Nenhum cliente</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center text-sm text-gray-600">
-                              <Calendar className="h-4 w-4 mr-1" />
-                              {formatDate(video.created_at)}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">
-                              {permissions.length} {permissions.length === 1 ? 'permissão' : 'permissões'}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              )}
-            </TabsContent>
+                  );
+                })}
+              </TableBody>
+            </Table>
             
             {videos.length >= limit && (
               <div className="text-center pt-4">
@@ -210,7 +153,7 @@ export const VideoHistory = ({ limit = 10 }: VideoHistoryProps) => {
                 </Button>
               </div>
             )}
-          </Tabs>
+          </div>
         )}
       </CardContent>
     </Card>
