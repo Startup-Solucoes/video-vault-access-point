@@ -47,8 +47,9 @@ export const useClientSelector = () => {
   // Filtrar clientes baseado no valor de busca
   const filteredClients = useMemo(() => {
     console.log('=== FILTRANDO CLIENTES ===');
-    console.log('Termo de busca:', searchValue);
+    console.log('Termo de busca atual:', `"${searchValue}"`);
     console.log('Total de clientes antes do filtro:', clients.length);
+    console.log('Lista completa de clientes:', clients.map(c => `${c.full_name} (${c.email})`));
     
     if (!searchValue.trim()) {
       console.log('Sem termo de busca, retornando todos os clientes');
@@ -56,6 +57,8 @@ export const useClientSelector = () => {
     }
     
     const searchLower = searchValue.toLowerCase().trim();
+    console.log('Termo de busca normalizado:', `"${searchLower}"`);
+    
     const filtered = clients.filter(client => {
       const nameMatch = client.full_name.toLowerCase().includes(searchLower);
       const emailMatch = client.email.toLowerCase().includes(searchLower);

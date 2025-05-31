@@ -1,16 +1,9 @@
 
 import React from 'react';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
+import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
@@ -64,33 +57,40 @@ export const ClientSearchPopover: React.FC<ClientSearchPopoverProps> = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput 
-            placeholder="Digite o nome ou e-mail..." 
+        <div className="flex items-center border-b px-3">
+          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+          <Input
+            placeholder="Digite o nome ou e-mail..."
             value={searchValue}
-            onValueChange={(value) => {
+            onChange={(e) => {
               console.log('=== VALOR DE BUSCA ALTERADO ===');
-              console.log('Novo valor:', value);
-              onSearchValueChange(value);
+              console.log('Novo valor:', e.target.value);
+              onSearchValueChange(e.target.value);
             }}
+            className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
-          <CommandList>
-            <CommandEmpty>
-              {isLoading 
-                ? "Carregando clientes..." 
-                : clients.length === 0 
-                  ? "Nenhum cliente cadastrado ainda." 
-                  : filteredClients.length === 0
-                    ? "Nenhum cliente encontrado com esse termo."
-                    : "Carregando..."
-              }
-            </CommandEmpty>
-            <CommandGroup>
+        </div>
+        
+        <div className="max-h-[300px] overflow-y-auto">
+          {isLoading ? (
+            <div className="py-6 text-center text-sm">
+              Carregando clientes...
+            </div>
+          ) : clients.length === 0 ? (
+            <div className="py-6 text-center text-sm">
+              Nenhum cliente cadastrado ainda.
+            </div>
+          ) : filteredClients.length === 0 ? (
+            <div className="py-6 text-center text-sm">
+              Nenhum cliente encontrado com esse termo.
+            </div>
+          ) : (
+            <div className="p-1">
               {filteredClients.map((client) => (
-                <CommandItem
+                <div
                   key={client.id}
-                  value={`${client.full_name} ${client.email}`}
-                  onSelect={() => {
+                  className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                  onClick={() => {
                     console.log('=== CLIENTE SELECIONADO NO POPOVER ===');
                     console.log('Cliente:', client);
                     onClientSelect(client.id);
@@ -106,11 +106,11 @@ export const ClientSearchPopover: React.FC<ClientSearchPopoverProps> = ({
                     <span className="font-medium">{client.full_name}</span>
                     <span className="text-sm text-gray-500">{client.email}</span>
                   </div>
-                </CommandItem>
+                </div>
               ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+            </div>
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );
