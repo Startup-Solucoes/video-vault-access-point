@@ -17,7 +17,8 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -85,15 +86,68 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
     }
   };
 
+  const validateForm = () => {
+    if (!formData.full_name.trim()) {
+      toast({
+        title: "Erro",
+        description: "Nome do cliente é obrigatório",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!formData.email.trim()) {
+      toast({
+        title: "Erro",
+        description: "E-mail é obrigatório",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!formData.password.trim()) {
+      toast({
+        title: "Erro",
+        description: "Senha é obrigatória",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Erro",
+        description: "A senha deve ter pelo menos 6 caracteres",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!formData.confirmPassword.trim()) {
+      toast({
+        title: "Erro",
+        description: "Confirmação de senha é obrigatória",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Erro",
+        description: "As senhas não coincidem. Verifique e tente novamente.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.full_name.trim() || !formData.email.trim() || !formData.password.trim()) {
-      toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos obrigatórios",
-        variant: "destructive"
-      });
+    if (!validateForm()) {
       return;
     }
 
@@ -203,7 +257,8 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
       setFormData({
         full_name: '',
         email: '',
-        password: ''
+        password: '',
+        confirmPassword: ''
       });
       setLogoFile(null);
       setLogoPreview(null);
@@ -286,6 +341,22 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
               minLength={6}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="client-confirm-password">Confirmar Senha *</Label>
+            <Input
+              id="client-confirm-password"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+              placeholder="••••••••"
+              minLength={6}
+              required
+            />
+            {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
+              <p className="text-sm text-red-500">As senhas não coincidem</p>
+            )}
           </div>
 
           <div className="space-y-2">
