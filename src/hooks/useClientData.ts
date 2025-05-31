@@ -14,7 +14,7 @@ const CLIENTS_QUERY_KEY = ['clients'];
 export const useClientData = () => {
   const queryClient = useQueryClient();
 
-  // Query para buscar clientes sem cache
+  // Query para buscar clientes
   const {
     data: clients = [],
     isLoading,
@@ -93,6 +93,7 @@ export const useClientData = () => {
 
   // Função para forçar atualização manual
   const refreshClients = () => {
+    console.log('useClientData: refreshClients chamado - invalidando queries');
     queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
   };
 

@@ -42,6 +42,7 @@ export const ClientManagement = () => {
   };
 
   const handleRefresh = () => {
+    console.log('ClientManagement: Botão atualizar clicado');
     refreshClients();
   };
 
