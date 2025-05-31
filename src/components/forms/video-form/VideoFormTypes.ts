@@ -12,6 +12,7 @@ export interface VideoFormData {
 export interface VideoFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onVideoCreated?: () => void;
 }
 
 export const categories = [

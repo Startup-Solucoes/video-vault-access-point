@@ -10,7 +10,7 @@ import { PublishDateTimeSelector } from './video-form/PublishDateTimeSelector';
 import { useVideoForm } from './video-form/useVideoForm';
 import { VideoFormProps } from './video-form/VideoFormTypes';
 
-export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
+export const VideoForm = ({ open, onOpenChange, onVideoCreated }: VideoFormProps) => {
   const clientSelectorRef = useRef<ClientSelectorRef>(null);
   const {
     formData,
@@ -20,7 +20,13 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
     handleClientChange,
     handleDateTimeChange,
     handleSubmit
-  } = useVideoForm(() => onOpenChange(false));
+  } = useVideoForm(() => {
+    onOpenChange(false);
+    // Chamar onVideoCreated quando o vídeo for criado com sucesso
+    if (onVideoCreated) {
+      onVideoCreated();
+    }
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
