@@ -2,53 +2,38 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ClientFormData } from './clientFormValidation';
+import { ClientFormData, validateClientForm } from './clientFormValidation';
 
-export const useClientForm = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const initialFormData: ClientFormData = {
+  full_name: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  logo_url: ''
+};
+
+export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open: boolean) => void) => {
+  const [formData, setFormData] = useState<ClientFormData>(initialFormData);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (formData: ClientFormData) => {
-    setIsSubmitting(true);
+  const handleLogoChange = (file: File | null, preview: string | null) => {
+    setLogoFile(file);
+    setLogoPreview(preview);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateClientForm(formData)) {
+      return;
+    }
+
+    setIsLoading(true);
     
     try {
-      // Validar dados básicos
-      if (!formData.full_name.trim()) {
-        toast({
-          title: "Erro",
-          description: "Nome é obrigatório",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      if (!formData.email.trim()) {
-        toast({
-          title: "Erro",
-          description: "Email é obrigatório",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      if (formData.password !== formData.confirmPassword) {
-        toast({
-          title: "Erro",
-          description: "As senhas não coincidem",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      if (formData.password.length < 8) {
-        toast({
-          title: "Erro",
-          description: "Senha deve ter pelo menos 8 caracteres",
-          variant: "destructive"
-        });
-        return false;
-      }
-
       // Implementar lógica de criação do cliente
       console.log('Creating client:', formData);
       
@@ -57,7 +42,19 @@ export const useClientForm = () => {
         description: "Cliente criado com sucesso!",
       });
       
-      return true;
+      // Reset form
+      setFormData(initialFormData);
+      setLogoFile(null);
+      setLogoPreview(null);
+      
+      if (onClientCreated) {
+        onClientCreated();
+      }
+      
+      if (onOpenChange) {
+        onOpenChange(false);
+      }
+      
     } catch (error) {
       console.error('Error creating client:', error);
       toast({
@@ -65,14 +62,19 @@ export const useClientForm = () => {
         description: "Erro ao criar cliente. Tente novamente.",
         variant: "destructive"
       });
-      return false;
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
   return {
+    formData,
+    setFormData,
+    logoFile,
+    logoPreview,
+    isLoading,
+    isSubmitting: isLoading,
     handleSubmit,
-    isSubmitting
+    handleLogoChange
   };
 };
