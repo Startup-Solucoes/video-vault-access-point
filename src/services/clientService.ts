@@ -18,10 +18,14 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
     throw profilesError;
   }
 
-  // Mapear os dados sem assumir que todos estão aprovados
-  // Vamos usar um campo 'approved' baseado no updated_at ser diferente do created_at
+  console.log('Dados brutos dos perfis:', profilesData);
+
+  // Mapear os dados para determinar se estão aprovados
+  // Um cliente é considerado aprovado se updated_at for diferente de created_at
   const combinedData = profilesData?.map(profile => {
     const isApproved = profile.updated_at !== profile.created_at;
+    console.log(`Cliente ${profile.full_name}: created_at=${profile.created_at}, updated_at=${profile.updated_at}, isApproved=${isApproved}`);
+    
     return {
       ...profile,
       email_confirmed_at: isApproved ? profile.updated_at : null,
@@ -29,7 +33,7 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
     };
   }) || [];
 
-  console.log('Clientes encontrados:', combinedData);
+  console.log('Clientes processados:', combinedData);
   return combinedData;
 };
 

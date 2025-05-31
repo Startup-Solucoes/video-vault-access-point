@@ -34,6 +34,10 @@ export const ClientManagement = () => {
     updateClient(clientId, editForm);
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as 'all' | 'verified' | 'unverified');
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -44,6 +48,10 @@ export const ClientManagement = () => {
 
   const counts = getTabCounts();
 
+  console.log('ClientManagement - Counts:', counts);
+  console.log('ClientManagement - Filtered clients:', filteredClients);
+  console.log('ClientManagement - Active tab:', activeTab);
+
   return (
     <div className="space-y-6">
       <Card>
@@ -52,7 +60,7 @@ export const ClientManagement = () => {
           <ClientSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="all">
                 Todos ({counts.all})
