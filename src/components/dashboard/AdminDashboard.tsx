@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { VideoForm } from '@/components/forms/VideoForm';
 import { ClientForm } from '@/components/forms/ClientForm';
 import { ClientSelectorRef } from '@/components/forms/ClientSelector';
 import { ClientManagement } from './ClientManagement';
+import { VideoHistory } from './VideoHistory';
 
 export const AdminDashboard = () => {
   const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
@@ -137,6 +137,9 @@ export const AdminDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Nova seção: Histórico de Vídeos */}
+      <VideoHistory limit={10} />
 
       <VideoForm 
         open={isVideoFormOpen} 
