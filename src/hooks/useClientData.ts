@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { Client, EditClientForm } from '@/types/client';
 import { toast } from '@/hooks/use-toast';
 import { 
@@ -9,36 +9,37 @@ import {
   deleteClientFromDB 
 } from '@/services/clientService';
 
+const CLIENTS_QUERY_KEY = ['clients'];
+
 export const useClientData = () => {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchClients = async () => {
-    try {
-      console.log('useClientData: Iniciando busca de clientes...');
-      setIsLoading(true);
-      const data = await fetchClientsFromDB();
-      console.log('useClientData: Clientes carregados:', data.length);
-      console.log('useClientData: Dados dos clientes:', data);
-      setClients(data);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
+  // Query para buscar clientes com cache inteligente
+  const {
+    data: clients = [],
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: CLIENTS_QUERY_KEY,
+    queryFn: fetchClientsFromDB,
+    staleTime: 30000, // Dados são considerados "frescos" por 30 segundos
+    refetchInterval: 60000, // Atualiza a cada 60 segundos apenas se a aba estiver ativa
+    refetchIntervalInBackground: false, // Não atualiza em background
+    refetchOnWindowFocus: true, // Atualiza quando usuário volta para a aba
+  });
+
+  // Mutation para atualizar cliente
+  const updateClientMutation = useMutation({
+    mutationFn: ({ clientId, editForm }: { clientId: string; editForm: EditClientForm }) =>
+      updateClientInDB(clientId, editForm),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
       toast({
-        title: "Erro",
-        description: "Erro ao carregar clientes",
-        variant: "destructive"
+        title: "Sucesso",
+        description: "Cliente atualizado com sucesso",
       });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateClient = async (clientId: string, editForm: EditClientForm) => {
-    try {
-      console.log('useClientData: Atualizando cliente:', clientId);
-      await updateClientInDB(clientId, editForm);
-      await fetchClients(); // Recarregar lista
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Erro ao atualizar cliente:', error);
       toast({
         title: "Erro",
@@ -46,14 +47,20 @@ export const useClientData = () => {
         variant: "destructive"
       });
     }
-  };
+  });
 
-  const approveClient = async (clientId: string, clientEmail: string) => {
-    try {
-      console.log('useClientData: Aprovando cliente:', clientId);
-      await approveClientInDB(clientId, clientEmail);
-      await fetchClients(); // Recarregar lista
-    } catch (error) {
+  // Mutation para aprovar cliente
+  const approveClientMutation = useMutation({
+    mutationFn: ({ clientId, clientEmail }: { clientId: string; clientEmail: string }) =>
+      approveClientInDB(clientId, clientEmail),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
+      toast({
+        title: "Sucesso",
+        description: "Cliente aprovado com sucesso",
+      });
+    },
+    onError: (error) => {
       console.error('Erro ao aprovar cliente:', error);
       toast({
         title: "Erro",
@@ -61,14 +68,20 @@ export const useClientData = () => {
         variant: "destructive"
       });
     }
-  };
+  });
 
-  const deleteClient = async (clientId: string, clientName: string) => {
-    try {
-      console.log('useClientData: Removendo cliente:', clientId);
-      await deleteClientFromDB(clientId, clientName);
-      await fetchClients(); // Recarregar lista
-    } catch (error) {
+  // Mutation para deletar cliente
+  const deleteClientMutation = useMutation({
+    mutationFn: ({ clientId, clientName }: { clientId: string; clientName: string }) =>
+      deleteClientFromDB(clientId, clientName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
+      toast({
+        title: "Sucesso",
+        description: "Cliente removido com sucesso",
+      });
+    },
+    onError: (error) => {
       console.error('Erro ao remover cliente:', error);
       toast({
         title: "Erro",
@@ -76,34 +89,30 @@ export const useClientData = () => {
         variant: "destructive"
       });
     }
+  });
+
+  // Função para forçar atualização manual
+  const refreshClients = () => {
+    queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
   };
 
-  // Buscar clientes na inicialização
-  useEffect(() => {
-    console.log('useClientData: Componente montado, buscando clientes...');
-    fetchClients();
-  }, []);
+  const updateClient = (clientId: string, editForm: EditClientForm) => {
+    updateClientMutation.mutate({ clientId, editForm });
+  };
 
-  // Polling para verificar novos clientes a cada 5 segundos quando não está carregando
-  useEffect(() => {
-    if (!isLoading) {
-      console.log('useClientData: Configurando polling para verificar novos clientes...');
-      const interval = setInterval(() => {
-        console.log('useClientData: Verificando novos clientes (polling)...');
-        fetchClients();
-      }, 5000);
+  const approveClient = (clientId: string, clientEmail: string) => {
+    approveClientMutation.mutate({ clientId, clientEmail });
+  };
 
-      return () => {
-        console.log('useClientData: Limpando polling...');
-        clearInterval(interval);
-      };
-    }
-  }, [isLoading]);
+  const deleteClient = (clientId: string, clientName: string) => {
+    deleteClientMutation.mutate({ clientId, clientName });
+  };
 
   return {
     clients,
-    isLoading,
-    fetchClients,
+    isLoading: isLoading || updateClientMutation.isPending || approveClientMutation.isPending || deleteClientMutation.isPending,
+    error,
+    refreshClients,
     updateClient,
     approveClient,
     deleteClient

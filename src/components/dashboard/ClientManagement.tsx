@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 import { useClientManagement } from '@/hooks/useClientManagement';
 import { ClientSearch } from './client-management/ClientSearch';
 import { ClientTable } from './client-management/ClientTable';
@@ -19,7 +21,8 @@ export const ClientManagement = () => {
     updateClient,
     approveClient,
     deleteClient,
-    getTabCounts
+    getTabCounts,
+    refreshClients
   } = useClientManagement();
 
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -38,13 +41,9 @@ export const ClientManagement = () => {
     setActiveTab(value as 'all' | 'admins' | 'clients' | 'verified' | 'unverified' | 'deleted');
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  const handleRefresh = () => {
+    refreshClients();
+  };
 
   const counts = getTabCounts();
 
@@ -52,7 +51,19 @@ export const ClientManagement = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Gerenciamento de Usuários</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Gerenciamento de Usuários</CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+          </div>
           <ClientSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         </CardHeader>
         <CardContent>
@@ -79,12 +90,21 @@ export const ClientManagement = () => {
             </TabsList>
 
             <TabsContent value={activeTab} className="mt-6">
-              <ClientTable
-                clients={filteredClients}
-                onEditClient={handleEditClient}
-                onApproveClient={approveClient}
-                onDeleteClient={deleteClient}
-              />
+              {isLoading && filteredClients.length === 0 ? (
+                <div className="flex items-center justify-center p-8">
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span className="text-gray-600">Carregando usuários...</span>
+                  </div>
+                </div>
+              ) : (
+                <ClientTable
+                  clients={filteredClients}
+                  onEditClient={handleEditClient}
+                  onApproveClient={approveClient}
+                  onDeleteClient={deleteClient}
+                />
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>

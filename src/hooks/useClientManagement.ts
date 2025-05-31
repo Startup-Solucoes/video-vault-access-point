@@ -6,7 +6,7 @@ export const useClientManagement = () => {
   const {
     clients,
     isLoading,
-    fetchClients,
+    refreshClients,
     updateClient,
     approveClient,
     deleteClient
@@ -29,7 +29,7 @@ export const useClientManagement = () => {
     isLoading,
     activeTab,
     setActiveTab,
-    fetchClients,
+    refreshClients,
     updateClient,
     approveClient,
     deleteClient,
