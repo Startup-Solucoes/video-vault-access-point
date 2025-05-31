@@ -31,41 +31,41 @@ export const platforms = [
   {
     id: 'nuvemshop',
     name: 'Nuvemshop',
-    logo: 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=40&h=40&fit=crop'
+    logo: 'https://www.nuvemshop.com.br/favicon.ico'
   },
   {
     id: 'bling',
     name: 'Bling',
-    logo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=40&h=40&fit=crop'
+    logo: 'https://www.bling.com.br/favicon.ico'
   },
   {
     id: 'yampi',
     name: 'Yampi',
-    logo: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=40&h=40&fit=crop'
+    logo: 'https://www.yampi.com.br/favicon.ico'
   },
   {
     id: 'bagy',
     name: 'Bagy',
-    logo: 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=40&h=40&fit=crop'
+    logo: 'https://www.bagy.com.br/favicon.ico'
   },
   {
     id: 'woocommerce',
     name: 'Woocommerce',
-    logo: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=40&h=40&fit=crop'
+    logo: 'https://woocommerce.com/favicon.ico'
   },
   {
     id: 'olist-tiny',
     name: 'Olist/Tiny',
-    logo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=40&h=40&fit=crop'
+    logo: 'https://olist.com/favicon.ico'
   },
   {
     id: 'wordpress',
     name: 'Wordpress',
-    logo: 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=40&h=40&fit=crop'
+    logo: 'https://wordpress.com/favicon.ico'
   },
   {
     id: 'outros',
     name: 'Outros',
-    logo: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=40&h=40&fit=crop'
+    logo: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=32&h=32&fit=crop'
   }
 ];
