@@ -35,7 +35,7 @@ export const ClientManagement = () => {
   };
 
   const handleTabChange = (value: string) => {
-    setActiveTab(value as 'all' | 'verified' | 'unverified' | 'deleted');
+    setActiveTab(value as 'all' | 'admins' | 'clients' | 'verified' | 'unverified' | 'deleted');
   };
 
   if (isLoading) {
@@ -56,14 +56,20 @@ export const ClientManagement = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Gerenciamento de Clientes</CardTitle>
+          <CardTitle>Gerenciamento de Usuários</CardTitle>
           <ClientSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="all">
                 Todos ({counts.all})
+              </TabsTrigger>
+              <TabsTrigger value="admins">
+                Admins ({counts.admins})
+              </TabsTrigger>
+              <TabsTrigger value="clients">
+                Clientes ({counts.clients})
               </TabsTrigger>
               <TabsTrigger value="verified">
                 Verificados ({counts.verified})

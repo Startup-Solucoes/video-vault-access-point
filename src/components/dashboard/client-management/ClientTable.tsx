@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { ClientStatusBadge } from './ClientStatusBadge';
 import { ClientActions } from './ClientActions';
 import { Client } from '@/types/client';
@@ -29,10 +30,25 @@ export const ClientTable = ({
     });
   };
 
+  const getRoleBadge = (role: string) => {
+    if (role === 'admin') {
+      return (
+        <Badge variant="default" className="bg-purple-100 text-purple-800">
+          Admin
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+        Cliente
+      </Badge>
+    );
+  };
+
   if (clients.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500">Nenhum cliente encontrado</p>
+        <p className="text-gray-500">Nenhum usuário encontrado</p>
       </div>
     );
   }
@@ -44,6 +60,7 @@ export const ClientTable = ({
           <TableRow>
             <TableHead>Nome</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Tipo</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Último acesso</TableHead>
             <TableHead>Cadastrado em</TableHead>
@@ -66,6 +83,9 @@ export const ClientTable = ({
                 </div>
               </TableCell>
               <TableCell>{client.email}</TableCell>
+              <TableCell>
+                {getRoleBadge(client.role)}
+              </TableCell>
               <TableCell>
                 <ClientStatusBadge client={client} />
               </TableCell>

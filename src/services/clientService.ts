@@ -1,16 +1,14 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Client, EditClientForm } from '@/types/client';
 
 export const fetchClientsFromDB = async (): Promise<Client[]> => {
-  console.log('Buscando todos os clientes...');
+  console.log('Buscando todos os usuários...');
   
-  // Buscar dados dos perfis
+  // Buscar dados de todos os perfis (admin e client)
   const { data: profilesData, error: profilesError } = await supabase
     .from('profiles')
     .select('*')
-    .eq('role', 'client')
     .order('created_at', { ascending: false });
 
   if (profilesError) {
@@ -67,7 +65,7 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       isDeleted = false; // No fallback, assumimos que não está deletado
     }
 
-    console.log(`Cliente ${profile.full_name}: verified=${isVerified}, deleted=${isDeleted}, authUser=${!!authUser}`);
+    console.log(`Usuário ${profile.full_name}: role=${profile.role}, verified=${isVerified}, deleted=${isDeleted}, authUser=${!!authUser}`);
     
     return {
       ...profile,
@@ -77,7 +75,7 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
     };
   }) || [];
 
-  console.log('Clientes processados:', combinedData);
+  console.log('Usuários processados:', combinedData);
   return combinedData;
 };
 
