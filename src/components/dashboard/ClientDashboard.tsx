@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useClientVideos } from '@/hooks/useClientVideos';
 import { ClientHeader } from './client/ClientHeader';
+import { CategoryFilter } from './client/CategoryFilter';
 import { VideoFilters } from './client/VideoFilters';
 import { VideoGrid } from './client/VideoGrid';
 
@@ -53,6 +54,14 @@ export const ClientDashboard = () => {
     <div className="space-y-6">
       {/* Header com informações do cliente */}
       <ClientHeader profile={profile} videoCount={videos.length} />
+
+      {/* Filtro de Categorias */}
+      <CategoryFilter
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        availableCategories={availableCategories}
+        videos={videos}
+      />
 
       {/* Filtros e Busca */}
       <VideoFilters
