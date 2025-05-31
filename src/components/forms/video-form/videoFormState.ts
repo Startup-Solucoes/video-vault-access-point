@@ -10,7 +10,8 @@ export const useVideoFormState = () => {
     thumbnail_url: '',
     selectedCategories: [],
     selectedClients: [],
-    publishDateTime: new Date() // Inicializa com data/hora atual
+    publishDateTime: new Date(),
+    platform: 'outros' // Valor padrão
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -47,6 +48,15 @@ export const useVideoFormState = () => {
     }));
   };
 
+  const handlePlatformChange = (platform: string) => {
+    console.log('=== PLATAFORMA ALTERADA ===');
+    console.log('Nova plataforma:', platform);
+    setFormData(prev => ({
+      ...prev,
+      platform
+    }));
+  };
+
   const resetForm = () => {
     setFormData({
       title: '',
@@ -55,7 +65,8 @@ export const useVideoFormState = () => {
       thumbnail_url: '',
       selectedCategories: [],
       selectedClients: [],
-      publishDateTime: new Date() // Reinicia com data/hora atual
+      publishDateTime: new Date(),
+      platform: 'outros'
     });
   };
 
@@ -67,6 +78,7 @@ export const useVideoFormState = () => {
     handleCategoryChange,
     handleClientChange,
     handleDateTimeChange,
+    handlePlatformChange,
     resetForm
   };
 };

@@ -14,6 +14,7 @@ export const useVideoForm = (onClose: () => void) => {
     handleCategoryChange,
     handleClientChange,
     handleDateTimeChange,
+    handlePlatformChange,
     resetForm
   } = useVideoFormState();
 
@@ -48,6 +49,7 @@ export const useVideoForm = (onClose: () => void) => {
     handleCategoryChange,
     handleClientChange,
     handleDateTimeChange,
+    handlePlatformChange,
     handleSubmit,
     resetForm
   };
