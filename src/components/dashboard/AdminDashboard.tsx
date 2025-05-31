@@ -10,6 +10,23 @@ import { VideoHistory } from './VideoHistory';
 import { VideoManagement } from './VideoManagement';
 import { useAdminStats } from '@/hooks/useAdminStats';
 
+// Cores para cada categoria (mesmas do CategoryFilter e VideoCard)
+const getCategoryColor = (category: string) => {
+  const colors: { [key: string]: string } = {
+    'Gerais': 'bg-blue-600 text-white',
+    'Produto': 'bg-green-600 text-white',
+    'Financeiro': 'bg-yellow-600 text-white',
+    'Relatórios': 'bg-purple-600 text-white',
+    'Pedidos de venda': 'bg-orange-600 text-white',
+    'Fiscal': 'bg-red-600 text-white',
+    'Integrações': 'bg-teal-600 text-white',
+    'Serviços': 'bg-indigo-600 text-white'
+  };
+  
+  // Cor padrão se a categoria não estiver mapeada
+  return colors[category] || 'bg-gray-600 text-white';
+};
+
 export const AdminDashboard = () => {
   const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
   const [isClientFormOpen, setIsClientFormOpen] = useState(false);
@@ -185,7 +202,7 @@ export const AdminDashboard = () => {
       </div>
 
       {/* Nova seção: Histórico de Vídeos */}
-      <VideoHistory limit={10} />
+      <VideoHistory limit={10} getCategoryColor={getCategoryColor} />
 
       <VideoForm 
         open={isVideoFormOpen} 
