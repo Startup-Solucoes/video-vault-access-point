@@ -12,11 +12,10 @@ export const useClientSelector = () => {
     console.log('=== BUSCANDO CLIENTES NO SELECTOR ===');
     setIsLoading(true);
     try {
-      // Buscar tanto admins quanto clientes
+      // Buscar TODOS os usuários da tabela profiles
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email, role')
-        .in('role', ['client', 'admin'])
         .order('full_name');
 
       if (error) {
@@ -24,17 +23,29 @@ export const useClientSelector = () => {
         throw error;
       }
       
-      console.log('Clientes encontrados na base (incluindo admins):', data);
-      console.log('Quantidade total:', data?.length || 0);
+      console.log('TODOS os perfis encontrados na base:', data);
+      console.log('Quantidade total de perfis:', data?.length || 0);
+      
+      if (data && data.length > 0) {
+        data.forEach(profile => {
+          console.log(`Perfil encontrado: ID=${profile.id}, Nome="${profile.full_name}", Email="${profile.email}", Role="${profile.role}"`);
+        });
+      }
       
       // Processar os dados para garantir que temos nomes válidos
-      const processedClients = (data || []).map(client => ({
-        id: client.id,
-        full_name: client.full_name || client.email.split('@')[0] || 'Usuário',
-        email: client.email
-      }));
+      const processedClients = (data || []).map(client => {
+        const processedName = client.full_name || client.email.split('@')[0] || 'Usuário';
+        console.log(`Processando cliente: ${client.email} -> Nome final: "${processedName}"`);
+        
+        return {
+          id: client.id,
+          full_name: processedName,
+          email: client.email
+        };
+      });
       
-      console.log('Clientes processados:', processedClients);
+      console.log('Clientes processados para o seletor:', processedClients);
+      console.log('Total de clientes disponíveis:', processedClients.length);
       setClients(processedClients);
     } catch (error) {
       console.error('Erro ao buscar clientes:', error);

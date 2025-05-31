@@ -20,7 +20,10 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
 
     // Expor função para refresh via ref
     useImperativeHandle(ref, () => ({
-      refreshClients: fetchClients
+      refreshClients: () => {
+        console.log('Refresh de clientes solicitado via ref');
+        fetchClients();
+      }
     }));
 
     const handleClientToggle = (clientId: string) => {
@@ -49,12 +52,19 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
       return `${selectedClients.length} clientes selecionados`;
     };
 
+    const handleModalOpen = () => {
+      console.log('Abrindo modal de seleção de clientes');
+      console.log('Clientes disponíveis no momento da abertura:', clients.length);
+      console.log('Lista de clientes:', clients.map(c => `${c.full_name} (${c.email})`));
+      setModalOpen(true);
+    };
+
     return (
       <div className="space-y-2">
         <Button
           type="button"
           variant="outline"
-          onClick={() => setModalOpen(true)}
+          onClick={handleModalOpen}
           className="w-full justify-start"
         >
           Selecionar Clientes ({getSelectedClientsText()})
