@@ -42,13 +42,14 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
     const [searchValue, setSearchValue] = useState('');
 
     const fetchClients = async () => {
-      console.log('=== BUSCANDO CLIENTES ===');
+      console.log('=== BUSCANDO CLIENTES NO SELECTOR ===');
       setIsLoading(true);
       try {
+        // Buscar tanto admins quanto clientes
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, full_name, email')
-          .eq('role', 'client')
+          .select('id, full_name, email, role')
+          .in('role', ['client', 'admin'])
           .order('full_name');
 
         if (error) {
@@ -56,9 +57,18 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
           throw error;
         }
         
-        console.log('Clientes encontrados na base:', data);
-        console.log('Quantidade de clientes:', data?.length || 0);
-        setClients(data || []);
+        console.log('Clientes encontrados na base (incluindo admins):', data);
+        console.log('Quantidade total:', data?.length || 0);
+        
+        // Processar os dados para garantir que temos nomes válidos
+        const processedClients = (data || []).map(client => ({
+          id: client.id,
+          full_name: client.full_name || client.email.split('@')[0] || 'Usuário',
+          email: client.email
+        }));
+        
+        console.log('Clientes processados:', processedClients);
+        setClients(processedClients);
       } catch (error) {
         console.error('Erro ao buscar clientes:', error);
         setClients([]);
@@ -69,7 +79,8 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
 
     // Filtrar clientes baseado no valor de busca
     const filteredClients = React.useMemo(() => {
-      console.log('Filtrando clientes com termo:', searchValue);
+      console.log('=== FILTRANDO CLIENTES ===');
+      console.log('Termo de busca:', searchValue);
       console.log('Total de clientes antes do filtro:', clients.length);
       
       if (!searchValue.trim()) {
@@ -85,6 +96,7 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
       });
       
       console.log('Clientes após filtro:', filtered.length);
+      console.log('Clientes filtrados:', filtered.map(c => c.full_name));
       return filtered;
     }, [clients, searchValue]);
 
@@ -94,6 +106,7 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
     }));
 
     useEffect(() => {
+      console.log('=== COMPONENTE MONTADO - BUSCANDO CLIENTES ===');
       fetchClients();
     }, []);
 
@@ -138,10 +151,11 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
           <PopoverContent className="w-full p-0" align="start">
             <Command shouldFilter={false}>
               <CommandInput 
-                placeholder="Digite o nome ou e-mail do cliente..." 
+                placeholder="Digite o nome ou e-mail..." 
                 value={searchValue}
                 onValueChange={(value) => {
-                  console.log('Valor de busca alterado:', value);
+                  console.log('=== VALOR DE BUSCA ALTERADO ===');
+                  console.log('Novo valor:', value);
                   setSearchValue(value);
                 }}
               />
@@ -170,7 +184,7 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
                         )}
                       />
                       <div className="flex flex-col">
-                        <span>{client.full_name}</span>
+                        <span className="font-medium">{client.full_name}</span>
                         <span className="text-sm text-gray-500">{client.email}</span>
                       </div>
                     </CommandItem>
