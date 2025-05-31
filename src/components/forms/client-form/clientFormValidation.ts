@@ -40,7 +40,14 @@ export const clientFormSchema = z.object({
     .min(1, "Confirmação de senha é obrigatória")
 });
 
-export type ClientFormData = z.infer<typeof clientFormSchema>;
+// Updated interface to match form usage
+export interface ClientFormData {
+  full_name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  logo_url: string;
+}
 
 // Validation function for the form
 export const validateClientForm = (formData: ClientFormData): boolean => {

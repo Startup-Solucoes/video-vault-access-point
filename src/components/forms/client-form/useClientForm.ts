@@ -24,7 +24,7 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
     setLogoPreview(preview);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!validateClientForm(formData)) {
