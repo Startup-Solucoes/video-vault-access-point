@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,7 +23,9 @@ export const useClientUsers = (clientId: string | null) => {
     queryKey,
     queryFn: () => fetchClientUsers(clientId!),
     enabled: !!clientId,
-    staleTime: 30000,
+    staleTime: 0, // Dados sempre considerados obsoletos
+    cacheTime: 0, // Não mantém cache
+    refetchOnMount: true, // Sempre busca ao montar
   });
 
   const addUserMutation = useMutation({

@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { Client, EditClientForm } from '@/types/client';
 import { toast } from '@/hooks/use-toast';
@@ -14,7 +13,7 @@ const CLIENTS_QUERY_KEY = ['clients'];
 export const useClientData = () => {
   const queryClient = useQueryClient();
 
-  // Query para buscar clientes com cache inteligente
+  // Query para buscar clientes sem cache
   const {
     data: clients = [],
     isLoading,
@@ -22,10 +21,10 @@ export const useClientData = () => {
   } = useQuery({
     queryKey: CLIENTS_QUERY_KEY,
     queryFn: fetchClientsFromDB,
-    staleTime: 30000, // Dados são considerados "frescos" por 30 segundos
-    refetchInterval: 60000, // Atualiza a cada 60 segundos apenas se a aba estiver ativa
-    refetchIntervalInBackground: false, // Não atualiza em background
-    refetchOnWindowFocus: true, // Atualiza quando usuário volta para a aba
+    staleTime: 0, // Dados sempre considerados obsoletos
+    cacheTime: 0, // Não mantém cache
+    refetchOnMount: true, // Sempre busca ao montar
+    refetchOnWindowFocus: true, // Busca quando volta para a aba
   });
 
   // Mutation para atualizar cliente
