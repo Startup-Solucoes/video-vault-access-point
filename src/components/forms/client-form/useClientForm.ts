@@ -108,38 +108,8 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
       });
 
       // Aguardar um pouco para o trigger criar o perfil
-      console.log('Aguardando criação do perfil...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Verificar se o perfil foi criado
-      console.log('Verificando se o perfil foi criado...');
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authData.user.id)
-        .single();
-
-      if (profileError) {
-        console.error('Erro ao verificar perfil:', profileError);
-        // Se o perfil não foi criado pelo trigger, criar manualmente
-        console.log('Criando perfil manualmente...');
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            email: formData.email,
-            full_name: formData.full_name,
-            role: 'client'
-          });
-
-        if (insertError) {
-          console.error('Erro ao criar perfil manualmente:', insertError);
-          throw insertError;
-        }
-        console.log('Perfil criado manualmente com sucesso');
-      } else {
-        console.log('Perfil encontrado:', profileData);
-      }
+      console.log('Aguardando criação do perfil pelo trigger...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Fazer upload da logo se foi selecionada
       let logoUrl = null;
@@ -156,6 +126,8 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
 
           if (updateError) {
             console.error('Erro ao atualizar logo do perfil:', updateError);
+            // Não vamos falhar o cadastro por causa da logo
+            console.log('Continuando sem a logo...');
           } else {
             console.log('Logo atualizada no perfil com sucesso');
           }
@@ -179,7 +151,7 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
         // Aguardar um pouco antes de atualizar a lista
         setTimeout(() => {
           onClientCreated();
-        }, 500);
+        }, 1000);
       }
       
       if (onOpenChange) {
