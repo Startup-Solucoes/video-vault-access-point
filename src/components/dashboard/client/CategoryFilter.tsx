@@ -18,21 +18,21 @@ interface CategoryFilterProps {
   videos: any[];
 }
 
-// Cores para cada categoria
+// Cores para cada categoria com destaque no background e texto
 const getCategoryColor = (category: string) => {
   const colors: { [key: string]: string } = {
-    'Gerais': 'bg-blue-500 hover:bg-blue-600 border-blue-200',
-    'Produto': 'bg-green-500 hover:bg-green-600 border-green-200',
-    'Financeiro': 'bg-yellow-500 hover:bg-yellow-600 border-yellow-200',
-    'Relatórios': 'bg-purple-500 hover:bg-purple-600 border-purple-200',
-    'Pedidos de venda': 'bg-orange-500 hover:bg-orange-600 border-orange-200',
-    'Fiscal': 'bg-red-500 hover:bg-red-600 border-red-200',
-    'Integrações': 'bg-teal-500 hover:bg-teal-600 border-teal-200',
-    'Serviços': 'bg-indigo-500 hover:bg-indigo-600 border-indigo-200'
+    'Gerais': 'bg-blue-600 hover:bg-blue-700 text-white border-blue-300',
+    'Produto': 'bg-green-600 hover:bg-green-700 text-white border-green-300',
+    'Financeiro': 'bg-yellow-600 hover:bg-yellow-700 text-white border-yellow-300',
+    'Relatórios': 'bg-purple-600 hover:bg-purple-700 text-white border-purple-300',
+    'Pedidos de venda': 'bg-orange-600 hover:bg-orange-700 text-white border-orange-300',
+    'Fiscal': 'bg-red-600 hover:bg-red-700 text-white border-red-300',
+    'Integrações': 'bg-teal-600 hover:bg-teal-700 text-white border-teal-300',
+    'Serviços': 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-300'
   };
   
   // Cor padrão se a categoria não estiver mapeada
-  return colors[category] || 'bg-gray-500 hover:bg-gray-600 border-gray-200';
+  return colors[category] || 'bg-gray-600 hover:bg-gray-700 text-white border-gray-300';
 };
 
 export const CategoryFilter = ({
@@ -62,7 +62,11 @@ export const CategoryFilter = ({
                   variant={selectedCategory === '' ? 'default' : 'outline'}
                   size="lg"
                   onClick={() => setSelectedCategory('')}
-                  className="whitespace-nowrap"
+                  className={`whitespace-nowrap font-semibold ${
+                    selectedCategory === '' 
+                      ? 'bg-slate-800 hover:bg-slate-900 text-white' 
+                      : 'border-2 border-slate-300 text-slate-700 hover:bg-slate-100'
+                  }`}
                 >
                   Todas ({videos.length})
                 </Button>
@@ -75,13 +79,13 @@ export const CategoryFilter = ({
                 return (
                   <CarouselItem key={category} className="pl-2 md:pl-4 basis-auto">
                     <Button
-                      variant={isSelected ? 'default' : 'outline'}
+                      variant="outline"
                       size="lg"
                       onClick={() => setSelectedCategory(category)}
-                      className={`whitespace-nowrap text-white ${
+                      className={`whitespace-nowrap font-semibold transition-all duration-200 ${
                         isSelected 
-                          ? categoryColors
-                          : `border-2 text-gray-700 hover:text-white ${categoryColors.split(' ')[2]} hover:${categoryColors.split(' ')[0]}`
+                          ? `${categoryColors} shadow-lg border-2`
+                          : `border-2 text-gray-600 hover:text-white ${categoryColors} opacity-80 hover:opacity-100 hover:shadow-md`
                       }`}
                     >
                       {category} ({count})
