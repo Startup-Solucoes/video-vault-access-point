@@ -59,11 +59,13 @@ export const useClientSelector = () => {
     const filtered = clients.filter(client => {
       const nameMatch = client.full_name.toLowerCase().includes(searchLower);
       const emailMatch = client.email.toLowerCase().includes(searchLower);
-      return nameMatch || emailMatch;
+      const match = nameMatch || emailMatch;
+      console.log(`Cliente ${client.full_name}: nameMatch=${nameMatch}, emailMatch=${emailMatch}, match=${match}`);
+      return match;
     });
     
     console.log('Clientes após filtro:', filtered.length);
-    console.log('Clientes filtrados:', filtered.map(c => c.full_name));
+    console.log('Clientes filtrados:', filtered.map(c => `${c.full_name} (${c.email})`));
     return filtered;
   }, [clients, searchValue]);
 

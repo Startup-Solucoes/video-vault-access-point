@@ -1,6 +1,6 @@
 
 import React, { useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ClientSelector, ClientSelectorRef } from './ClientSelector';
@@ -33,6 +33,9 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Adicionar Nova Vídeo Aula</DialogTitle>
+          <DialogDescription>
+            Preencha os campos abaixo para adicionar uma nova vídeo aula ao sistema.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">

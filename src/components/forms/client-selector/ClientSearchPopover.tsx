@@ -64,7 +64,7 @@ export const ClientSearchPopover: React.FC<ClientSearchPopoverProps> = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
-        <Command shouldFilter={false}>
+        <Command>
           <CommandInput 
             placeholder="Digite o nome ou e-mail..." 
             value={searchValue}
@@ -89,8 +89,12 @@ export const ClientSearchPopover: React.FC<ClientSearchPopoverProps> = ({
               {filteredClients.map((client) => (
                 <CommandItem
                   key={client.id}
-                  value={client.id}
-                  onSelect={() => onClientSelect(client.id)}
+                  value={`${client.full_name} ${client.email}`}
+                  onSelect={() => {
+                    console.log('=== CLIENTE SELECIONADO NO POPOVER ===');
+                    console.log('Cliente:', client);
+                    onClientSelect(client.id);
+                  }}
                 >
                   <Check
                     className={cn(
