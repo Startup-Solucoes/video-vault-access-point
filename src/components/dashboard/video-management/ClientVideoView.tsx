@@ -4,19 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Video, Calendar, Eye, User, Edit, Trash2 } from 'lucide-react';
+import { Video, Calendar, Eye, User, Edit, Trash2, Users } from 'lucide-react';
 import { useClientVideos } from '@/hooks/useClientVideos';
 import { EditVideoForm } from '@/components/forms/EditVideoForm';
+import { ClientUsersManager } from '@/components/dashboard/client-management/ClientUsersManager';
 
 interface ClientVideoViewProps {
   clientId: string;
   clientName: string;
+  clientLogoUrl?: string;
 }
 
-export const ClientVideoView = ({ clientId, clientName }: ClientVideoViewProps) => {
+export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientVideoViewProps) => {
   const { videos, isLoading } = useClientVideos(clientId);
   const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showUsersManager, setShowUsersManager] = useState(false);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('pt-BR', {
@@ -67,15 +70,46 @@ export const ClientVideoView = ({ clientId, clientName }: ClientVideoViewProps) 
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <User className="h-5 w-5 mr-2" />
-            Vídeos de {clientName}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center">
+              {clientLogoUrl ? (
+                <img 
+                  src={clientLogoUrl} 
+                  alt={`Logo ${clientName}`}
+                  className="h-8 w-8 mr-3 object-contain rounded"
+                />
+              ) : (
+                <User className="h-5 w-5 mr-2" />
+              )}
+              Vídeos de {clientName}
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowUsersManager(!showUsersManager)}
+              className="flex items-center gap-2"
+            >
+              <Users className="h-4 w-4" />
+              {showUsersManager ? 'Ocultar Usuários' : 'Gerenciar Usuários'}
+            </Button>
+          </div>
           <p className="text-gray-600 mt-2">
             {videos.length} vídeo{videos.length !== 1 ? 's' : ''} disponível{videos.length !== 1 ? 'eis' : ''}
           </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
+          {/* Gerenciamento de Usuários */}
+          {showUsersManager && (
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h4 className="font-semibold mb-4 flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Gerenciar Usuários do Cliente
+              </h4>
+              <ClientUsersManager clientId={clientId} />
+            </div>
+          )}
+
+          {/* Lista de Vídeos */}
           {videos.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Video className="h-12 w-12 mx-auto mb-4 text-gray-300" />

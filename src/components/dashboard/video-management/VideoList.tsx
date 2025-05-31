@@ -9,7 +9,7 @@ import { useVideoPermissions } from '@/hooks/useVideoPermissions';
 import { useClientData } from '@/hooks/useClientData';
 
 interface VideoListProps {
-  onClientSelect: (clientId: string, clientName: string) => void;
+  onClientSelect: (clientId: string, clientName: string, clientLogoUrl?: string) => void;
 }
 
 export const VideoList = ({ onClientSelect }: VideoListProps) => {
@@ -106,10 +106,18 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
                   <div className="flex items-start justify-between mb-3">
                     <div 
                       className="flex items-center space-x-3 flex-1 cursor-pointer"
-                      onClick={() => onClientSelect(client.id, client.full_name)}
+                      onClick={() => onClientSelect(client.id, client.full_name, client.logo_url)}
                     >
                       <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
-                        <Folder className="h-8 w-8 text-blue-600" />
+                        {client.logo_url ? (
+                          <img 
+                            src={client.logo_url} 
+                            alt={`Logo ${client.full_name}`}
+                            className="h-8 w-8 object-contain"
+                          />
+                        ) : (
+                          <Folder className="h-8 w-8 text-blue-600" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-gray-900 truncate">
@@ -154,7 +162,7 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
                     variant="outline"
                     size="sm"
                     className="w-full mt-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => onClientSelect(client.id, client.full_name)}
+                    onClick={() => onClientSelect(client.id, client.full_name, client.logo_url)}
                   >
                     <User className="h-4 w-4 mr-1" />
                     Ver Vídeos
