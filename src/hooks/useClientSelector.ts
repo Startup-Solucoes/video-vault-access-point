@@ -10,69 +10,119 @@ export const useClientSelector = () => {
 
   const fetchClients = async () => {
     console.log('=== BUSCANDO CLIENTES NO SELECTOR ===');
-    console.log('Usuário atual autenticado:', (await supabase.auth.getUser()).data.user?.id);
+    const { data: user } = await supabase.auth.getUser();
+    console.log('Usuário atual autenticado:', user.user?.id);
+    console.log('Role do usuário atual:', user.user?.user_metadata?.role);
+    
     setIsLoading(true);
     try {
-      // Primeiro, vamos verificar se conseguimos acessar a tabela profiles
       console.log('Testando acesso à tabela profiles...');
       
-      // Buscar TODOS os usuários da tabela profiles
-      const { data, error } = await supabase
+      // Tentar buscar todos os perfis primeiro
+      console.log('Tentativa 1: Buscar todos os perfis...');
+      const { data: allProfiles, error: allError } = await supabase
         .from('profiles')
         .select('id, full_name, email, role')
         .order('full_name');
 
-      console.log('Resposta da query de profiles:');
-      console.log('- Data:', data);
-      console.log('- Error:', error);
-      console.log('- Data length:', data?.length);
+      console.log('Resultado da busca de todos os perfis:');
+      console.log('- Data:', allProfiles);
+      console.log('- Error:', allError);
+      console.log('- Quantidade:', allProfiles?.length || 0);
 
-      if (error) {
-        console.error('Erro na query de clientes:', error);
-        console.error('Código do erro:', error.code);
-        console.error('Detalhes do erro:', error.details);
-        console.error('Hint do erro:', error.hint);
-        console.error('Message do erro:', error.message);
-        throw error;
-      }
-      
-      console.log('TODOS os perfis encontrados na base:', data);
-      console.log('Quantidade total de perfis:', data?.length || 0);
-      
-      if (data && data.length > 0) {
-        data.forEach((profile, index) => {
-          console.log(`Perfil ${index + 1}: ID=${profile.id}, Nome="${profile.full_name}", Email="${profile.email}", Role="${profile.role}"`);
-        });
-      } else {
-        console.log('ATENÇÃO: Nenhum perfil foi retornado pela query!');
+      if (allError) {
+        console.error('Erro ao buscar todos os perfis:', allError);
         
-        // Vamos tentar uma query mais simples para debug
-        console.log('Tentando query mais simples...');
-        const { data: simpleData, error: simpleError } = await supabase
+        // Se deu erro, tentar buscar apenas clientes
+        console.log('Tentativa 2: Buscar apenas clientes...');
+        const { data: clientsOnly, error: clientError } = await supabase
           .from('profiles')
-          .select('*');
+          .select('id, full_name, email, role')
+          .eq('role', 'client')
+          .order('full_name');
+
+        console.log('Resultado da busca apenas de clientes:');
+        console.log('- Data:', clientsOnly);
+        console.log('- Error:', clientError);
         
-        console.log('Query simples - Data:', simpleData);
-        console.log('Query simples - Error:', simpleError);
+        if (clientError) {
+          console.error('Erro ao buscar clientes:', clientError);
+          
+          // Última tentativa: buscar sem filtros
+          console.log('Tentativa 3: Buscar sem filtros...');
+          const { data: noFilter, error: noFilterError } = await supabase
+            .from('profiles')
+            .select('*');
+
+          console.log('Resultado sem filtros:');
+          console.log('- Data:', noFilter);
+          console.log('- Error:', noFilterError);
+          
+          if (noFilterError) {
+            throw noFilterError;
+          }
+          
+          // Usar dados sem filtro se disponível
+          if (noFilter && noFilter.length > 0) {
+            const processedClients = noFilter.map(client => ({
+              id: client.id,
+              full_name: client.full_name || client.email.split('@')[0] || 'Usuário',
+              email: client.email
+            }));
+            
+            console.log('Clientes processados (sem filtro):', processedClients);
+            setClients(processedClients);
+            return;
+          }
+        } else if (clientsOnly) {
+          // Usar apenas clientes se conseguiu buscar
+          const processedClients = clientsOnly.map(client => ({
+            id: client.id,
+            full_name: client.full_name || client.email.split('@')[0] || 'Usuário',
+            email: client.email
+          }));
+          
+          console.log('Clientes processados (apenas clientes):', processedClients);
+          setClients(processedClients);
+          return;
+        }
+      } else {
+        // Sucesso na busca de todos os perfis
+        console.log('TODOS os perfis encontrados na base:', allProfiles);
+        console.log('Quantidade total de perfis:', allProfiles?.length || 0);
+        
+        if (allProfiles && allProfiles.length > 0) {
+          allProfiles.forEach((profile, index) => {
+            console.log(`Perfil ${index + 1}: ID=${profile.id}, Nome="${profile.full_name}", Email="${profile.email}", Role="${profile.role}"`);
+          });
+          
+          // Processar os dados para garantir que temos nomes válidos
+          const processedClients = allProfiles.map(client => {
+            const processedName = client.full_name || client.email.split('@')[0] || 'Usuário';
+            console.log(`Processando cliente: ${client.email} -> Nome final: "${processedName}"`);
+            
+            return {
+              id: client.id,
+              full_name: processedName,
+              email: client.email
+            };
+          });
+          
+          console.log('Clientes processados para o seletor:', processedClients);
+          console.log('Total de clientes disponíveis:', processedClients.length);
+          setClients(processedClients);
+          return;
+        } else {
+          console.log('ATENÇÃO: Nenhum perfil foi retornado pela query de todos os perfis!');
+        }
       }
       
-      // Processar os dados para garantir que temos nomes válidos
-      const processedClients = (data || []).map(client => {
-        const processedName = client.full_name || client.email.split('@')[0] || 'Usuário';
-        console.log(`Processando cliente: ${client.email} -> Nome final: "${processedName}"`);
-        
-        return {
-          id: client.id,
-          full_name: processedName,
-          email: client.email
-        };
-      });
+      // Se chegou até aqui, não conseguiu buscar nenhum cliente
+      console.log('Nenhum cliente encontrado em nenhuma tentativa');
+      setClients([]);
       
-      console.log('Clientes processados para o seletor:', processedClients);
-      console.log('Total de clientes disponíveis:', processedClients.length);
-      setClients(processedClients);
     } catch (error) {
-      console.error('Erro ao buscar clientes:', error);
+      console.error('Erro geral ao buscar clientes:', error);
       setClients([]);
     } finally {
       setIsLoading(false);
