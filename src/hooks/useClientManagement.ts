@@ -1,191 +1,25 @@
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
-import { Client, EditClientForm } from '@/types/client';
+import { useClientData } from './useClientData';
+import { useClientFilters } from './useClientFilters';
 
 export const useClientManagement = () => {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('all');
+  const {
+    clients,
+    isLoading,
+    fetchClients,
+    updateClient,
+    approveClient,
+    deleteClient
+  } = useClientData();
 
-  const fetchClients = async () => {
-    try {
-      console.log('Buscando todos os clientes...');
-      setIsLoading(true);
-      
-      // Buscar dados dos perfis
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'client')
-        .order('created_at', { ascending: false });
-
-      if (profilesError) {
-        console.error('Erro ao buscar perfis:', profilesError);
-        throw profilesError;
-      }
-
-      // Mapear os dados sem assumir que todos estão aprovados
-      // Vamos usar um campo 'approved' baseado no updated_at ser diferente do created_at
-      const combinedData = profilesData?.map(profile => {
-        const isApproved = profile.updated_at !== profile.created_at;
-        return {
-          ...profile,
-          email_confirmed_at: isApproved ? profile.updated_at : null,
-          last_sign_in_at: profile.updated_at || profile.created_at
-        };
-      }) || [];
-
-      console.log('Clientes encontrados:', combinedData);
-      setClients(combinedData);
-      setFilteredClients(combinedData);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar clientes",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateClient = async (clientId: string, editForm: EditClientForm) => {
-    try {
-      console.log('Atualizando cliente:', clientId, editForm);
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: editForm.full_name,
-          email: editForm.email,
-          logo_url: editForm.logo_url || null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', clientId);
-
-      if (error) {
-        console.error('Erro ao atualizar cliente:', error);
-        throw error;
-      }
-
-      toast({
-        title: "Sucesso!",
-        description: "Cliente atualizado com sucesso"
-      });
-
-      fetchClients();
-    } catch (error) {
-      console.error('Erro ao atualizar cliente:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar cliente",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const approveClient = async (clientId: string, clientEmail: string) => {
-    try {
-      console.log('Aprovando cliente:', clientId);
-      
-      // Aprovar cliente atualizando o timestamp para ser diferente do created_at
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', clientId);
-
-      if (error) {
-        console.error('Erro ao aprovar cliente:', error);
-        throw error;
-      }
-
-      toast({
-        title: "Sucesso!",
-        description: `Cliente ${clientEmail} aprovado com sucesso`
-      });
-
-      fetchClients();
-    } catch (error) {
-      console.error('Erro ao aprovar cliente:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao aprovar cliente",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const deleteClient = async (clientId: string, clientName: string) => {
-    if (!confirm(`Tem certeza que deseja remover o cliente "${clientName}"? Esta ação não pode ser desfeita.`)) {
-      return;
-    }
-
-    try {
-      console.log('Removendo cliente:', clientId);
-      
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', clientId);
-
-      if (error) {
-        console.error('Erro ao remover cliente:', error);
-        throw error;
-      }
-
-      toast({
-        title: "Sucesso!",
-        description: "Cliente removido com sucesso"
-      });
-
-      fetchClients();
-    } catch (error) {
-      console.error('Erro ao remover cliente:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao remover cliente",
-        variant: "destructive"
-      });
-    }
-  };
-
-  useEffect(() => {
-    fetchClients();
-  }, []);
-
-  useEffect(() => {
-    let filtered = clients;
-
-    // Filtrar por status
-    if (activeTab === 'verified') {
-      filtered = clients.filter(client => client.email_confirmed_at);
-    } else if (activeTab === 'unverified') {
-      filtered = clients.filter(client => !client.email_confirmed_at);
-    }
-
-    // Filtrar por termo de busca
-    if (searchTerm) {
-      filtered = filtered.filter(client =>
-        client.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    setFilteredClients(filtered);
-  }, [searchTerm, clients, activeTab]);
-
-  const getTabCounts = () => {
-    const verified = clients.filter(c => c.email_confirmed_at).length;
-    const unverified = clients.filter(c => !c.email_confirmed_at).length;
-    return { all: clients.length, verified, unverified };
-  };
+  const {
+    filteredClients,
+    searchTerm,
+    setSearchTerm,
+    activeTab,
+    setActiveTab,
+    getTabCounts
+  } = useClientFilters(clients);
 
   return {
     clients,
