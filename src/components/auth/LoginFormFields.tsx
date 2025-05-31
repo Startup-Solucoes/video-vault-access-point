@@ -18,7 +18,7 @@ export const LoginFormFields = ({ loginData, setLoginData }: LoginFormFieldsProp
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="login-email">Email</Label>
+        <Label htmlFor="login-email">E-mail</Label>
         <Input
           id="login-email"
           type="email"
