@@ -6,7 +6,7 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
   console.log('clientDataService: Iniciando busca de clientes...');
   
   try {
-    // Buscar dados de todos os perfis
+    // Buscar dados apenas da tabela profiles (sem tentar acessar auth.users)
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select('*')
@@ -18,30 +18,26 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
     }
 
     console.log('clientDataService: Perfis encontrados:', profilesData?.length || 0);
-    console.log('clientDataService: Dados dos perfis:', profilesData);
 
     if (!profilesData || profilesData.length === 0) {
       console.log('clientDataService: Nenhum perfil encontrado');
       return [];
     }
 
-    // Mapear os dados sem tentar acessar auth.users (que requer service role)
+    // Processar os dados usando apenas informações da tabela profiles
     const processedData = profilesData.map(profile => {
       console.log('clientDataService: Processando perfil:', profile.id, profile.email);
       
-      // Como não podemos acessar auth.users com anon key, vamos usar uma lógica baseada nos dados do perfil
-      // Assumimos que se o perfil foi criado mas não teve login recente, está pendente
+      // Lógica simples para determinar se está verificado:
+      // Se o perfil foi atualizado muito tempo depois de criado, assumimos que fez login
       const now = new Date();
       const createdAt = new Date(profile.created_at);
       const updatedAt = new Date(profile.updated_at);
       
-      // Se updated_at é muito próximo de created_at (diferença menor que 1 minuto), 
-      // provavelmente o usuário ainda não fez login
+      // Se a diferença entre updated_at e created_at for maior que 1 minuto,
+      // assumimos que o usuário fez login (está verificado)
       const timeDiff = updatedAt.getTime() - createdAt.getTime();
-      const isLikelyUnverified = timeDiff < 60000; // menos de 1 minuto
-      
-      // Para clientes existentes que podem ter feito login, assumimos verificados
-      const isVerified = !isLikelyUnverified;
+      const isVerified = timeDiff > 60000; // mais de 1 minuto
       
       const processedProfile = {
         ...profile,
@@ -50,25 +46,18 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
         is_deleted: false
       };
 
-      console.log('clientDataService: Perfil processado final:', {
+      console.log('clientDataService: Perfil processado:', {
         id: processedProfile.id,
         email: processedProfile.email,
         role: processedProfile.role,
         isVerified,
-        emailConfirmedAt: processedProfile.email_confirmed_at,
-        created_at: processedProfile.created_at,
-        timeDiff
+        timeDiff: `${timeDiff}ms`
       });
 
       return processedProfile;
     });
 
-    console.log('clientDataService: Dados processados:', processedData.length);
-    console.log('clientDataService: Resumo de verificação:', processedData.map(p => ({
-      email: p.email,
-      verified: !!p.email_confirmed_at,
-      email_confirmed_at: p.email_confirmed_at
-    })));
+    console.log('clientDataService: Total de clientes processados:', processedData.length);
     
     return processedData;
   } catch (error) {
