@@ -27,7 +27,7 @@ export const ClientFormFields = ({ formData, onFormDataChange }: ClientFormField
         <Label htmlFor="client-name">Nome do Cliente *</Label>
         <Input
           id="client-name"
-          value={formData.full_name || ''}
+          value={formData.full_name}
           onChange={(e) => handleInputChange('full_name', e.target.value)}
           placeholder="Digite o nome completo"
           required
@@ -39,7 +39,7 @@ export const ClientFormFields = ({ formData, onFormDataChange }: ClientFormField
         <Input
           id="client-email"
           type="email"
-          value={formData.email || ''}
+          value={formData.email}
           onChange={(e) => handleInputChange('email', e.target.value)}
           placeholder="cliente@email.com"
           required
@@ -50,7 +50,7 @@ export const ClientFormFields = ({ formData, onFormDataChange }: ClientFormField
         <Label htmlFor="client-password">Senha * (mínimo 8 caracteres)</Label>
         <PasswordInput
           id="client-password"
-          value={formData.password || ''}
+          value={formData.password}
           onChange={(value) => handleInputChange('password', value)}
           showGenerator={true}
           required
@@ -61,7 +61,7 @@ export const ClientFormFields = ({ formData, onFormDataChange }: ClientFormField
         <Label htmlFor="client-confirm-password">Confirmar Senha *</Label>
         <PasswordInput
           id="client-confirm-password"
-          value={formData.confirmPassword || ''}
+          value={formData.confirmPassword}
           onChange={(value) => handleInputChange('confirmPassword', value)}
           showGenerator={false}
           showStrengthIndicator={false}
