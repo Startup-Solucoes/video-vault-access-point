@@ -55,3 +55,21 @@ export const sendClientConfirmationEmail = async (data: ClientConfirmationData):
     return false;
   }
 };
+
+export const getUserAuthInfo = async (userId: string) => {
+  try {
+    const { data, error } = await supabase.functions.invoke('get-user-auth-info', {
+      body: { user_id: userId }
+    });
+
+    if (error) {
+      console.error('Error getting user auth info:', error);
+      return { email_confirmed_at: null, last_sign_in_at: null };
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in getUserAuthInfo:', error);
+    return { email_confirmed_at: null, last_sign_in_at: null };
+  }
+};

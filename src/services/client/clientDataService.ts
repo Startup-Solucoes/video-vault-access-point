@@ -3,115 +3,79 @@ import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types/client';
 
 export const fetchClientsFromDB = async (): Promise<Client[]> => {
-  console.log('=== DIAGNÓSTICO COMPLETO DE CLIENTES ===');
+  console.log('clientDataService: Buscando clientes...');
   
   try {
-    // Primeiro, verificar usuário atual
-    const { data: currentUser } = await supabase.auth.getUser();
-    console.log('Usuário atual logado:', {
-      id: currentUser.user?.id,
-      email: currentUser.user?.email,
-      role: currentUser.user?.user_metadata?.role
-    });
-
-    // Tentar buscar TODOS os perfis sem filtros
-    console.log('1. Testando busca SEM filtros...');
-    const { data: allProfilesRaw, error: allError, count } = await supabase
+    // Buscar profiles com informações de auth via join
+    const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('*', { count: 'exact' });
+      .select(`
+        id,
+        email,
+        full_name,
+        logo_url,
+        role,
+        created_at,
+        updated_at
+      `)
+      .order('created_at', { ascending: false });
 
-    console.log('Resultado busca sem filtros:', {
-      data: allProfilesRaw,
-      error: allError,
-      count: count,
-      length: allProfilesRaw?.length || 0
-    });
+    if (profilesError) {
+      throw profilesError;
+    }
 
-    if (allError) {
-      console.error('Erro na busca sem filtros:', allError);
-      
-      // Tentar busca com campos específicos
-      console.log('2. Testando busca com campos específicos...');
-      const { data: specificFields, error: specificError } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, role, created_at, updated_at');
+    if (!profiles) {
+      console.log('clientDataService: Nenhum perfil encontrado');
+      return [];
+    }
 
-      console.log('Resultado busca com campos específicos:', {
-        data: specificFields,
-        error: specificError,
-        length: specificFields?.length || 0
-      });
+    // Para cada perfil, buscar informações de autenticação via função RPC
+    const clientsWithAuthInfo = await Promise.all(
+      profiles.map(async (profile) => {
+        try {
+          // Buscar informações de auth do usuário via função personalizada
+          const { data: authData, error: authError } = await supabase.rpc('get_user_auth_info', {
+            user_id: profile.id
+          });
 
-      if (specificError) {
-        console.error('Erro na busca com campos específicos:', specificError);
-        throw specificError;
-      }
-
-      if (specificFields && specificFields.length > 0) {
-        console.log('Usando dados da busca com campos específicos');
-        return specificFields.map(profile => ({
-          ...profile,
-          email_confirmed_at: profile.updated_at,
-          last_sign_in_at: profile.updated_at,
-          is_deleted: false
-        }));
-      }
-    } else {
-      console.log('Busca sem filtros funcionou!');
-      console.log('Perfis encontrados:', allProfilesRaw);
-      
-      if (allProfilesRaw && allProfilesRaw.length > 0) {
-        const processedProfiles = allProfilesRaw.map(profile => {
-          console.log('Processando perfil:', {
+          const client: Client = {
             id: profile.id,
             email: profile.email,
             full_name: profile.full_name,
-            role: profile.role
-          });
-          
-          return {
-            ...profile,
-            email_confirmed_at: profile.updated_at,
-            last_sign_in_at: profile.updated_at,
+            logo_url: profile.logo_url,
+            role: profile.role,
+            created_at: profile.created_at,
+            updated_at: profile.updated_at,
+            email_confirmed_at: authData?.email_confirmed_at || null,
+            last_sign_in_at: authData?.last_sign_in_at || null,
             is_deleted: false
           };
-        });
-        
-        console.log('Perfis processados final:', processedProfiles);
-        return processedProfiles;
-      }
-    }
 
-    // Se chegou até aqui, tentar verificar se há dados na tabela usando count
-    console.log('3. Verificando se existem dados na tabela...');
-    const { count: totalCount, error: countError } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true });
+          return client;
+        } catch (error) {
+          console.error('Erro ao buscar informações de auth para usuário:', profile.id, error);
+          // Retorna o cliente sem informações de auth se houver erro
+          return {
+            id: profile.id,
+            email: profile.email,
+            full_name: profile.full_name,
+            logo_url: profile.logo_url,
+            role: profile.role,
+            created_at: profile.created_at,
+            updated_at: profile.updated_at,
+            email_confirmed_at: null,
+            last_sign_in_at: null,
+            is_deleted: false
+          } as Client;
+        }
+      })
+    );
 
-    console.log('Total de registros na tabela profiles:', {
-      count: totalCount,
-      error: countError
-    });
+    console.log('clientDataService: Clientes encontrados:', clientsWithAuthInfo.length);
+    return clientsWithAuthInfo;
 
-    // Tentar buscar da tabela auth.users para comparar (se permitido)
-    console.log('4. Tentando verificar usuários na tabela auth...');
-    try {
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-      console.log('Usuários na tabela auth:', {
-        data: authUsers,
-        error: authError,
-        count: authUsers?.users?.length || 0
-      });
-    } catch (authErr) {
-      console.log('Não foi possível acessar auth.users (esperado):', authErr);
-    }
-
-    console.log('=== FIM DO DIAGNÓSTICO ===');
-    console.log('Retornando lista vazia - nenhum perfil encontrado');
-    return [];
-    
   } catch (error) {
-    console.error('Erro geral no diagnóstico:', error);
+    console.error('clientDataService: Erro ao buscar clientes:', error);
     throw error;
   }
 };
