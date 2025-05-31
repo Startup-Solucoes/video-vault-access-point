@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,11 +8,13 @@ import { ClientForm } from '@/components/forms/ClientForm';
 import { ClientSelectorRef } from '@/components/forms/ClientSelector';
 import { ClientManagement } from './ClientManagement';
 import { VideoHistory } from './VideoHistory';
+import { VideoManagement } from './VideoManagement';
 
 export const AdminDashboard = () => {
   const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
   const [isClientFormOpen, setIsClientFormOpen] = useState(false);
   const [showClientManagement, setShowClientManagement] = useState(false);
+  const [showVideoManagement, setShowVideoManagement] = useState(false);
   const clientSelectorRef = useRef<ClientSelectorRef>(null);
 
   const handleClientCreated = () => {
@@ -36,6 +39,24 @@ export const AdminDashboard = () => {
           </Button>
         </div>
         <ClientManagement />
+      </div>
+    );
+  }
+
+  // Se estiver visualizando o gerenciamento de vídeos, mostrar apenas esse componente
+  if (showVideoManagement) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="outline"
+            onClick={() => setShowVideoManagement(false)}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar ao Dashboard
+          </Button>
+        </div>
+        <VideoManagement />
       </div>
     );
   }
@@ -129,7 +150,11 @@ export const AdminDashboard = () => {
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar Novo Vídeo
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => setShowVideoManagement(true)}
+              >
                 <Video className="h-4 w-4 mr-2" />
                 Ver Todos os Vídeos
               </Button>
