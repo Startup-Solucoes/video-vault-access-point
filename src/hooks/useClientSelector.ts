@@ -10,16 +10,29 @@ export const useClientSelector = () => {
 
   const fetchClients = async () => {
     console.log('=== BUSCANDO CLIENTES NO SELECTOR ===');
+    console.log('Usuário atual autenticado:', (await supabase.auth.getUser()).data.user?.id);
     setIsLoading(true);
     try {
+      // Primeiro, vamos verificar se conseguimos acessar a tabela profiles
+      console.log('Testando acesso à tabela profiles...');
+      
       // Buscar TODOS os usuários da tabela profiles
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email, role')
         .order('full_name');
 
+      console.log('Resposta da query de profiles:');
+      console.log('- Data:', data);
+      console.log('- Error:', error);
+      console.log('- Data length:', data?.length);
+
       if (error) {
         console.error('Erro na query de clientes:', error);
+        console.error('Código do erro:', error.code);
+        console.error('Detalhes do erro:', error.details);
+        console.error('Hint do erro:', error.hint);
+        console.error('Message do erro:', error.message);
         throw error;
       }
       
@@ -27,9 +40,20 @@ export const useClientSelector = () => {
       console.log('Quantidade total de perfis:', data?.length || 0);
       
       if (data && data.length > 0) {
-        data.forEach(profile => {
-          console.log(`Perfil encontrado: ID=${profile.id}, Nome="${profile.full_name}", Email="${profile.email}", Role="${profile.role}"`);
+        data.forEach((profile, index) => {
+          console.log(`Perfil ${index + 1}: ID=${profile.id}, Nome="${profile.full_name}", Email="${profile.email}", Role="${profile.role}"`);
         });
+      } else {
+        console.log('ATENÇÃO: Nenhum perfil foi retornado pela query!');
+        
+        // Vamos tentar uma query mais simples para debug
+        console.log('Tentando query mais simples...');
+        const { data: simpleData, error: simpleError } = await supabase
+          .from('profiles')
+          .select('*');
+        
+        console.log('Query simples - Data:', simpleData);
+        console.log('Query simples - Error:', simpleError);
       }
       
       // Processar os dados para garantir que temos nomes válidos
