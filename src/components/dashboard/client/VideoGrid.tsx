@@ -40,7 +40,7 @@ export const VideoGrid = ({ videos, isLoading, searchTerm, selectedCategory }: V
           </div>
           <div className="p-4">
             <h3 className="font-semibold mb-2">
-              {searchTerm || selectedCategory ? 'Nenhum vídeo encontrado' : 'Nenhum vídeo disponível'}
+              {searchTerm || selectedCategory ? 'Nenhum vídeo encontrado' : 'Ainda não existem vídeos para visualizar'}
             </h3>
             <p className="text-sm text-gray-600 mb-4">
               {searchTerm || selectedCategory 
