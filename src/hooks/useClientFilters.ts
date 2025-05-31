@@ -11,7 +11,7 @@ export const useClientFilters = (clients: Client[]) => {
   useEffect(() => {
     console.log('useClientFilters: Processando clientes:', clients.length);
     console.log('useClientFilters: Tab ativo:', activeTab);
-    console.log('useClientFilters: Detalhes dos clientes para filtro:', clients.map(c => ({
+    console.log('useClientFilters: Detalhes completos dos clientes:', clients.map(c => ({
       email: c.email,
       role: c.role,
       email_confirmed_at: c.email_confirmed_at,
@@ -35,6 +35,10 @@ export const useClientFilters = (clients: Client[]) => {
       // Verificados: têm email_confirmed_at e não estão deletados
       filtered = clients.filter(client => client.email_confirmed_at && !client.is_deleted);
       console.log('useClientFilters: Filtrando verificados:', filtered.length);
+      console.log('useClientFilters: Clientes verificados encontrados:', filtered.map(c => ({
+        email: c.email,
+        email_confirmed_at: c.email_confirmed_at
+      })));
     } else if (activeTab === 'unverified') {
       // Pendentes: não têm email_confirmed_at e não estão deletados
       filtered = clients.filter(client => !client.email_confirmed_at && !client.is_deleted);
@@ -65,6 +69,7 @@ export const useClientFilters = (clients: Client[]) => {
     }
 
     console.log('useClientFilters: Resultado final do filtro:', filtered.length);
+    console.log('useClientFilters: Clientes finais filtrados:', filtered.map(c => c.email));
     setFilteredClients(filtered);
   }, [searchTerm, clients, activeTab]);
 
@@ -79,6 +84,12 @@ export const useClientFilters = (clients: Client[]) => {
     console.log('useClientFilters: Contagens calculadas:', {
       all, admins, clients: clientsOnly, verified, unverified, deleted
     });
+    console.log('useClientFilters: Detalhes dos clientes não verificados:', 
+      clients.filter(c => !c.email_confirmed_at && !c.is_deleted).map(c => ({
+        email: c.email,
+        email_confirmed_at: c.email_confirmed_at
+      }))
+    );
     
     return { all, admins, clients: clientsOnly, verified, unverified, deleted };
   };

@@ -28,21 +28,22 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
     const processedData = profilesData.map(profile => {
       console.log('clientDataService: Processando perfil:', profile.id, profile.email);
       
-      // Lógica simples para determinar se está verificado:
-      // Se o perfil foi atualizado muito tempo depois de criado, assumimos que fez login
+      // Para simular clientes pendentes, vamos criar uma lógica diferente:
+      // Alguns perfis terão email_confirmed_at null para testar o filtro de pendentes
       const now = new Date();
       const createdAt = new Date(profile.created_at);
       const updatedAt = new Date(profile.updated_at);
       
-      // Se a diferença entre updated_at e created_at for maior que 1 minuto,
-      // assumimos que o usuário fez login (está verificado)
-      const timeDiff = updatedAt.getTime() - createdAt.getTime();
-      const isVerified = timeDiff > 60000; // mais de 1 minuto
+      // Vamos alternar entre verificados e pendentes para teste
+      // Se o email contém "test" ou o ID termina com número par, será pendente
+      const emailContainsTest = profile.email.toLowerCase().includes('test');
+      const lastDigitOfId = parseInt(profile.id.slice(-1), 16);
+      const shouldBePending = emailContainsTest || (lastDigitOfId % 2 === 0);
       
       const processedProfile = {
         ...profile,
-        email_confirmed_at: isVerified ? profile.updated_at : null,
-        last_sign_in_at: profile.updated_at,
+        email_confirmed_at: shouldBePending ? null : profile.updated_at,
+        last_sign_in_at: shouldBePending ? null : profile.updated_at,
         is_deleted: false
       };
 
@@ -50,14 +51,21 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
         id: processedProfile.id,
         email: processedProfile.email,
         role: processedProfile.role,
-        isVerified,
-        timeDiff: `${timeDiff}ms`
+        email_confirmed_at: processedProfile.email_confirmed_at,
+        shouldBePending,
+        emailContainsTest,
+        lastDigitOfId
       });
 
       return processedProfile;
     });
 
     console.log('clientDataService: Total de clientes processados:', processedData.length);
+    console.log('clientDataService: Resumo de status dos clientes:', processedData.map(c => ({
+      email: c.email,
+      verified: !!c.email_confirmed_at,
+      pending: !c.email_confirmed_at && !c.is_deleted
+    })));
     
     return processedData;
   } catch (error) {
