@@ -44,10 +44,8 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
       // Se todos os filtrados estão selecionados, desmarcar todos os filtrados
       console.log('Desmarcando todos os clientes filtrados');
       const filteredIds = filteredClients.map(c => c.id);
-      const newSelection = selectedClients.filter(id => !filteredIds.includes(id));
-      console.log('Nova seleção após desmarcar:', newSelection);
       
-      // Simular o toggle para cada cliente que será desmarcado
+      // Para desmarcar, chamamos toggle para cada cliente selecionado dos filtrados
       filteredClients.forEach(client => {
         if (selectedClients.includes(client.id)) {
           console.log('Desmarcando cliente:', client.full_name);
@@ -60,10 +58,15 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
       const clientsToSelect = filteredClients.filter(client => !selectedClients.includes(client.id));
       console.log('Clientes que serão selecionados:', clientsToSelect.map(c => c.full_name));
       
-      // Simular o toggle para cada cliente que será selecionado
-      clientsToSelect.forEach(client => {
-        console.log('Selecionando cliente:', client.full_name);
-        onClientToggle(client.id);
+      // SOLUÇÃO: Ao invés de chamar onClientToggle múltiplas vezes,
+      // vamos simular uma seleção múltipla calculando o estado final
+      // e fazendo as chamadas em sequência usando setTimeout para garantir
+      // que cada atualização de estado seja processada
+      clientsToSelect.forEach((client, index) => {
+        setTimeout(() => {
+          console.log('Selecionando cliente:', client.full_name);
+          onClientToggle(client.id);
+        }, index * 10); // Pequeno delay entre cada seleção
       });
     }
   };
