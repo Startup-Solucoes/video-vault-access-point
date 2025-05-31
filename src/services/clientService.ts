@@ -34,11 +34,17 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       if (!authError && authData?.users) {
         authUsersData = authData.users;
         console.log('clientService: Dados de auth encontrados:', authUsersData.length);
+        console.log('clientService: Detalhes dos usuários auth:', authUsersData.map(u => ({
+          id: u.id,
+          email: u.email,
+          email_confirmed_at: u.email_confirmed_at,
+          created_at: u.created_at
+        })));
       } else {
-        console.log('clientService: Não foi possível acessar auth.users, usando fallback');
+        console.log('clientService: Não foi possível acessar auth.users, usando fallback. Erro:', authError);
       }
     } catch (error) {
-      console.log('clientService: Fallback - não foi possível acessar dados de auth');
+      console.log('clientService: Fallback - não foi possível acessar dados de auth. Erro:', error);
     }
 
     // Mapear os dados para determinar se estão aprovados
@@ -55,17 +61,30 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       let isDeleted = false;
 
       if (authUser) {
-        console.log('clientService: Usuário encontrado em auth:', authUser.email);
+        console.log('clientService: Usuário encontrado em auth:', {
+          email: authUser.email,
+          email_confirmed_at: authUser.email_confirmed_at,
+          created_at: authUser.created_at,
+          last_sign_in_at: authUser.last_sign_in_at
+        });
+        
+        // Verificação mais rigorosa - apenas considerar verificado se email_confirmed_at existe
         isVerified = !!authUser.email_confirmed_at;
         emailConfirmedAt = authUser.email_confirmed_at;
         lastSignIn = authUser.last_sign_in_at;
         isDeleted = !!authUser.banned_until || !!authUser.deleted_at;
+        
+        console.log('clientService: Status de verificação determinado:', {
+          email: authUser.email,
+          isVerified,
+          emailConfirmedAt,
+          rawEmailConfirmedAt: authUser.email_confirmed_at
+        });
       } else {
         console.log('clientService: Usuário não encontrado em auth, usando fallback');
-        // Fallback: considerar verificado se o perfil existe há mais de 1 minuto
-        const profileAge = new Date().getTime() - new Date(profile.created_at).getTime();
-        isVerified = profileAge > 60000; // 1 minuto
-        emailConfirmedAt = isVerified ? profile.created_at : null;
+        // Fallback mais conservador: considerar não verificado se não temos dados de auth
+        isVerified = false;
+        emailConfirmedAt = null;
         lastSignIn = profile.updated_at;
         isDeleted = false;
       }
@@ -77,18 +96,25 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
         is_deleted: isDeleted
       };
 
-      console.log('clientService: Perfil processado:', {
+      console.log('clientService: Perfil processado final:', {
         id: processedProfile.id,
         email: processedProfile.email,
         role: processedProfile.role,
         isVerified,
-        emailConfirmedAt
+        emailConfirmedAt: processedProfile.email_confirmed_at,
+        created_at: processedProfile.created_at
       });
 
       return processedProfile;
     });
 
     console.log('clientService: Dados combinados processados:', combinedData.length);
+    console.log('clientService: Resumo de verificação:', combinedData.map(p => ({
+      email: p.email,
+      verified: !!p.email_confirmed_at,
+      email_confirmed_at: p.email_confirmed_at
+    })));
+    
     return combinedData;
   } catch (error) {
     console.error('clientService: Erro na busca de clientes:', error);

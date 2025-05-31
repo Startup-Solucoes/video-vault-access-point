@@ -9,27 +9,49 @@ export const useClientFilters = (clients: Client[]) => {
   const [activeTab, setActiveTab] = useState<'all' | 'admins' | 'clients' | 'verified' | 'unverified' | 'deleted'>('all');
 
   useEffect(() => {
+    console.log('useClientFilters: Processando clientes:', clients.length);
+    console.log('useClientFilters: Tab ativo:', activeTab);
+    console.log('useClientFilters: Detalhes dos clientes para filtro:', clients.map(c => ({
+      email: c.email,
+      role: c.role,
+      email_confirmed_at: c.email_confirmed_at,
+      is_deleted: c.is_deleted,
+      isVerified: !!c.email_confirmed_at,
+      isPending: !c.email_confirmed_at && !c.is_deleted
+    })));
+
     let filtered = clients;
 
     // Filtrar por status/role
     if (activeTab === 'admins') {
       // Apenas administradores não deletados
       filtered = clients.filter(client => client.role === 'admin' && !client.is_deleted);
+      console.log('useClientFilters: Filtrando admins:', filtered.length);
     } else if (activeTab === 'clients') {
       // Apenas clientes não deletados
       filtered = clients.filter(client => client.role === 'client' && !client.is_deleted);
+      console.log('useClientFilters: Filtrando clientes:', filtered.length);
     } else if (activeTab === 'verified') {
       // Verificados: têm email_confirmed_at e não estão deletados
       filtered = clients.filter(client => client.email_confirmed_at && !client.is_deleted);
+      console.log('useClientFilters: Filtrando verificados:', filtered.length);
     } else if (activeTab === 'unverified') {
       // Pendentes: não têm email_confirmed_at e não estão deletados
       filtered = clients.filter(client => !client.email_confirmed_at && !client.is_deleted);
+      console.log('useClientFilters: Filtrando pendentes:', filtered.length);
+      console.log('useClientFilters: Clientes pendentes encontrados:', filtered.map(c => ({
+        email: c.email,
+        email_confirmed_at: c.email_confirmed_at,
+        is_deleted: c.is_deleted
+      })));
     } else if (activeTab === 'deleted') {
       // Excluídos: estão marcados como deletados
       filtered = clients.filter(client => client.is_deleted);
+      console.log('useClientFilters: Filtrando deletados:', filtered.length);
     } else {
       // Todos: apenas os não deletados (admins + clientes)
       filtered = clients.filter(client => !client.is_deleted);
+      console.log('useClientFilters: Filtrando todos (não deletados):', filtered.length);
     }
 
     // Filtrar por termo de busca
@@ -39,8 +61,10 @@ export const useClientFilters = (clients: Client[]) => {
         client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         client.role.toLowerCase().includes(searchTerm.toLowerCase())
       );
+      console.log('useClientFilters: Após filtro de busca:', filtered.length);
     }
 
+    console.log('useClientFilters: Resultado final do filtro:', filtered.length);
     setFilteredClients(filtered);
   }, [searchTerm, clients, activeTab]);
 
@@ -51,6 +75,10 @@ export const useClientFilters = (clients: Client[]) => {
     const unverified = clients.filter(c => !c.email_confirmed_at && !c.is_deleted).length;
     const deleted = clients.filter(c => c.is_deleted).length;
     const all = admins + clientsOnly; // Todos = admins + clientes (sem os deletados)
+    
+    console.log('useClientFilters: Contagens calculadas:', {
+      all, admins, clients: clientsOnly, verified, unverified, deleted
+    });
     
     return { all, admins, clients: clientsOnly, verified, unverified, deleted };
   };
