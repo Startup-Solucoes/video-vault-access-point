@@ -1,104 +1,56 @@
 
-import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { VideoFormData } from './VideoFormTypes';
+import { useAuth } from '@/hooks/useAuth';
+import { useVideoFormState } from './videoFormState';
+import { validateVideoForm } from './videoFormValidation';
+import { submitVideoData } from './videoSubmissionService';
 
-const initialFormData: VideoFormData = {
-  title: '',
-  description: '',
-  video_url: '',
-  thumbnail_url: '',
-  selectedCategories: [],
-  selectedClients: [],
-  publishDateTime: new Date(),
-  platform: 'outros'
-};
+export const useVideoForm = (onClose: () => void) => {
+  const { user } = useAuth();
+  const {
+    formData,
+    isLoading,
+    setIsLoading,
+    handleFieldChange,
+    handleCategoryChange,
+    handleClientChange,
+    handleDateTimeChange,
+    handlePlatformChange,
+    resetForm
+  } = useVideoFormState();
 
-export const useVideoForm = (onClose?: () => void) => {
-  const [formData, setFormData] = useState<VideoFormData>(initialFormData);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
-  const handleFieldChange = (field: keyof VideoFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleCategoryChange = (category: string, checked: boolean) => {
-    setFormData(prev => {
-      const newCategories = checked
-        ? [...prev.selectedCategories, category]
-        : prev.selectedCategories.filter(c => c !== category);
-      
-      return {
-        ...prev,
-        selectedCategories: newCategories
-      };
-    });
-  };
-
-  const handleClientChange = (clientIds: string[]) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedClients: clientIds
-    }));
-  };
-
-  const handleDateTimeChange = (publishDateTime: Date) => {
-    setFormData(prev => ({
-      ...prev,
-      publishDateTime
-    }));
-  };
-
-  const handlePlatformChange = (platform: string) => {
-    setFormData(prev => ({
-      ...prev,
-      platform
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('=== INICIANDO PROCESSO DE CADASTRO DE VÍDEO ===');
+
+    if (!validateVideoForm(formData, user)) {
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      // Implementar lógica de submissão do vídeo
-      console.log('Submitting video:', formData);
+      const success = await submitVideoData(formData, user);
       
-      toast({
-        title: "Sucesso",
-        description: "Vídeo criado com sucesso!",
-      });
-
-      // Reset form
-      setFormData(initialFormData);
-      
-      if (onClose) {
+      if (success) {
+        resetForm();
         onClose();
       }
       
-    } catch (error) {
-      console.error('Error submitting video:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao criar vídeo. Tente novamente.",
-        variant: "destructive"
-      });
     } finally {
       setIsLoading(false);
+      console.log('🏁 === FINALIZANDO PROCESSO ===');
     }
   };
 
   return {
     formData,
     isLoading,
-    isSubmitting: isLoading,
     handleFieldChange,
     handleCategoryChange,
     handleClientChange,
     handleDateTimeChange,
     handlePlatformChange,
-    handleSubmit
+    handleSubmit,
+    resetForm
   };
 };

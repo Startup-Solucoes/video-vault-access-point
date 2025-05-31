@@ -61,11 +61,11 @@ jobs:
           # Extrair novos arquivos
           sudo tar -xzf /tmp/deploy.tar.gz
           
-          # Criar arquivo .env se não existir usando variáveis de ambiente seguras
+          # Criar arquivo .env se não existir
           if [ ! -f .env ]; then
             sudo tee .env > /dev/null <<EOF
-          VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL=https://rgdrbimchwxbfyourqgy.supabase.co
+          VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnZHJiaW1jaHd4YmZ5b3VycWd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2NDY4MDYsImV4cCI6MjA2NDIyMjgwNn0.5SmdFhO9ePkEQsPTv_RqaRpGLXuv55kK8OlNETAZ23k
           EOF
           fi
           
