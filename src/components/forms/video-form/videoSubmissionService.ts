@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { VideoFormData } from './VideoFormTypes';
+import { sendVideoNotifications } from '@/services/emailNotificationService';
 
 export const submitVideoData = async (formData: VideoFormData, user: any): Promise<boolean> => {
   console.log('📋 Preparando dados para inserção no banco...');
@@ -62,15 +63,34 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
       }
 
       console.log('✅ Permissões inseridas com sucesso:', insertedPermissions);
+
+      // Enviar notificações por email para os usuários dos clientes selecionados
+      console.log('📧 Enviando notificações por email...');
+      try {
+        const emailSuccess = await sendVideoNotifications({
+          videoTitle: formData.title,
+          videoDescription: formData.description,
+          clientIds: formData.selectedClients
+        });
+
+        if (emailSuccess) {
+          console.log('✅ Notificações por email enviadas com sucesso');
+        } else {
+          console.warn('⚠️ Algumas notificações por email falharam, mas o vídeo foi cadastrado');
+        }
+      } catch (emailError) {
+        console.error('❌ Erro ao enviar notificações por email:', emailError);
+        // Não falha o processo principal se o email falhar
+      }
     } else {
-      console.log('ℹ️ Nenhum cliente selecionado, pulando criação de permissões');
+      console.log('ℹ️ Nenhum cliente selecionado, pulando criação de permissões e notificações');
     }
 
     console.log('🎉 === VÍDEO CADASTRADO COM SUCESSO ===');
     
     toast({
       title: "Sucesso!",
-      description: "Vídeo cadastrado com sucesso",
+      description: "Vídeo cadastrado com sucesso e notificações enviadas",
     });
     
     return true;
