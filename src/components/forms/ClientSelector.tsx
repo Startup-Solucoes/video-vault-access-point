@@ -36,6 +36,12 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
       onClientChange(newSelection);
     };
 
+    const handleBulkClientChange = (clientIds: string[]) => {
+      console.log('=== MUDANÇA EM LOTE DE CLIENTES ===');
+      console.log('Nova lista completa:', clientIds);
+      onClientChange(clientIds);
+    };
+
     const removeClient = (clientId: string) => {
       console.log('Removendo cliente:', clientId);
       onClientChange(selectedClients.filter(id => id !== clientId));
@@ -90,6 +96,7 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
           clients={clients}
           selectedClients={selectedClients}
           onClientToggle={handleClientToggle}
+          onBulkClientChange={handleBulkClientChange}
           isLoading={isLoading}
           searchValue={searchValue}
           onSearchValueChange={setSearchValue}

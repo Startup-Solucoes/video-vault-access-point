@@ -13,6 +13,7 @@ interface ClientSelectionModalProps {
   clients: Client[];
   selectedClients: string[];
   onClientToggle: (clientId: string) => void;
+  onBulkClientChange: (clientIds: string[]) => void;
   isLoading: boolean;
   searchValue: string;
   onSearchValueChange: (value: string) => void;
@@ -25,6 +26,7 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
   clients,
   selectedClients,
   onClientToggle,
+  onBulkClientChange,
   isLoading,
   searchValue,
   onSearchValueChange,
@@ -44,30 +46,17 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
       // Se todos os filtrados estão selecionados, desmarcar todos os filtrados
       console.log('Desmarcando todos os clientes filtrados');
       const filteredIds = filteredClients.map(c => c.id);
-      
-      // Para desmarcar, chamamos toggle para cada cliente selecionado dos filtrados
-      filteredClients.forEach(client => {
-        if (selectedClients.includes(client.id)) {
-          console.log('Desmarcando cliente:', client.full_name);
-          onClientToggle(client.id);
-        }
-      });
+      const newSelection = selectedClients.filter(id => !filteredIds.includes(id));
+      console.log('Nova seleção após desmarcar:', newSelection);
+      onBulkClientChange(newSelection);
     } else {
       // Selecionar todos os filtrados que ainda não estão selecionados
       console.log('Selecionando todos os clientes filtrados');
-      const clientsToSelect = filteredClients.filter(client => !selectedClients.includes(client.id));
-      console.log('Clientes que serão selecionados:', clientsToSelect.map(c => c.full_name));
-      
-      // SOLUÇÃO: Ao invés de chamar onClientToggle múltiplas vezes,
-      // vamos simular uma seleção múltipla calculando o estado final
-      // e fazendo as chamadas em sequência usando setTimeout para garantir
-      // que cada atualização de estado seja processada
-      clientsToSelect.forEach((client, index) => {
-        setTimeout(() => {
-          console.log('Selecionando cliente:', client.full_name);
-          onClientToggle(client.id);
-        }, index * 10); // Pequeno delay entre cada seleção
-      });
+      const filteredIds = filteredClients.map(c => c.id);
+      // Criar nova lista mantendo os já selecionados e adicionando os novos
+      const newSelection = [...new Set([...selectedClients, ...filteredIds])];
+      console.log('Nova seleção após selecionar todos:', newSelection);
+      onBulkClientChange(newSelection);
     }
   };
 
