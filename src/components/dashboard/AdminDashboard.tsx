@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { ClientSelectorRef } from '@/components/forms/ClientSelector';
 import { ClientManagement } from './ClientManagement';
 import { VideoHistory } from './VideoHistory';
 import { VideoManagement } from './VideoManagement';
+import { useAdminStats } from '@/hooks/useAdminStats';
 
 export const AdminDashboard = () => {
   const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
@@ -16,6 +16,7 @@ export const AdminDashboard = () => {
   const [showClientManagement, setShowClientManagement] = useState(false);
   const [showVideoManagement, setShowVideoManagement] = useState(false);
   const clientSelectorRef = useRef<ClientSelectorRef>(null);
+  const { stats, isLoading: statsLoading, refreshStats } = useAdminStats();
 
   const handleClientCreated = () => {
     // Atualizar lista de clientes no seletor quando um novo cliente for criado
@@ -23,6 +24,8 @@ export const AdminDashboard = () => {
     if (clientSelectorRef.current) {
       clientSelectorRef.current.refreshClients();
     }
+    // Atualizar estatísticas também
+    refreshStats();
   };
 
   // Se estiver visualizando o gerenciamento de clientes, mostrar apenas esse componente
@@ -77,7 +80,13 @@ export const AdminDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {statsLoading ? (
+                <div className="animate-pulse bg-gray-200 h-6 w-8 rounded"></div>
+              ) : (
+                stats.totalClients
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">Clientes cadastrados</p>
           </CardContent>
         </Card>
@@ -88,7 +97,13 @@ export const AdminDashboard = () => {
             <Video className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {statsLoading ? (
+                <div className="animate-pulse bg-gray-200 h-6 w-8 rounded"></div>
+              ) : (
+                stats.totalVideos
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">Vídeos cadastrados</p>
           </CardContent>
         </Card>
@@ -99,7 +114,13 @@ export const AdminDashboard = () => {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {statsLoading ? (
+                <div className="animate-pulse bg-gray-200 h-6 w-8 rounded"></div>
+              ) : (
+                stats.totalPermissions
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">Acessos concedidos</p>
           </CardContent>
         </Card>
@@ -169,6 +190,7 @@ export const AdminDashboard = () => {
       <VideoForm 
         open={isVideoFormOpen} 
         onOpenChange={setIsVideoFormOpen}
+        onVideoCreated={refreshStats}
       />
       
       <ClientForm 
