@@ -39,10 +39,10 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
     const [open, setOpen] = useState(false);
     const [clients, setClients] = useState<Client[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchValue, setSearchValue] = useState('');
 
     const fetchClients = async () => {
-      console.log('Buscando clientes...');
+      console.log('=== BUSCANDO CLIENTES ===');
       setIsLoading(true);
       try {
         const { data, error } = await supabase
@@ -52,29 +52,41 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
           .order('full_name');
 
         if (error) {
-          console.error('Erro na query:', error);
+          console.error('Erro na query de clientes:', error);
           throw error;
         }
         
-        console.log('Clientes encontrados:', data);
+        console.log('Clientes encontrados na base:', data);
+        console.log('Quantidade de clientes:', data?.length || 0);
         setClients(data || []);
       } catch (error) {
         console.error('Erro ao buscar clientes:', error);
+        setClients([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    // Filtrar clientes baseado no termo de busca
-    const filteredClients = clients.filter(client => {
-      if (!searchTerm.trim()) return true;
+    // Filtrar clientes baseado no valor de busca
+    const filteredClients = React.useMemo(() => {
+      console.log('Filtrando clientes com termo:', searchValue);
+      console.log('Total de clientes antes do filtro:', clients.length);
       
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        client.full_name.toLowerCase().includes(searchLower) ||
-        client.email.toLowerCase().includes(searchLower)
-      );
-    });
+      if (!searchValue.trim()) {
+        console.log('Sem termo de busca, retornando todos os clientes');
+        return clients;
+      }
+      
+      const searchLower = searchValue.toLowerCase().trim();
+      const filtered = clients.filter(client => {
+        const nameMatch = client.full_name.toLowerCase().includes(searchLower);
+        const emailMatch = client.email.toLowerCase().includes(searchLower);
+        return nameMatch || emailMatch;
+      });
+      
+      console.log('Clientes após filtro:', filtered.length);
+      return filtered;
+    }, [clients, searchValue]);
 
     // Expor função para refresh via ref
     useImperativeHandle(ref, () => ({
@@ -86,14 +98,17 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
     }, []);
 
     const handleClientSelect = (clientId: string) => {
+      console.log('Cliente selecionado:', clientId);
       const newSelection = selectedClients.includes(clientId)
         ? selectedClients.filter(id => id !== clientId)
         : [...selectedClients, clientId];
       
+      console.log('Nova seleção de clientes:', newSelection);
       onClientChange(newSelection);
     };
 
     const removeClient = (clientId: string) => {
+      console.log('Removendo cliente:', clientId);
       onClientChange(selectedClients.filter(id => id !== clientId));
     };
 
@@ -120,20 +135,25 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-full p-0">
+          <PopoverContent className="w-full p-0" align="start">
             <Command shouldFilter={false}>
               <CommandInput 
-                placeholder="Buscar clientes por nome ou e-mail..." 
-                value={searchTerm}
-                onValueChange={setSearchTerm}
+                placeholder="Digite o nome ou e-mail do cliente..." 
+                value={searchValue}
+                onValueChange={(value) => {
+                  console.log('Valor de busca alterado:', value);
+                  setSearchValue(value);
+                }}
               />
               <CommandList>
                 <CommandEmpty>
                   {isLoading 
-                    ? "Carregando..." 
+                    ? "Carregando clientes..." 
                     : clients.length === 0 
                       ? "Nenhum cliente cadastrado ainda." 
-                      : "Nenhum cliente encontrado."
+                      : filteredClients.length === 0
+                        ? "Nenhum cliente encontrado com esse termo."
+                        : "Carregando..."
                   }
                 </CommandEmpty>
                 <CommandGroup>
