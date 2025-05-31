@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -34,12 +33,15 @@ export const AuthForm = ({ onSuccess }: AuthFormProps) => {
     setIsLoading(true);
 
     try {
+      console.log('Tentando fazer login:', loginData.email);
+      
       const { error } = await supabase.auth.signInWithPassword({
         email: loginData.email,
         password: loginData.password
       });
 
       if (error) {
+        console.error('Erro no login:', error.message);
         toast({
           title: "Erro no login",
           description: error.message,
@@ -48,6 +50,7 @@ export const AuthForm = ({ onSuccess }: AuthFormProps) => {
         return;
       }
 
+      console.log('Login realizado com sucesso');
       toast({
         title: "Login realizado com sucesso!",
         description: "Bem-vindo ao portal de vídeos."
@@ -55,6 +58,7 @@ export const AuthForm = ({ onSuccess }: AuthFormProps) => {
 
       onSuccess();
     } catch (error) {
+      console.error('Erro inesperado no login:', error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro inesperado.",
@@ -70,7 +74,13 @@ export const AuthForm = ({ onSuccess }: AuthFormProps) => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log('Iniciando cadastro:', { 
+        email: signupData.email, 
+        fullName: signupData.fullName, 
+        role: signupData.role 
+      });
+
+      const { data, error } = await supabase.auth.signUp({
         email: signupData.email,
         password: signupData.password,
         options: {
@@ -83,6 +93,7 @@ export const AuthForm = ({ onSuccess }: AuthFormProps) => {
       });
 
       if (error) {
+        console.error('Erro no cadastro:', error.message);
         toast({
           title: "Erro no cadastro",
           description: error.message,
@@ -91,9 +102,10 @@ export const AuthForm = ({ onSuccess }: AuthFormProps) => {
         return;
       }
 
+      console.log('Cadastro realizado com sucesso:', data);
       toast({
         title: "Cadastro realizado com sucesso!",
-        description: "Verifique seu email para confirmar a conta."
+        description: "Usuário criado e pode fazer login imediatamente."
       });
 
       // Reset form
@@ -104,6 +116,7 @@ export const AuthForm = ({ onSuccess }: AuthFormProps) => {
         role: 'client'
       });
     } catch (error) {
+      console.error('Erro inesperado no cadastro:', error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro inesperado.",
