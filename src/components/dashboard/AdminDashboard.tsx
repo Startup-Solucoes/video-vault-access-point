@@ -1,10 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Video, Shield, Plus } from 'lucide-react';
+import { VideoForm } from '@/components/forms/VideoForm';
+import { ClientForm } from '@/components/forms/ClientForm';
 
 export const AdminDashboard = () => {
+  const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
+  const [isClientFormOpen, setIsClientFormOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -59,7 +64,10 @@ export const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <Button className="w-full">
+              <Button 
+                className="w-full"
+                onClick={() => setIsClientFormOpen(true)}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Novo Cliente
               </Button>
@@ -80,7 +88,10 @@ export const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <Button className="w-full">
+              <Button 
+                className="w-full"
+                onClick={() => setIsVideoFormOpen(true)}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar Novo Vídeo
               </Button>
@@ -92,6 +103,16 @@ export const AdminDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      <VideoForm 
+        open={isVideoFormOpen} 
+        onOpenChange={setIsVideoFormOpen}
+      />
+      
+      <ClientForm 
+        open={isClientFormOpen} 
+        onOpenChange={setIsClientFormOpen}
+      />
     </div>
   );
 };
