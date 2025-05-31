@@ -6,16 +6,24 @@ import { ClientFilters, ClientCounts } from '@/types/clientManagement';
 export const useClientFilters = (clients: Client[]) => {
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'verified' | 'unverified'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'verified' | 'unverified' | 'deleted'>('all');
 
   useEffect(() => {
     let filtered = clients;
 
     // Filtrar por status
     if (activeTab === 'verified') {
-      filtered = clients.filter(client => client.email_confirmed_at);
+      // Verificados: têm email_confirmed_at e não estão deletados
+      filtered = clients.filter(client => client.email_confirmed_at && !client.is_deleted);
     } else if (activeTab === 'unverified') {
-      filtered = clients.filter(client => !client.email_confirmed_at);
+      // Pendentes: não têm email_confirmed_at e não estão deletados
+      filtered = clients.filter(client => !client.email_confirmed_at && !client.is_deleted);
+    } else if (activeTab === 'deleted') {
+      // Excluídos: estão marcados como deletados
+      filtered = clients.filter(client => client.is_deleted);
+    } else {
+      // Todos: apenas os não deletados (verificados + pendentes)
+      filtered = clients.filter(client => !client.is_deleted);
     }
 
     // Filtrar por termo de busca
@@ -26,13 +34,18 @@ export const useClientFilters = (clients: Client[]) => {
       );
     }
 
+    console.log(`Filtro ${activeTab}: ${filtered.length} clientes encontrados`);
     setFilteredClients(filtered);
   }, [searchTerm, clients, activeTab]);
 
   const getTabCounts = (): ClientCounts => {
-    const verified = clients.filter(c => c.email_confirmed_at).length;
-    const unverified = clients.filter(c => !c.email_confirmed_at).length;
-    return { all: clients.length, verified, unverified };
+    const verified = clients.filter(c => c.email_confirmed_at && !c.is_deleted).length;
+    const unverified = clients.filter(c => !c.email_confirmed_at && !c.is_deleted).length;
+    const deleted = clients.filter(c => c.is_deleted).length;
+    const all = verified + unverified; // Todos = verificados + pendentes (sem os deletados)
+    
+    console.log('Contadores:', { all, verified, unverified, deleted });
+    return { all, verified, unverified, deleted };
   };
 
   return {

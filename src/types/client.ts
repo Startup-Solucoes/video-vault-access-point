@@ -9,6 +9,7 @@ export interface Client {
   updated_at: string;
   email_confirmed_at?: string;
   last_sign_in_at?: string;
+  is_deleted?: boolean;
 }
 
 export interface EditClientForm {
