@@ -1,14 +1,17 @@
+
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Video, Shield, Plus } from 'lucide-react';
+import { Users, Video, Shield, Plus, ArrowLeft } from 'lucide-react';
 import { VideoForm } from '@/components/forms/VideoForm';
 import { ClientForm } from '@/components/forms/ClientForm';
 import { ClientSelectorRef } from '@/components/forms/ClientSelector';
+import { ClientManagement } from './ClientManagement';
 
 export const AdminDashboard = () => {
   const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
   const [isClientFormOpen, setIsClientFormOpen] = useState(false);
+  const [showClientManagement, setShowClientManagement] = useState(false);
   const clientSelectorRef = useRef<ClientSelectorRef>(null);
 
   const handleClientCreated = () => {
@@ -18,6 +21,24 @@ export const AdminDashboard = () => {
       clientSelectorRef.current.refreshClients();
     }
   };
+
+  // Se estiver visualizando o gerenciamento de clientes, mostrar apenas esse componente
+  if (showClientManagement) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="outline"
+            onClick={() => setShowClientManagement(false)}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar ao Dashboard
+          </Button>
+        </div>
+        <ClientManagement />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -80,7 +101,11 @@ export const AdminDashboard = () => {
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Novo Cliente
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => setShowClientManagement(true)}
+              >
                 <Users className="h-4 w-4 mr-2" />
                 Ver Todos os Clientes
               </Button>
