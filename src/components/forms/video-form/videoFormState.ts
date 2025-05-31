@@ -9,7 +9,8 @@ export const useVideoFormState = () => {
     video_url: '',
     thumbnail_url: '',
     selectedCategories: [],
-    selectedClients: []
+    selectedClients: [],
+    publishDateTime: new Date() // Inicializa com data/hora atual
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -37,6 +38,15 @@ export const useVideoFormState = () => {
     }));
   };
 
+  const handleDateTimeChange = (publishDateTime: Date) => {
+    console.log('=== DATA/HORA DE PUBLICAÇÃO ALTERADA ===');
+    console.log('Nova data/hora:', publishDateTime);
+    setFormData(prev => ({
+      ...prev,
+      publishDateTime
+    }));
+  };
+
   const resetForm = () => {
     setFormData({
       title: '',
@@ -44,7 +54,8 @@ export const useVideoFormState = () => {
       video_url: '',
       thumbnail_url: '',
       selectedCategories: [],
-      selectedClients: []
+      selectedClients: [],
+      publishDateTime: new Date() // Reinicia com data/hora atual
     });
   };
 
@@ -55,6 +66,7 @@ export const useVideoFormState = () => {
     handleFieldChange,
     handleCategoryChange,
     handleClientChange,
+    handleDateTimeChange,
     resetForm
   };
 };

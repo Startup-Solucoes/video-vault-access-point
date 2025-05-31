@@ -6,6 +6,7 @@ export interface VideoFormData {
   thumbnail_url: string;
   selectedCategories: string[];
   selectedClients: string[];
+  publishDateTime: Date;
 }
 
 export interface VideoFormProps {

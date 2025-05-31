@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { ClientSelector, ClientSelectorRef } from './ClientSelector';
 import { VideoFormFields } from './video-form/VideoFormFields';
 import { CategorySelector } from './video-form/CategorySelector';
+import { PublishDateTimeSelector } from './video-form/PublishDateTimeSelector';
 import { useVideoForm } from './video-form/useVideoForm';
 import { VideoFormProps } from './video-form/VideoFormTypes';
 
@@ -17,16 +18,9 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
     handleFieldChange,
     handleCategoryChange,
     handleClientChange,
+    handleDateTimeChange,
     handleSubmit
   } = useVideoForm(() => onOpenChange(false));
-
-  const currentDateTime = new Date().toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -61,12 +55,10 @@ export const VideoForm = ({ open, onOpenChange }: VideoFormProps) => {
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label>Data e Horário de Publicação</Label>
-            <div className="p-2 bg-gray-50 rounded-md text-sm text-gray-700">
-              {currentDateTime}
-            </div>
-          </div>
+          <PublishDateTimeSelector
+            publishDateTime={formData.publishDateTime}
+            onDateTimeChange={handleDateTimeChange}
+          />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button
