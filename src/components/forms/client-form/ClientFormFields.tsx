@@ -3,13 +3,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PasswordInput } from '@/components/ui/password-input';
-
-interface ClientFormData {
-  full_name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+import { ClientFormData } from './clientFormValidation';
 
 interface ClientFormFieldsProps {
   formData: ClientFormData;
