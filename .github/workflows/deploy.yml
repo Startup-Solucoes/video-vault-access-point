@@ -60,20 +60,29 @@ jobs:
           echo "📋 Conteúdo antes da atualização:"
           ls -la dist/ 2>/dev/null || echo "Diretório dist não existe"
           
+          # Parar nginx temporariamente para evitar conflitos
+          echo "⏸️ Parando Nginx temporariamente..."
+          sudo systemctl stop nginx
+          
           # Fazer backup da versão atual
           sudo cp -r dist dist_backup_$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
           
-          # Remover diretório dist antigo
+          # Remover diretório dist antigo completamente
           sudo rm -rf dist/
+          echo "🗑️ Diretório dist removido"
           
           # Extrair novos arquivos
           sudo tar -xzf /tmp/deploy.tar.gz
+          echo "📦 Arquivos extraídos"
           
-          echo "📋 Conteúdo após a atualização:"
+          echo "📋 Conteúdo após a extração:"
           ls -la dist/
           
           echo "🔍 Verificando conteúdo do index.html:"
-          head -20 dist/index.html
+          head -30 dist/index.html
+          
+          echo "🔍 Verificando se o texto 'Tutoriais ERP' está presente:"
+          grep -n "Tutoriais ERP" dist/index.html || echo "❌ Texto não encontrado no index.html"
           
           # Criar arquivo .env se não existir
           if [ ! -f .env ]; then
@@ -86,22 +95,73 @@ jobs:
           # Definir permissões corretas
           sudo chown -R www-data:www-data /var/www/tutoriaiserp.com.br
           sudo chmod -R 755 /var/www/tutoriaiserp.com.br
+          echo "✅ Permissões atualizadas"
           
-          # Limpar cache do Nginx
-          echo "🗑️ Limpando cache do Nginx..."
-          sudo nginx -s reload
+          # Limpar cache do navegador forçando headers
+          echo "🗑️ Configurando headers anti-cache..."
+          sudo tee /etc/nginx/sites-available/tutoriaiserp.com.br > /dev/null <<'NGINX_EOF'
+          server {
+              listen 80;
+              listen [::]:80;
+              server_name tutoriaiserp.com.br www.tutoriaiserp.com.br;
+              return 301 https://$server_name$request_uri;
+          }
+
+          server {
+              listen 443 ssl http2;
+              listen [::]:443 ssl http2;
+              server_name tutoriaiserp.com.br www.tutoriaiserp.com.br;
+
+              ssl_certificate /etc/letsencrypt/live/tutoriaiserp.com.br/fullchain.pem;
+              ssl_certificate_key /etc/letsencrypt/live/tutoriaiserp.com.br/privkey.pem;
+
+              root /var/www/tutoriaiserp.com.br/dist;
+              index index.html;
+
+              # Headers anti-cache para forçar reload
+              add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+              add_header Pragma "no-cache" always;
+              add_header Expires "0" always;
+
+              location / {
+                  try_files $uri $uri/ /index.html;
+                  
+                  # Headers específicos para arquivos estáticos
+                  add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+                  add_header Pragma "no-cache" always;
+                  add_header Expires "0" always;
+              }
+
+              # Configuração específica para assets
+              location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+                  add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+                  add_header Pragma "no-cache" always;
+                  add_header Expires "0" always;
+              }
+          }
+          NGINX_EOF
           
           # Verificar configuração do Nginx
           echo "⚙️ Testando configuração do Nginx:"
           sudo nginx -t
           
-          # Reiniciar nginx para garantir
+          # Reiniciar nginx
           echo "🔄 Reiniciando Nginx..."
-          sudo systemctl restart nginx
+          sudo systemctl start nginx
+          sudo systemctl reload nginx
           
           # Verificar status do nginx
           echo "✅ Status do Nginx:"
           sudo systemctl status nginx --no-pager -l
+          
+          # Verificar se o site está respondendo
+          echo "🌐 Testando resposta do site:"
+          curl -I https://tutoriaiserp.com.br/ || echo "❌ Site não está respondendo"
+          
+          # Forçar limpeza de cache do sistema
+          echo "🗑️ Limpando caches do sistema..."
+          sudo sync
+          echo 3 | sudo tee /proc/sys/vm/drop_caches
           
           # Limpar backups antigos (manter apenas os 5 mais recentes)
           sudo find /var/www/tutoriaiserp.com.br -name "dist_backup_*" -type d | sort | head -n -5 | sudo xargs rm -rf 2>/dev/null || true
@@ -111,3 +171,4 @@ jobs:
           
           echo "✅ Deploy concluído com sucesso em $(date)!"
           echo "🌐 Site: https://tutoriaiserp.com.br"
+          echo "📝 Para forçar reload no navegador, use Ctrl+F5 ou Cmd+Shift+R"
