@@ -14,7 +14,7 @@ export const Header = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-3">
             <img 
-              src="/lovable-uploads/51210795-61a0-4314-a028-1e98b8101e9d.png" 
+              src="/lovable-uploads/f64ca7e7-2b45-40b3-acdf-ee8120b53523.png" 
               alt="Start Up Soluções Digitais" 
               className="h-10 w-auto"
             />
