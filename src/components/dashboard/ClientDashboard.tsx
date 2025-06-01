@@ -69,49 +69,44 @@ export const ClientDashboard = () => {
   }
 
   return (
-    <div className="flex gap-6">
-      {/* Sidebar esquerda com filtros */}
-      <div className="w-64 flex-shrink-0 space-y-4">
-        <PlatformFilter
-          selectedPlatform={selectedPlatform}
-          onPlatformChange={setSelectedPlatform}
-          videos={videos}
-        />
-      </div>
+    <div className="space-y-6">
+      {/* Header expandido com informações do cliente */}
+      <ClientHeader profile={profile} videoCount={videos.length} />
 
-      {/* Conteúdo principal */}
-      <div className="flex-1 space-y-6">
-        {/* Header com informações do cliente */}
-        <ClientHeader profile={profile} videoCount={videos.length} />
+      {/* Filtro de Categorias expandido */}
+      <CategoryFilter
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        availableCategories={availableCategories}
+        videos={videos}
+      />
 
-        {/* Filtro de Categorias */}
-        <CategoryFilter
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          availableCategories={availableCategories}
-          videos={videos}
-        />
+      {/* Filtros de Plataforma expandido */}
+      <PlatformFilter
+        selectedPlatform={selectedPlatform}
+        onPlatformChange={setSelectedPlatform}
+        videos={videos}
+      />
 
-        {/* Filtros e Busca */}
-        <VideoFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          availableCategories={availableCategories}
-          videos={videos}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-        />
+      {/* Filtros e Busca expandidos */}
+      <VideoFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        availableCategories={availableCategories}
+        videos={videos}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+      />
 
-        {/* Lista de Vídeos */}
-        <VideoGrid
-          videos={filteredVideos}
-          isLoading={isLoading}
-          searchTerm={searchTerm}
-          selectedCategory={selectedCategory}
-        />
-      </div>
+      {/* Lista de Vídeos */}
+      <VideoGrid
+        videos={filteredVideos}
+        isLoading={isLoading}
+        searchTerm={searchTerm}
+        selectedCategory={selectedCategory}
+      />
     </div>
   );
 };
