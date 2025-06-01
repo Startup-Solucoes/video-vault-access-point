@@ -1,4 +1,5 @@
 
+
 name: Deploy Application
 
 on:
@@ -9,10 +10,9 @@ on:
       environment:
         description: 'Environment to deploy to'
         required: true
-        default: 'staging'
+        default: 'production'
         type: choice
         options:
-        - staging
         - production
 
 jobs:
@@ -59,36 +59,14 @@ jobs:
         path: deploy.tar.gz
         retention-days: 3
 
-  deploy-staging:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    environment:
-      name: staging
-      url: https://staging.tutoriaiserp.com.br
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Download build artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: deployment-package-${{ github.sha }}
-        
-    - name: Deploy to staging
+    - name: Build completion summary
       run: |
-        echo "🚀 Deploying to STAGING environment"
-        echo "Build SHA: ${{ github.sha }}"
-        echo "Timestamp: ${{ needs.build.outputs.deploy-timestamp }}"
-        # Aqui você colocaria os comandos de deploy para staging
-        # Por exemplo, deploy para um subdomínio de teste
-        
-    - name: Staging deployment summary
-      run: |
-        echo "✅ Staging deployment completed!"
-        echo "🔗 URL: https://staging.tutoriaiserp.com.br"
-        echo "📝 Para promover para produção, execute o workflow manualmente"
+        echo "✅ Build completed successfully!"
+        echo "📦 Build SHA: ${{ github.sha }}"
+        echo "🕒 Build time: $(date)"
+        if [ "${{ github.event_name }}" = "push" ]; then
+          echo "📝 Para fazer deploy, execute o workflow manualmente escolhendo 'production'"
+        fi
 
   deploy-production:
     needs: build
@@ -132,3 +110,4 @@ jobs:
         echo "🔗 URL: https://tutoriaiserp.com.br"
         echo "👤 Approved by: ${{ github.actor }}"
         echo "📅 Deploy time: $(date)"
+
