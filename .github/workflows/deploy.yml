@@ -32,23 +32,23 @@ jobs:
     - name: Verify build output
       run: |
         echo "=== BUILD VERIFICATION ==="
-        echo "📂 Verificando conteúdo do build:"
+        echo "Verificando conteudo do build:"
         ls -la dist/
         echo ""
-        echo "🔍 Verificando index.html:"
+        echo "Verificando index.html:"
         head -50 dist/index.html
         echo ""
-        echo "✅ Verificando se 'Tutoriais ERP' está no build:"
-        grep -n "Tutoriais ERP" dist/index.html || echo "❌ Texto não encontrado no build!"
+        echo "Verificando se 'Tutoriais ERP' esta no build:"
+        grep -n "Tutoriais ERP" dist/index.html || echo "Texto nao encontrado no build!"
         echo ""
-        echo "📊 Tamanho dos arquivos principais:"
+        echo "Tamanho dos arquivos principais:"
         du -h dist/index.html
         find dist/assets -name "*.js" -o -name "*.css" | head -5 | xargs du -h
         
     - name: Create deployment package
       run: |
         tar -czf deploy.tar.gz dist/ package.json package-lock.json
-        echo "✅ Pacote de deploy criado com tamanho: $(du -h deploy.tar.gz | cut -f1)"
+        echo "Pacote de deploy criado com tamanho: $(du -h deploy.tar.gz | cut -f1)"
         
     - name: Transfer files to server
       uses: appleboy/scp-action@v0.1.7
@@ -68,172 +68,172 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         script: |
-          echo "=== DIAGNÓSTICO PRÉ-DEPLOY ==="
-          echo "📍 Servidor: $(hostname)"
-          echo "📍 Data/Hora: $(date)"
-          echo "📍 Usuário: $(whoami)"
-          echo "📍 Diretório atual: $(pwd)"
+          echo "=== DIAGNOSTICO PRE-DEPLOY ==="
+          echo "Servidor: $(hostname)"
+          echo "Data/Hora: $(date)"
+          echo "Usuario: $(whoami)"
+          echo "Diretorio atual: $(pwd)"
           
           # Verificar se o diretório da aplicação existe
           if [ ! -d "/var/www/tutoriaiserp.com.br" ]; then
-            echo "❌ ERRO: Diretório /var/www/tutoriaiserp.com.br não existe!"
-            echo "🔧 Criando diretório..."
+            echo "ERRO: Diretorio /var/www/tutoriaiserp.com.br nao existe!"
+            echo "Criando diretorio..."
             sudo mkdir -p /var/www/tutoriaiserp.com.br
             sudo chown -R www-data:www-data /var/www/tutoriaiserp.com.br
           fi
           
           # Navegar para o diretório da aplicação
           cd /var/www/tutoriaiserp.com.br
-          echo "📂 Diretório da aplicação: $(pwd)"
+          echo "Diretorio da aplicacao: $(pwd)"
           
           # Verificar arquivo de deploy
           if [ ! -f "/tmp/deploy.tar.gz" ]; then
-            echo "❌ ERRO: Arquivo deploy.tar.gz não encontrado em /tmp/"
+            echo "ERRO: Arquivo deploy.tar.gz nao encontrado em /tmp/"
             exit 1
           fi
           
-          echo "📦 Tamanho do arquivo de deploy: $(du -h /tmp/deploy.tar.gz | cut -f1)"
+          echo "Tamanho do arquivo de deploy: $(du -h /tmp/deploy.tar.gz | cut -f1)"
           
-          echo "📋 Conteúdo ANTES da atualização:"
-          ls -la . 2>/dev/null || echo "Diretório vazio"
+          echo "Conteudo ANTES da atualizacao:"
+          ls -la . 2>/dev/null || echo "Diretorio vazio"
           
           if [ -f "dist/index.html" ]; then
-            echo "🔍 Conteúdo atual do index.html (primeiras 10 linhas):"
+            echo "Conteudo atual do index.html (primeiras 10 linhas):"
             head -10 dist/index.html
-            echo "✅ Verificando 'Tutoriais ERP' no arquivo atual:"
-            grep -n "Tutoriais ERP" dist/index.html || echo "❌ Texto não encontrado no arquivo atual"
+            echo "Verificando 'Tutoriais ERP' no arquivo atual:"
+            grep -n "Tutoriais ERP" dist/index.html || echo "Texto nao encontrado no arquivo atual"
           fi
           
           # Parar nginx
-          echo "⏸️ Parando Nginx..."
+          echo "Parando Nginx..."
           sudo systemctl stop nginx
           
           # Fazer backup
           if [ -d "dist" ]; then
             BACKUP_DIR="dist_backup_$(date +%Y%m%d_%H%M%S)"
             sudo cp -r dist "$BACKUP_DIR"
-            echo "💾 Backup criado: $BACKUP_DIR"
+            echo "Backup criado: $BACKUP_DIR"
           fi
           
           # Remover dist antigo
           sudo rm -rf dist/
-          echo "🗑️ Diretório dist removido"
+          echo "Diretorio dist removido"
           
           # Extrair novos arquivos
-          echo "📦 Extraindo novos arquivos..."
+          echo "Extraindo novos arquivos..."
           sudo tar -xzf /tmp/deploy.tar.gz
           
-          echo "📋 Conteúdo APÓS a extração:"
-          ls -la dist/ 2>/dev/null || echo "❌ ERRO: Diretório dist não foi criado!"
+          echo "Conteudo APOS a extracao:"
+          ls -la dist/ 2>/dev/null || echo "ERRO: Diretorio dist nao foi criado!"
           
           if [ -f "dist/index.html" ]; then
-            echo "🔍 NOVO index.html (primeiras 20 linhas):"
+            echo "NOVO index.html (primeiras 20 linhas):"
             head -20 dist/index.html
             echo ""
-            echo "✅ Verificando 'Tutoriais ERP' no NOVO arquivo:"
-            grep -n "Tutoriais ERP" dist/index.html || echo "❌ Texto não encontrado no novo arquivo!"
+            echo "Verificando 'Tutoriais ERP' no NOVO arquivo:"
+            grep -n "Tutoriais ERP" dist/index.html || echo "Texto nao encontrado no novo arquivo!"
             echo ""
-            echo "📊 Tamanho do novo index.html:"
+            echo "Tamanho do novo index.html:"
             du -h dist/index.html
           else
-            echo "❌ ERRO CRÍTICO: index.html não foi criado!"
+            echo "ERRO CRITICO: index.html nao foi criado!"
             exit 1
           fi
           
           # Verificar arquivos assets
-          echo "📁 Arquivos assets criados:"
+          echo "Arquivos assets criados:"
           find dist/assets -name "*.js" -o -name "*.css" | head -5
           
           # Definir permissões
           sudo chown -R www-data:www-data /var/www/tutoriaiserp.com.br
           sudo chmod -R 755 /var/www/tutoriaiserp.com.br
-          echo "✅ Permissões definidas"
+          echo "Permissoes definidas"
           
           # Configurar Nginx com timestamp para forçar cache busting
           TIMESTAMP=$(date +%s)
-          echo "🔧 Configurando Nginx com timestamp: $TIMESTAMP"
+          echo "Configurando Nginx com timestamp: $TIMESTAMP"
           
           sudo tee /etc/nginx/sites-available/tutoriaiserp.com.br > /dev/null <<NGINX_EOF
-server {
-    listen 80;
-    listen [::]:80;
-    server_name tutoriaiserp.com.br www.tutoriaiserp.com.br;
-    return 301 https://\$server_name\$request_uri;
-}
+          server {
+              listen 80;
+              listen [::]:80;
+              server_name tutoriaiserp.com.br www.tutoriaiserp.com.br;
+              return 301 https://\$server_name\$request_uri;
+          }
 
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name tutoriaiserp.com.br www.tutoriaiserp.com.br;
+          server {
+              listen 443 ssl http2;
+              listen [::]:443 ssl http2;
+              server_name tutoriaiserp.com.br www.tutoriaiserp.com.br;
 
-    ssl_certificate /etc/letsencrypt/live/tutoriaiserp.com.br/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/tutoriaiserp.com.br/privkey.pem;
+              ssl_certificate /etc/letsencrypt/live/tutoriaiserp.com.br/fullchain.pem;
+              ssl_certificate_key /etc/letsencrypt/live/tutoriaiserp.com.br/privkey.pem;
 
-    root /var/www/tutoriaiserp.com.br/dist;
-    index index.html;
+              root /var/www/tutoriaiserp.com.br/dist;
+              index index.html;
 
-    # Anti-cache headers com timestamp
-    add_header X-Deploy-Time "$TIMESTAMP" always;
-    add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
-    add_header Pragma "no-cache" always;
-    add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT" always;
+              # Anti-cache headers com timestamp
+              add_header X-Deploy-Time "$TIMESTAMP" always;
+              add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
+              add_header Pragma "no-cache" always;
+              add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT" always;
 
-    location / {
-        try_files \$uri \$uri/ /index.html;
-        
-        add_header X-Deploy-Time "$TIMESTAMP" always;
-        add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
-        add_header Pragma "no-cache" always;
-        add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT" always;
-    }
+              location / {
+                  try_files \$uri \$uri/ /index.html;
+                  
+                  add_header X-Deploy-Time "$TIMESTAMP" always;
+                  add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
+                  add_header Pragma "no-cache" always;
+                  add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT" always;
+              }
 
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        add_header X-Deploy-Time "$TIMESTAMP" always;
-        add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
-        add_header Pragma "no-cache" always;
-        add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT" always;
-    }
-}
-NGINX_EOF
+              location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+                  add_header X-Deploy-Time "$TIMESTAMP" always;
+                  add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
+                  add_header Pragma "no-cache" always;
+                  add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT" always;
+              }
+          }
+          NGINX_EOF
           
           # Testar configuração do Nginx
-          echo "🔧 Testando configuração do Nginx..."
+          echo "Testando configuracao do Nginx..."
           sudo nginx -t
           if [ $? -ne 0 ]; then
-            echo "❌ ERRO: Configuração do Nginx inválida!"
+            echo "ERRO: Configuracao do Nginx invalida!"
             exit 1
           fi
           
           # Reiniciar nginx
-          echo "🔄 Reiniciando Nginx..."
+          echo "Reiniciando Nginx..."
           sudo systemctl start nginx
           sudo systemctl reload nginx
           
           # Verificar status
-          echo "✅ Status do Nginx:"
+          echo "Status do Nginx:"
           sudo systemctl is-active nginx
           
           # Teste final - verificar se o site responde
-          echo "🌐 Testando resposta do site..."
+          echo "Testando resposta do site..."
           sleep 3
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://tutoriaiserp.com.br/ --max-time 10)
-          echo "📊 Código de resposta HTTP: $RESPONSE"
+          echo "Codigo de resposta HTTP: $RESPONSE"
           
           if [ "$RESPONSE" = "200" ]; then
-            echo "✅ Site respondendo corretamente!"
+            echo "Site respondendo corretamente!"
             
             # Verificar se o conteúdo está correto
-            echo "🔍 Verificando conteúdo da resposta..."
+            echo "Verificando conteudo da resposta..."
             CONTENT=$(curl -s https://tutoriaiserp.com.br/ --max-time 10)
             if echo "$CONTENT" | grep -q "Tutoriais ERP"; then
-              echo "✅ SUCESSO: 'Tutoriais ERP' encontrado na resposta do site!"
+              echo "SUCESSO: 'Tutoriais ERP' encontrado na resposta do site!"
             else
-              echo "❌ PROBLEMA: 'Tutoriais ERP' NÃO encontrado na resposta do site!"
-              echo "📝 Primeiras 500 chars da resposta:"
+              echo "PROBLEMA: 'Tutoriais ERP' NAO encontrado na resposta do site!"
+              echo "Primeiras 500 chars da resposta:"
               echo "$CONTENT" | head -c 500
             fi
           else
-            echo "❌ Site não está respondendo corretamente (código: $RESPONSE)"
+            echo "Site nao esta respondendo corretamente (codigo: $RESPONSE)"
           fi
           
           # Limpeza
@@ -244,10 +244,10 @@ NGINX_EOF
           
           echo ""
           echo "=== RESUMO DO DEPLOY ==="
-          echo "✅ Deploy concluído em $(date)!"
-          echo "🌐 Site: https://tutoriaiserp.com.br"
-          echo "📝 Para verificar mudanças:"
-          echo "   1. Abra o site em uma aba anônima/privada"
+          echo "Deploy concluido em $(date)!"
+          echo "Site: https://tutoriaiserp.com.br"
+          echo "Para verificar mudancas:"
+          echo "   1. Abra o site em uma aba anonima/privada"
           echo "   2. Pressione Ctrl+F5 (ou Cmd+Shift+R no Mac)"
           echo "   3. Verifique o header X-Deploy-Time: $TIMESTAMP"
-          echo "📊 Logs completos disponíveis nos Actions do GitHub"
+          echo "Logs completos disponiveis nos Actions do GitHub"
