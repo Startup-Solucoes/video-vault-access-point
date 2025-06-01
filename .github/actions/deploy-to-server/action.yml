@@ -83,8 +83,8 @@ runs:
           if [ -f "dist/index.html" ]; then
             echo "Conteudo atual do index.html (primeiras 10 linhas):"
             head -10 dist/index.html
-            echo "Verificando 'Tutoriais ERP' no arquivo atual:"
-            grep -n "Tutoriais ERP" dist/index.html || echo "Texto nao encontrado no arquivo atual"
+            echo "Verificando 'TutoriaisERP' no arquivo atual:"
+            grep -n "TutoriaisERP" dist/index.html || echo "Texto nao encontrado no arquivo atual"
           fi
           
           # Usar script de deploy

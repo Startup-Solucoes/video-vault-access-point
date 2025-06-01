@@ -31,8 +31,8 @@ if [ -f "dist/index.html" ]; then
   echo "NOVO index.html (primeiras 20 linhas):"
   head -20 dist/index.html
   echo ""
-  echo "Verificando 'Tutoriais ERP' no NOVO arquivo:"
-  grep -n "Tutoriais ERP" dist/index.html || echo "Texto nao encontrado no novo arquivo!"
+  echo "Verificando 'TutoriaisERP' no NOVO arquivo:"
+  grep -n "TutoriaisERP" dist/index.html || echo "Texto nao encontrado no novo arquivo!"
   echo ""
   echo "Tamanho do novo index.html:"
   du -h dist/index.html

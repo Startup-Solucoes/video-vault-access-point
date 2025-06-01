@@ -14,10 +14,10 @@ if [ "$RESPONSE" = "200" ]; then
   # Verificar se o conteúdo está correto
   echo "Verificando conteudo da resposta..."
   CONTENT=$(curl -s https://tutoriaiserp.com.br/ --max-time 10)
-  if echo "$CONTENT" | grep -q "Tutoriais ERP"; then
-    echo "SUCESSO: 'Tutoriais ERP' encontrado na resposta do site!"
+  if echo "$CONTENT" | grep -q "TutoriaisERP"; then
+    echo "SUCESSO: 'TutoriaisERP' encontrado na resposta do site!"
   else
-    echo "PROBLEMA: 'Tutoriais ERP' NAO encontrado na resposta do site!"
+    echo "PROBLEMA: 'TutoriaisERP' NAO encontrado na resposta do site!"
     echo "Primeiras 500 chars da resposta:"
     echo "$CONTENT" | head -c 500
   fi

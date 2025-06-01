@@ -15,8 +15,8 @@ runs:
         echo "Verificando index.html:"
         head -50 dist/index.html
         echo ""
-        echo "Verificando se 'Tutoriais ERP' esta no build:"
-        grep -n "Tutoriais ERP" dist/index.html || echo "Texto nao encontrado no build!"
+        echo "Verificando se 'TutoriaisERP' esta no build:"
+        grep -n "TutoriaisERP" dist/index.html || echo "Texto nao encontrado no build!"
         echo ""
         echo "Tamanho dos arquivos principais:"
         du -h dist/index.html
