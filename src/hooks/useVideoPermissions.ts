@@ -20,7 +20,7 @@ interface VideoPermission {
 export const useVideoPermissions = () => {
   const { user } = useAuth();
   const { get, set, invalidatePattern } = useCache<VideoPermission[]>({
-    defaultTTL: 3 * 60 * 1000, // 3 minutos para permissões
+    defaultTTL: 3 * 60 * 1000,
     maxSize: 50
   });
   
@@ -35,65 +35,59 @@ export const useVideoPermissions = () => {
 
     const cacheKey = `video_permissions_${user.id}`;
     
-    // Tentar buscar do cache primeiro, a menos que seja refresh forçado
     if (!forceRefresh) {
       const cachedData = get(cacheKey);
       if (cachedData) {
-        console.log('🎯 Usando permissões de vídeos do cache');
+        console.log('🎯 Cache hit: permissões de vídeos');
         setVideoPermissions(cachedData);
         setIsLoadingPermissions(false);
         return;
       }
     }
 
-    console.log('🔐 Buscando permissões de vídeos do banco...');
+    console.log('🔐 Buscando permissões de vídeos (OTIMIZADO)...');
     setIsLoadingPermissions(true);
 
     try {
-      // Buscar permissões primeiro
+      // Query otimizada com join para reduzir chamadas
       const { data: permissions, error: permissionsError } = await supabase
         .from('video_permissions')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select(`
+          id,
+          video_id,
+          client_id,
+          created_at,
+          granted_by,
+          profiles!video_permissions_client_id_fkey (
+            id,
+            full_name,
+            email
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(100); // Limite para performance
 
       if (permissionsError) {
         console.error('❌ Erro ao buscar permissões:', permissionsError);
         throw permissionsError;
       }
 
-      // Buscar dados dos clientes separadamente
-      const clientIds = permissions?.map(p => p.client_id) || [];
+      // Processar dados com join otimizado
+      const permissionsWithClients: VideoPermission[] = permissions?.map(permission => ({
+        id: permission.id,
+        video_id: permission.video_id,
+        client_id: permission.client_id,
+        created_at: permission.created_at,
+        granted_by: permission.granted_by,
+        client: permission.profiles ? {
+          id: permission.profiles.id,
+          full_name: permission.profiles.full_name,
+          email: permission.profiles.email
+        } : null
+      })) || [];
+
+      console.log('✅ Permissões otimizadas encontradas:', permissionsWithClients.length);
       
-      if (clientIds.length === 0) {
-        console.log('✅ Nenhuma permissão encontrada');
-        const emptyResult: VideoPermission[] = [];
-        set(cacheKey, emptyResult);
-        setVideoPermissions(emptyResult);
-        return;
-      }
-
-      const { data: clients, error: clientsError } = await supabase
-        .from('profiles')
-        .select('id, full_name, email')
-        .in('id', clientIds);
-
-      if (clientsError) {
-        console.error('❌ Erro ao buscar clientes:', clientsError);
-        throw clientsError;
-      }
-
-      // Combinar os dados
-      const permissionsWithClients: VideoPermission[] = permissions?.map(permission => {
-        const client = clients?.find(c => c.id === permission.client_id) || null;
-        return {
-          ...permission,
-          client
-        };
-      }) || [];
-
-      console.log('✅ Permissões encontradas:', permissionsWithClients.length);
-      
-      // Armazenar no cache
       set(cacheKey, permissionsWithClients);
       setVideoPermissions(permissionsWithClients);
     } catch (error) {
@@ -108,7 +102,6 @@ export const useVideoPermissions = () => {
     fetchVideoPermissions();
   }, [user]);
 
-  // Função para forçar atualização manual
   const refreshVideoPermissions = () => {
     if (user) {
       invalidatePattern(`video_permissions_${user.id}`);

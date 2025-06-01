@@ -4,44 +4,43 @@ import { Client } from '@/types/client';
 import { getUserAuthInfo } from '@/services/emailNotificationService';
 
 export const fetchClientsFromDB = async (): Promise<Client[]> => {
-  console.log('clientDataService: Buscando clientes...');
+  console.log('clientDataService: Buscando clientes (OTIMIZADO)...');
   
   try {
-    // Buscar profiles com informações de auth via join
+    // Query otimizada - apenas campos necessários inicialmente
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select(`
         id,
         email,
         full_name,
-        logo_url,
         role,
         created_at,
         updated_at
-      `)
-      .order('created_at', { ascending: false });
+      `) // Removido logo_url da query principal para reduzir dados
+      .order('created_at', { ascending: false })
+      .limit(100); // Limite para performance
 
     if (profilesError) {
       throw profilesError;
     }
 
-    if (!profiles) {
+    if (!profiles || profiles.length === 0) {
       console.log('clientDataService: Nenhum perfil encontrado');
       return [];
     }
 
-    // Para cada perfil, buscar informações de autenticação via função personalizada
+    // Buscar informações de auth em lote quando necessário
     const clientsWithAuthInfo = await Promise.allSettled(
       profiles.map(async (profile) => {
         try {
-          // Buscar informações de auth do usuário via função personalizada
           const authData = await getUserAuthInfo(profile.id);
 
           const client: Client = {
             id: profile.id,
             email: profile.email,
             full_name: profile.full_name,
-            logo_url: profile.logo_url,
+            logo_url: null, // Carregar apenas quando necessário
             role: profile.role,
             created_at: profile.created_at,
             updated_at: profile.updated_at,
@@ -52,13 +51,13 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
 
           return client;
         } catch (error) {
-          console.warn('Erro ao buscar informações de auth para usuário:', profile.id, error);
-          // Retorna o cliente sem informações de auth se houver erro
+          console.warn('Erro ao buscar auth para usuário:', profile.id);
+          // Retorna cliente sem informações de auth se houver erro
           return {
             id: profile.id,
             email: profile.email,
             full_name: profile.full_name,
-            logo_url: profile.logo_url,
+            logo_url: null,
             role: profile.role,
             created_at: profile.created_at,
             updated_at: profile.updated_at,
@@ -70,12 +69,11 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       })
     );
 
-    // Filtra apenas os resultados bem-sucedidos
     const successfulClients = clientsWithAuthInfo
       .filter((result): result is PromiseFulfilledResult<Client> => result.status === 'fulfilled')
       .map(result => result.value);
 
-    console.log('clientDataService: Clientes encontrados:', successfulClients.length);
+    console.log('clientDataService: Clientes otimizados encontrados:', successfulClients.length);
     return successfulClients;
 
   } catch (error) {

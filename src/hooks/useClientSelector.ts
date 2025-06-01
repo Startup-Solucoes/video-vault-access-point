@@ -9,41 +9,26 @@ export const useClientSelector = () => {
   const [searchValue, setSearchValue] = useState('');
 
   const fetchClients = async () => {
-    console.log('=== INICIANDO BUSCA DE CLIENTES NO SELECTOR (SEM CACHE) ===');
+    console.log('=== BUSCANDO CLIENTES PARA SELECTOR (OTIMIZADO) ===');
     
     setIsLoading(true);
     try {
-      // Verificar usuário atual
-      const { data: user } = await supabase.auth.getUser();
-      console.log('Usuário autenticado:', {
-        id: user.user?.id,
-        email: user.user?.email,
-        role: user.user?.user_metadata?.role
-      });
-
-      // Buscar dados frescos sempre, sem cache - incluindo timestamp para forçar refresh
-      const timestamp = Date.now();
-      console.log('Timestamp da busca:', timestamp);
-      
+      // Query otimizada - apenas campos necessários para o seletor
       const { data: clientsData, error } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          email,
-          full_name
-        `)
+        .select('id, email, full_name') // Apenas campos necessários
         .eq('role', 'client')
-        .order('full_name', { ascending: true });
+        .order('full_name', { ascending: true })
+        .limit(50); // Limite para evitar queries muito grandes
 
       if (error) {
         console.error('Erro ao buscar clientes:', error);
         throw error;
       }
 
-      console.log('Dados retornados diretamente do Supabase:', {
-        timestamp,
+      console.log('Clientes otimizados encontrados:', {
         length: clientsData?.length || 0,
-        clients: clientsData
+        timestamp: Date.now()
       });
 
       // Processar para o formato do seletor
@@ -53,7 +38,6 @@ export const useClientSelector = () => {
         email: client.email
       }));
 
-      console.log('Clientes processados para o seletor:', processedClients);
       setClients(processedClients);
       
     } catch (error) {
@@ -64,39 +48,23 @@ export const useClientSelector = () => {
     }
   };
 
-  // Filtrar clientes baseado no valor de busca
+  // Filtrar clientes baseado no valor de busca - otimizado
   const filteredClients = useMemo(() => {
-    console.log('=== FILTRANDO CLIENTES ===');
-    console.log('Termo de busca atual:', `"${searchValue}"`);
-    console.log('Total de clientes antes do filtro:', clients.length);
-    console.log('Lista completa de clientes:', clients.map(c => `${c.full_name} (${c.email})`));
-    
     if (!searchValue.trim()) {
-      console.log('Sem termo de busca, retornando todos os clientes');
       return clients;
     }
     
     const searchLower = searchValue.toLowerCase().trim();
-    console.log('Termo de busca normalizado:', `"${searchLower}"`);
-    
-    const filtered = clients.filter(client => {
+    return clients.filter(client => {
       const nameMatch = client.full_name.toLowerCase().includes(searchLower);
       const emailMatch = client.email.toLowerCase().includes(searchLower);
-      const match = nameMatch || emailMatch;
-      console.log(`Cliente ${client.full_name}: nameMatch=${nameMatch}, emailMatch=${emailMatch}, match=${match}`);
-      return match;
+      return nameMatch || emailMatch;
     });
-    
-    console.log('Clientes após filtro:', filtered.length);
-    console.log('Clientes filtrados:', filtered.map(c => `${c.full_name} (${c.email})`));
-    return filtered;
   }, [clients, searchValue]);
 
-  // Remover qualquer dependência de cache - sempre busca na montagem
   useEffect(() => {
-    console.log('=== COMPONENTE SELECTOR MONTADO - REMOVENDO CACHE ===');
     fetchClients();
-  }, []); // Sem dependências para garantir execução única
+  }, []);
 
   return {
     clients,

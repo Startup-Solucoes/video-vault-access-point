@@ -18,7 +18,7 @@ interface Video {
 export const useVideoHistory = (limit: number = 10) => {
   const { user } = useAuth();
   const { get, set, invalidatePattern } = useCache<Video[]>({
-    defaultTTL: 3 * 60 * 1000, // 3 minutos para histórico
+    defaultTTL: 3 * 60 * 1000,
     maxSize: 20
   });
   
@@ -33,26 +33,33 @@ export const useVideoHistory = (limit: number = 10) => {
 
     const cacheKey = `video_history_${user.id}_${limit}`;
     
-    // Tentar buscar do cache primeiro, a menos que seja refresh forçado
     if (!forceRefresh) {
       const cachedData = get(cacheKey);
       if (cachedData) {
-        console.log('🎯 Usando histórico de vídeos do cache');
+        console.log('🎯 Cache hit: histórico de vídeos');
         setVideos(cachedData);
         setIsLoading(false);
         return;
       }
     }
 
-    console.log('🎬 Buscando histórico de vídeos do banco...');
-    console.log('Usuário:', user.id);
-    console.log('Limite:', limit);
+    console.log('🎬 Buscando histórico de vídeos (OTIMIZADO)...');
     setIsLoading(true);
 
     try {
+      // Query otimizada - apenas campos necessários
       const { data, error } = await supabase
         .from('videos')
-        .select('*')
+        .select(`
+          id,
+          title,
+          description,
+          video_url,
+          thumbnail_url,
+          category,
+          created_at,
+          created_by
+        `) // Removidos campos desnecessários como tags, platform para o histórico
         .order('created_at', { ascending: false })
         .limit(limit);
 
@@ -61,12 +68,10 @@ export const useVideoHistory = (limit: number = 10) => {
         throw error;
       }
 
-      console.log('✅ Vídeos encontrados:', data?.length || 0);
-      console.log('Dados dos vídeos:', data);
+      console.log('✅ Vídeos otimizados encontrados:', data?.length || 0);
       
       const videoData = data || [];
       
-      // Armazenar no cache
       set(cacheKey, videoData);
       setVideos(videoData);
     } catch (error) {
@@ -81,7 +86,6 @@ export const useVideoHistory = (limit: number = 10) => {
     fetchVideos();
   }, [user, limit]);
 
-  // Função para forçar atualização manual
   const refreshVideos = () => {
     if (user) {
       invalidatePattern(`video_history_${user.id}`);

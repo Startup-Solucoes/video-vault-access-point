@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Video, Calendar, User, Play } from 'lucide-react';
+import { Video, Calendar, User, Play, RefreshCw } from 'lucide-react';
 import { useVideoHistory } from '@/hooks/useVideoHistory';
 import { useVideoPermissions } from '@/hooks/useVideoPermissions';
 import { VideoModal } from '@/components/ui/video-modal';
@@ -15,8 +15,8 @@ interface VideoHistoryProps {
 }
 
 export const VideoHistory = ({ limit = 10, getCategoryColor }: VideoHistoryProps) => {
-  const { videos, isLoading } = useVideoHistory(limit);
-  const { videoPermissions, isLoadingPermissions } = useVideoPermissions();
+  const { videos, isLoading, refreshVideos } = useVideoHistory(limit);
+  const { videoPermissions, isLoadingPermissions, refreshVideoPermissions } = useVideoPermissions();
   const [selectedVideo, setSelectedVideo] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -37,6 +37,11 @@ export const VideoHistory = ({ limit = 10, getCategoryColor }: VideoHistoryProps
   const handleWatchVideo = (video: any) => {
     setSelectedVideo(video);
     setIsModalOpen(true);
+  };
+
+  const handleRefresh = () => {
+    refreshVideos();
+    refreshVideoPermissions();
   };
 
   if (isLoading) {
@@ -64,13 +69,26 @@ export const VideoHistory = ({ limit = 10, getCategoryColor }: VideoHistoryProps
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Video className="h-5 w-5 mr-2" />
-            Histórico de Vídeos
-          </CardTitle>
-          <CardDescription>
-            Últimos {limit} vídeos criados e clientes especificados
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center">
+                <Video className="h-5 w-5 mr-2" />
+                Histórico de Vídeos
+              </CardTitle>
+              <CardDescription>
+                Últimos {limit} vídeos criados e clientes especificados
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isLoading || isLoadingPermissions}
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Atualizar
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {videos.length === 0 ? (

@@ -19,7 +19,7 @@ interface ClientVideo {
 export const useClientVideos = (clientId: string) => {
   const { user } = useAuth();
   const { get, set, invalidatePattern } = useCache<ClientVideo[]>({
-    defaultTTL: 2 * 60 * 1000, // 2 minutos para vídeos do cliente
+    defaultTTL: 2 * 60 * 1000,
     maxSize: 30
   });
   
@@ -34,26 +34,26 @@ export const useClientVideos = (clientId: string) => {
 
     const cacheKey = `client_videos_${clientId}`;
     
-    // Tentar buscar do cache primeiro, a menos que seja refresh forçado
     if (!forceRefresh) {
       const cachedData = get(cacheKey);
       if (cachedData) {
-        console.log(`🎯 Usando vídeos do cliente ${clientId} do cache`);
+        console.log(`🎯 Cache hit: vídeos do cliente ${clientId}`);
         setVideos(cachedData);
         setIsLoading(false);
         return;
       }
     }
 
-    console.log('🎬 Buscando vídeos do cliente do banco:', clientId);
+    console.log('🎬 Buscando vídeos do cliente (OTIMIZADO):', clientId);
     setIsLoading(true);
 
     try {
+      // Query otimizada com select específico
       const { data, error } = await supabase
         .from('video_permissions')
         .select(`
           created_at,
-          videos (
+          videos!inner (
             id,
             title,
             description,
@@ -64,15 +64,15 @@ export const useClientVideos = (clientId: string) => {
             created_at
           )
         `)
-        .eq('client_id', clientId);
+        .eq('client_id', clientId)
+        .order('created_at', { ascending: false })
+        .limit(50); // Limite para performance
 
       if (error) {
         console.error('❌ Erro ao buscar vídeos do cliente:', error);
         throw error;
       }
 
-      console.log('✅ Permissões encontradas:', data?.length || 0);
-      
       const clientVideos = data?.map(permission => ({
         id: permission.videos.id,
         title: permission.videos.title,
@@ -85,9 +85,8 @@ export const useClientVideos = (clientId: string) => {
         permission_created_at: permission.created_at
       })) || [];
 
-      console.log('✅ Vídeos processados:', clientVideos.length);
+      console.log('✅ Vídeos otimizados processados:', clientVideos.length);
       
-      // Armazenar no cache
       set(cacheKey, clientVideos);
       setVideos(clientVideos);
     } catch (error) {
@@ -102,7 +101,6 @@ export const useClientVideos = (clientId: string) => {
     fetchClientVideos();
   }, [user, clientId]);
 
-  // Função para forçar atualização manual
   const refreshClientVideos = () => {
     invalidatePattern(`client_videos_${clientId}`);
     fetchClientVideos(true);
