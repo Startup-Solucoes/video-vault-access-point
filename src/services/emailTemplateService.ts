@@ -20,18 +20,18 @@ export const createVideoNotificationTemplate = (data: VideoNotificationEmailData
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Novo tutorial foi adicionado a sua conta</title>
+      <title>Novo tutorial foi adicionado à sua conta</title>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-        <h1 style="margin: 0; font-size: 28px;">🎬 Novo tutorial foi adicionado a sua conta!</h1>
+        <h1 style="margin: 0; font-size: 28px;">🎬 Novo tutorial foi adicionado à sua conta!</h1>
       </div>
       
       <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
         <p style="font-size: 18px; margin-bottom: 20px;">Olá ${data.clientName}!</p>
         
         <p style="font-size: 16px; margin-bottom: 25px;">
-          Um novo vídeo está disponível para você, clique no botão abaixo e verifique na sua dashboard.
+          Um novo vídeo está disponível para você. Clique no botão abaixo e acesse sua dashboard para visualizar.
         </p>
         
         <div style="background: white; padding: 25px; border-radius: 8px; border-left: 4px solid #667eea; margin: 25px 0;">
@@ -67,7 +67,7 @@ export const createVideoNotificationTemplate = (data: VideoNotificationEmailData
                     display: inline-block;
                     font-size: 16px;
                     transition: transform 0.2s;">
-            Acessar Dashboard
+            Acessar Minha Dashboard
           </a>
         </div>
         
@@ -89,11 +89,11 @@ export const createClientConfirmationTemplate = (data: ClientConfirmationEmailDa
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Confirmação de Cadastro - Bem-vindo!</title>
+      <title>Confirmação de Cadastro - Bem-vindo(a)!</title>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-        <h1 style="margin: 0; font-size: 28px;">🎉 Bem-vindo à nossa plataforma!</h1>
+        <h1 style="margin: 0; font-size: 28px;">🎉 Bem-vindo(a) à nossa plataforma!</h1>
       </div>
       
       <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">

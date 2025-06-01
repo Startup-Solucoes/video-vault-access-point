@@ -19,7 +19,7 @@ serve(async (req) => {
     const gmailPassword = Deno.env.get('GMAIL_APP_PASSWORD')
 
     if (!supabaseUrl || !serviceRoleKey || !gmailUser || !gmailPassword) {
-      throw new Error('Missing required environment variables')
+      throw new Error('Variáveis de ambiente obrigatórias não encontradas')
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey)
@@ -28,12 +28,12 @@ serve(async (req) => {
 
     if (!clientId || !clientEmail || !clientName || !adminId) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ error: 'Campos obrigatórios não informados' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Get admin info
+    // Buscar informações do administrador
     const { data: admin, error: adminError } = await supabase
       .from('profiles')
       .select('full_name, email')
@@ -41,9 +41,9 @@ serve(async (req) => {
       .single()
 
     if (adminError || !admin) {
-      console.error('Error fetching admin info:', adminError)
+      console.error('Erro ao buscar informações do administrador:', adminError)
       return new Response(
-        JSON.stringify({ error: 'Admin not found' }),
+        JSON.stringify({ error: 'Administrador não encontrado' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -59,7 +59,7 @@ serve(async (req) => {
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Bem-vindo ao nosso Portal!</h1>
+            <h1 style="color: white; margin: 0; font-size: 28px;">Bem-vindo(a) ao nosso Portal!</h1>
           </div>
           
           <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e9ecef;">
@@ -107,7 +107,7 @@ serve(async (req) => {
       `;
     };
 
-    console.log('Sending client confirmation email to:', clientEmail)
+    console.log('Enviando email de confirmação para:', clientEmail)
 
     // URL de confirmação que redireciona para a tela de login 
     const appUrl = 'https://2633fcdc-13df-4213-8528-a3784715b929.lovableproject.com' // URL do seu app
@@ -115,7 +115,7 @@ serve(async (req) => {
 
     const emailBody = createClientConfirmationTemplate(clientName, confirmationUrl)
     
-    // Send email using nodemailer with Gmail SMTP
+    // Envio de email usando nodemailer com Gmail SMTP
     const nodemailerConfig = {
       host: 'smtp.gmail.com',
       port: 587,
@@ -133,7 +133,7 @@ serve(async (req) => {
       html: emailBody
     }
 
-    // Call nodemailer to send email
+    // Chamada para nodemailer para enviar email
     const nodemailerResponse = await fetch('https://api.nodemailer.com/send', {
       method: 'POST',
       headers: {
@@ -146,19 +146,19 @@ serve(async (req) => {
     })
 
     if (!nodemailerResponse.ok) {
-      console.error('Failed to send email via nodemailer')
-      throw new Error('Failed to send confirmation email')
+      console.error('Falha ao enviar email via nodemailer')
+      throw new Error('Falha ao enviar email de confirmação')
     }
 
-    console.log('Client confirmation email sent successfully')
+    console.log('Email de confirmação enviado com sucesso')
 
     return new Response(
-      JSON.stringify({ message: 'Client confirmation email sent successfully' }),
+      JSON.stringify({ message: 'Email de confirmação enviado com sucesso' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    console.error('Error in send-client-confirmation function:', error)
+    console.error('Erro na função send-client-confirmation:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -20,11 +20,11 @@ const sendEmail = async (emailData: EmailData): Promise<boolean> => {
     const gmailPassword = Deno.env.get('GMAIL_APP_PASSWORD');
 
     if (!gmailUser || !gmailPassword) {
-      console.error('Gmail credentials not configured');
+      console.error('Credenciais do Gmail não configuradas');
       return false;
     }
 
-    // Create transporter using Gmail SMTP
+    // Criar transporter usando Gmail SMTP
     const transporter = nodemailer.createTransporter({
       service: 'gmail',
       auth: {
@@ -33,7 +33,7 @@ const sendEmail = async (emailData: EmailData): Promise<boolean> => {
       }
     });
 
-    // Send email
+    // Enviar email
     const result = await transporter.sendMail({
       from: gmailUser,
       to: emailData.to,
@@ -41,10 +41,10 @@ const sendEmail = async (emailData: EmailData): Promise<boolean> => {
       html: emailData.body
     });
 
-    console.log('Email sent successfully:', result.messageId);
+    console.log('Email enviado com sucesso:', result.messageId);
     return true;
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('Erro ao enviar email:', error);
     return false;
   }
 };
@@ -62,18 +62,18 @@ const createEmailTemplate = (
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Novo tutorial foi adicionado a sua conta</title>
+      <title>Novo tutorial foi adicionado à sua conta</title>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-        <h1 style="margin: 0; font-size: 28px;">🎬 Novo tutorial foi adicionado a sua conta!</h1>
+        <h1 style="margin: 0; font-size: 28px;">🎬 Novo tutorial foi adicionado à sua conta!</h1>
       </div>
       
       <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
         <p style="font-size: 18px; margin-bottom: 20px;">Olá ${clientName}!</p>
         
         <p style="font-size: 16px; margin-bottom: 25px;">
-          Um novo vídeo está disponível para você, clique no botão abaixo e verifique na sua dashboard.
+          Um novo vídeo está disponível para você. Clique no botão abaixo e acesse sua dashboard para visualizar.
         </p>
         
         <div style="background: white; padding: 25px; border-radius: 8px; border-left: 4px solid #667eea; margin: 25px 0;">
@@ -108,7 +108,7 @@ const createEmailTemplate = (
                     font-weight: bold; 
                     display: inline-block;
                     font-size: 16px;">
-            Acessar Dashboard
+            Acessar Minha Dashboard
           </a>
         </div>
         
@@ -125,13 +125,13 @@ const createEmailTemplate = (
 };
 
 serve(async (req) => {
-  // Handle CORS
+  // Tratar CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Create admin client with service role
+    // Criar cliente admin com service role
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -142,14 +142,14 @@ serve(async (req) => {
 
     if (!videoTitle || !clientIds || !Array.isArray(clientIds) || !adminId) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: videoTitle, clientIds, adminId' }),
+        JSON.stringify({ error: 'Campos obrigatórios não informados: videoTitle, clientIds, adminId' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('Sending video notifications for clients:', clientIds)
+    console.log('Enviando notificações de vídeo para clientes:', clientIds)
 
-    // Get admin name
+    // Buscar nome do administrador
     const { data: admin, error: adminError } = await supabaseAdmin
       .from('profiles')
       .select('full_name')
@@ -157,9 +157,9 @@ serve(async (req) => {
       .single()
 
     if (adminError) {
-      console.error('Error fetching admin:', adminError)
+      console.error('Erro ao buscar administrador:', adminError)
       return new Response(
-        JSON.stringify({ error: 'Admin not found' }),
+        JSON.stringify({ error: 'Administrador não encontrado' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -169,13 +169,13 @@ serve(async (req) => {
     let totalEmailsSent = 0;
     let errors = [];
 
-    // Dashboard URL
+    // URL da dashboard
     const dashboardUrl = 'https://rgdrbimchwxbfyourqgy.supabase.co'
 
-    // For each client, get their users and send notifications
+    // Para cada cliente, buscar seus usuários e enviar notificações
     for (const clientId of clientIds) {
       try {
-        // Get client name
+        // Buscar nome do cliente
         const { data: client, error: clientError } = await supabaseAdmin
           .from('profiles')
           .select('full_name')
@@ -183,28 +183,28 @@ serve(async (req) => {
           .single()
 
         if (clientError) {
-          console.error(`Error fetching client ${clientId}:`, clientError)
-          errors.push(`Client ${clientId}: ${clientError.message}`)
+          console.error(`Erro ao buscar cliente ${clientId}:`, clientError)
+          errors.push(`Cliente ${clientId}: ${clientError.message}`)
           continue
         }
 
         const clientName = client?.full_name || 'Cliente'
 
-        // Get all users for this client
+        // Buscar todos os usuários para este cliente
         const { data: clientUsers, error: usersError } = await supabaseAdmin
           .from('client_users')
           .select('user_email')
           .eq('client_id', clientId)
 
         if (usersError) {
-          console.error(`Error fetching users for client ${clientId}:`, usersError)
-          errors.push(`Client ${clientId} users: ${usersError.message}`)
+          console.error(`Erro ao buscar usuários para cliente ${clientId}:`, usersError)
+          errors.push(`Usuários do cliente ${clientId}: ${usersError.message}`)
           continue
         }
 
-        console.log(`Found ${clientUsers?.length || 0} users for client ${clientName}`)
+        console.log(`Encontrados ${clientUsers?.length || 0} usuários para cliente ${clientName}`)
 
-        // Send email to each user
+        // Enviar email para cada usuário
         if (clientUsers && clientUsers.length > 0) {
           for (const user of clientUsers) {
             const emailBody = createEmailTemplate(
@@ -218,20 +218,20 @@ serve(async (req) => {
             
             const emailSent = await sendEmail({
               to: user.user_email,
-              subject: `Novo tutorial foi adicionado a sua conta`,
+              subject: `Novo tutorial foi adicionado à sua conta`,
               body: emailBody
             })
 
             if (emailSent) {
               totalEmailsSent++
             } else {
-              errors.push(`Failed to send email to ${user.user_email}`)
+              errors.push(`Falha ao enviar email para ${user.user_email}`)
             }
           }
         }
       } catch (error) {
-        console.error(`Error processing client ${clientId}:`, error)
-        errors.push(`Client ${clientId}: ${error.message}`)
+        console.error(`Erro ao processar cliente ${clientId}:`, error)
+        errors.push(`Cliente ${clientId}: ${error.message}`)
       }
     }
 
@@ -241,7 +241,7 @@ serve(async (req) => {
       errors: errors.length > 0 ? errors : undefined
     }
 
-    console.log('Email notification summary:', response)
+    console.log('Resumo das notificações por email:', response)
 
     return new Response(
       JSON.stringify(response),
@@ -249,9 +249,9 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Function error:', error)
+    console.error('Erro na função:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Erro interno do servidor' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
