@@ -31,7 +31,7 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
     }
 
     // Para cada perfil, buscar informações de autenticação via função personalizada
-    const clientsWithAuthInfo = await Promise.all(
+    const clientsWithAuthInfo = await Promise.allSettled(
       profiles.map(async (profile) => {
         try {
           // Buscar informações de auth do usuário via função personalizada
@@ -52,7 +52,7 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
 
           return client;
         } catch (error) {
-          console.error('Erro ao buscar informações de auth para usuário:', profile.id, error);
+          console.warn('Erro ao buscar informações de auth para usuário:', profile.id, error);
           // Retorna o cliente sem informações de auth se houver erro
           return {
             id: profile.id,
@@ -70,8 +70,13 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       })
     );
 
-    console.log('clientDataService: Clientes encontrados:', clientsWithAuthInfo.length);
-    return clientsWithAuthInfo;
+    // Filtra apenas os resultados bem-sucedidos
+    const successfulClients = clientsWithAuthInfo
+      .filter((result): result is PromiseFulfilledResult<Client> => result.status === 'fulfilled')
+      .map(result => result.value);
+
+    console.log('clientDataService: Clientes encontrados:', successfulClients.length);
+    return successfulClients;
 
   } catch (error) {
     console.error('clientDataService: Erro ao buscar clientes:', error);

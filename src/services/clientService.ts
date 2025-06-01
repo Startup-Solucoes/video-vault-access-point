@@ -1,5 +1,5 @@
 
-// Re-export all client service functions from their respective modules
+// Serviço consolidado de clientes - Ponto único de acesso
 export { fetchClientsFromDB } from './client/clientDataService';
 export { updateClientInDB } from './client/clientUpdateService';
 export { approveClientInDB } from './client/clientApprovalService';
