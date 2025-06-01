@@ -1,220 +1,161 @@
-import React, { useState, useRef } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Users, Video, Shield, Plus, ArrowLeft } from 'lucide-react';
-import { VideoForm } from '@/components/forms/VideoForm';
-import { ClientForm } from '@/components/forms/ClientForm';
-import { ClientSelectorRef } from '@/components/forms/ClientSelector';
-import { ClientManagement } from './ClientManagement';
-import { VideoHistory } from './VideoHistory';
-import { VideoManagement } from './VideoManagement';
-import { useAdminStats } from '@/hooks/useAdminStats';
 
-// Cores para cada categoria (mesmas do CategoryFilter e VideoCard)
-const getCategoryColor = (category: string) => {
-  const colors: { [key: string]: string } = {
-    'Gerais': 'bg-blue-600 text-white',
-    'Produto': 'bg-green-600 text-white',
-    'Financeiro': 'bg-yellow-600 text-white',
-    'Relatórios': 'bg-purple-600 text-white',
-    'Pedidos de venda': 'bg-orange-600 text-white',
-    'Fiscal': 'bg-red-600 text-white',
-    'Integrações': 'bg-teal-600 text-white',
-    'Serviços': 'bg-indigo-600 text-white'
-  };
-  
-  // Cor padrão se a categoria não estiver mapeada
-  return colors[category] || 'bg-gray-600 text-white';
-};
+import React, { Suspense, useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useAdminStats } from '@/hooks/useAdminStats';
+import { VideoHistory } from './VideoHistory';
+import { ThumbnailGenerator } from './ThumbnailGenerator';
+import { 
+  LazyVideoManagement, 
+  LazyClientManagement, 
+  LazyVideoForm, 
+  LazyClientForm 
+} from './LazyComponents';
+
+// Componente de Loading para Suspense
+const ComponentLoader = () => (
+  <div className="flex items-center justify-center py-8">
+    <div className="flex items-center space-x-2">
+      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+      <span className="text-gray-600">Carregando componente...</span>
+    </div>
+  </div>
+);
 
 export const AdminDashboard = () => {
-  const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
-  const [isClientFormOpen, setIsClientFormOpen] = useState(false);
-  const [showClientManagement, setShowClientManagement] = useState(false);
-  const [showVideoManagement, setShowVideoManagement] = useState(false);
-  const clientSelectorRef = useRef<ClientSelectorRef>(null);
-  const { stats, isLoading: statsLoading, refreshStats } = useAdminStats();
+  const { stats, isLoading } = useAdminStats();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showVideoForm, setShowVideoForm] = useState(false);
+  const [showClientForm, setShowClientForm] = useState(false);
 
-  const handleClientCreated = () => {
-    // Atualizar lista de clientes no seletor quando um novo cliente for criado
-    console.log('Cliente criado, atualizando lista...');
-    if (clientSelectorRef.current) {
-      clientSelectorRef.current.refreshClients();
-    }
-    // Atualizar estatísticas também
-    refreshStats();
+  const refreshCurrentTab = () => {
+    console.log('AdminDashboard: Refresh solicitado para tab:', activeTab);
+    // Força re-render do componente ativo
+    setActiveTab(prev => prev);
   };
 
-  // Se estiver visualizando o gerenciamento de clientes, mostrar apenas esse componente
-  if (showClientManagement) {
+  if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            onClick={() => setShowClientManagement(false)}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar ao Dashboard
-          </Button>
-        </div>
-        <ClientManagement />
-      </div>
-    );
-  }
-
-  // Se estiver visualizando o gerenciamento de vídeos, mostrar apenas esse componente
-  if (showVideoManagement) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            onClick={() => setShowVideoManagement(false)}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar ao Dashboard
-          </Button>
-        </div>
-        <VideoManagement />
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900">Painel Administrativo</h2>
-          <p className="text-gray-600">Gerencie usuários, vídeos e permissões</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Header com estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Clientes</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {statsLoading ? (
-                <div className="animate-pulse bg-gray-200 h-6 w-8 rounded"></div>
-              ) : (
-                stats.totalClients
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">Clientes cadastrados</p>
+            <div className="text-2xl font-bold">{stats?.totalClients || 0}</div>
           </CardContent>
         </Card>
-
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Clientes Ativos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.activeClients || 0}</div>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Vídeos</CardTitle>
-            <Video className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {statsLoading ? (
-                <div className="animate-pulse bg-gray-200 h-6 w-8 rounded"></div>
-              ) : (
-                stats.totalVideos
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">Vídeos cadastrados</p>
+            <div className="text-2xl font-bold">{stats?.totalVideos || 0}</div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Permissões Ativas</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Vídeos Este Mês</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {statsLoading ? (
-                <div className="animate-pulse bg-gray-200 h-6 w-8 rounded"></div>
-              ) : (
-                stats.totalPermissions
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">Acessos concedidos</p>
+            <div className="text-2xl font-bold">{stats?.videosThisMonth || 0}</div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Gerenciar Clientes</CardTitle>
-            <CardDescription>
-              Criar e gerenciar contas de clientes
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Button 
-                className="w-full"
-                onClick={() => setIsClientFormOpen(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Criar Novo Cliente
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => setShowClientManagement(true)}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Ver Todos os Clientes
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Gerenciar Vídeos</CardTitle>
-            <CardDescription>
-              Adicionar e organizar conteúdo de vídeo
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Button 
-                className="w-full"
-                onClick={() => setIsVideoFormOpen(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Novo Vídeo
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => setShowVideoManagement(true)}
-              >
-                <Video className="h-4 w-4 mr-2" />
-                Ver Todos os Vídeos
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Botões de ação rápida */}
+      <div className="flex gap-4">
+        <Button onClick={() => setShowVideoForm(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Novo Vídeo
+        </Button>
+        <Button variant="outline" onClick={() => setShowClientForm(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Novo Cliente
+        </Button>
       </div>
 
-      {/* Nova seção: Histórico de Vídeos */}
-      <VideoHistory limit={10} getCategoryColor={getCategoryColor} />
+      {/* Tabs principais */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="videos">Vídeos</TabsTrigger>
+          <TabsTrigger value="clients">Clientes</TabsTrigger>
+          <TabsTrigger value="history">Histórico</TabsTrigger>
+          <TabsTrigger value="tools">Ferramentas</TabsTrigger>
+        </TabsList>
 
-      <VideoForm 
-        open={isVideoFormOpen} 
-        onOpenChange={setIsVideoFormOpen}
-        onVideoCreated={refreshStats}
-      />
-      
-      <ClientForm 
-        open={isClientFormOpen} 
-        onOpenChange={setIsClientFormOpen}
-        onClientCreated={handleClientCreated}
-      />
+        <TabsContent value="overview" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Dashboard Administrativo</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Bem-vindo ao painel administrativo. Use as abas acima para gerenciar vídeos, clientes e visualizar relatórios.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="videos">
+          <Suspense fallback={<ComponentLoader />}>
+            <LazyVideoManagement />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="clients">
+          <Suspense fallback={<ComponentLoader />}>
+            <LazyClientManagement />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="history">
+          <VideoHistory />
+        </TabsContent>
+
+        <TabsContent value="tools">
+          <ThumbnailGenerator />
+        </TabsContent>
+      </Tabs>
+
+      {/* Formulários modais com lazy loading */}
+      <Suspense fallback={null}>
+        {showVideoForm && (
+          <LazyVideoForm
+            open={showVideoForm}
+            onOpenChange={setShowVideoForm}
+            onVideoCreated={refreshCurrentTab}
+          />
+        )}
+      </Suspense>
+
+      <Suspense fallback={null}>
+        {showClientForm && (
+          <LazyClientForm
+            open={showClientForm}
+            onOpenChange={setShowClientForm}
+            onClientCreated={refreshCurrentTab}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };

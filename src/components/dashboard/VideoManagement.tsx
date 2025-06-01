@@ -1,10 +1,20 @@
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { VideoList } from './video-management/VideoList';
-import { ClientVideoView } from './video-management/ClientVideoView';
+import { LazyClientVideoView } from './LazyComponents';
+
+// Componente de Loading para Suspense
+const ComponentLoader = () => (
+  <div className="flex items-center justify-center py-8">
+    <div className="flex items-center space-x-2">
+      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+      <span className="text-gray-600">Carregando...</span>
+    </div>
+  </div>
+);
 
 export const VideoManagement = () => {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
@@ -32,10 +42,12 @@ export const VideoManagement = () => {
             Voltar aos Vídeos
           </Button>
         </div>
-        <ClientVideoView 
-          clientId={selectedClientId} 
-          clientName={selectedClientName}
-        />
+        <Suspense fallback={<ComponentLoader />}>
+          <LazyClientVideoView 
+            clientId={selectedClientId} 
+            clientName={selectedClientName}
+          />
+        </Suspense>
       </div>
     );
   }
