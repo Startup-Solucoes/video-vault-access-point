@@ -7,8 +7,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      deploy-timestamp: ${{ steps.timestamp.outputs.timestamp }}
     
     steps:
     - name: Checkout code
@@ -29,26 +31,37 @@ jobs:
         VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
         VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         
-    - name: Verify build output
-      run: |
-        echo "=== BUILD VERIFICATION ==="
-        echo "Verificando conteudo do build:"
-        ls -la dist/
-        echo ""
-        echo "Verificando index.html:"
-        head -50 dist/index.html
-        echo ""
-        echo "Verificando se 'Tutoriais ERP' esta no build:"
-        grep -n "Tutoriais ERP" dist/index.html || echo "Texto nao encontrado no build!"
-        echo ""
-        echo "Tamanho dos arquivos principais:"
-        du -h dist/index.html
-        find dist/assets -name "*.js" -o -name "*.css" | head -5 | xargs du -h
-        
+    - name: Verify build
+      uses: ./.github/actions/verify-build
+      
+    - name: Generate timestamp
+      id: timestamp
+      run: echo "timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+      
     - name: Create deployment package
       run: |
         tar -czf deploy.tar.gz dist/ package.json package-lock.json
         echo "Pacote de deploy criado com tamanho: $(du -h deploy.tar.gz | cut -f1)"
+        
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-package
+        path: deploy.tar.gz
+        retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: deployment-package
         
     - name: Transfer files to server
       uses: appleboy/scp-action@v0.1.7
@@ -61,193 +74,10 @@ jobs:
         target: "/tmp/"
         
     - name: Deploy to server
-      uses: appleboy/ssh-action@v1.0.3
+      uses: ./.github/actions/deploy-to-server
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        script: |
-          echo "=== DIAGNOSTICO PRE-DEPLOY ==="
-          echo "Servidor: $(hostname)"
-          echo "Data/Hora: $(date)"
-          echo "Usuario: $(whoami)"
-          echo "Diretorio atual: $(pwd)"
-          
-          # Verificar se o diretório da aplicação existe
-          if [ ! -d "/var/www/tutoriaiserp.com.br" ]; then
-            echo "ERRO: Diretorio /var/www/tutoriaiserp.com.br nao existe!"
-            echo "Criando diretorio..."
-            sudo mkdir -p /var/www/tutoriaiserp.com.br
-            sudo chown -R www-data:www-data /var/www/tutoriaiserp.com.br
-          fi
-          
-          # Navegar para o diretório da aplicação
-          cd /var/www/tutoriaiserp.com.br
-          echo "Diretorio da aplicacao: $(pwd)"
-          
-          # Verificar arquivo de deploy
-          if [ ! -f "/tmp/deploy.tar.gz" ]; then
-            echo "ERRO: Arquivo deploy.tar.gz nao encontrado em /tmp/"
-            exit 1
-          fi
-          
-          echo "Tamanho do arquivo de deploy: $(du -h /tmp/deploy.tar.gz | cut -f1)"
-          
-          echo "Conteudo ANTES da atualizacao:"
-          ls -la . 2>/dev/null || echo "Diretorio vazio"
-          
-          if [ -f "dist/index.html" ]; then
-            echo "Conteudo atual do index.html (primeiras 10 linhas):"
-            head -10 dist/index.html
-            echo "Verificando 'Tutoriais ERP' no arquivo atual:"
-            grep -n "Tutoriais ERP" dist/index.html || echo "Texto nao encontrado no arquivo atual"
-          fi
-          
-          # Parar nginx
-          echo "Parando Nginx..."
-          sudo systemctl stop nginx
-          
-          # Fazer backup
-          if [ -d "dist" ]; then
-            BACKUP_DIR="dist_backup_$(date +%Y%m%d_%H%M%S)"
-            sudo cp -r dist "$BACKUP_DIR"
-            echo "Backup criado: $BACKUP_DIR"
-          fi
-          
-          # Remover dist antigo
-          sudo rm -rf dist/
-          echo "Diretorio dist removido"
-          
-          # Extrair novos arquivos
-          echo "Extraindo novos arquivos..."
-          sudo tar -xzf /tmp/deploy.tar.gz
-          
-          echo "Conteudo APOS a extracao:"
-          ls -la dist/ 2>/dev/null || echo "ERRO: Diretorio dist nao foi criado!"
-          
-          if [ -f "dist/index.html" ]; then
-            echo "NOVO index.html (primeiras 20 linhas):"
-            head -20 dist/index.html
-            echo ""
-            echo "Verificando 'Tutoriais ERP' no NOVO arquivo:"
-            grep -n "Tutoriais ERP" dist/index.html || echo "Texto nao encontrado no novo arquivo!"
-            echo ""
-            echo "Tamanho do novo index.html:"
-            du -h dist/index.html
-          else
-            echo "ERRO CRITICO: index.html nao foi criado!"
-            exit 1
-          fi
-          
-          # Verificar arquivos assets
-          echo "Arquivos assets criados:"
-          find dist/assets -name "*.js" -o -name "*.css" | head -5
-          
-          # Definir permissões
-          sudo chown -R www-data:www-data /var/www/tutoriaiserp.com.br
-          sudo chmod -R 755 /var/www/tutoriaiserp.com.br
-          echo "Permissoes definidas"
-          
-          # Configurar Nginx com timestamp para forçar cache busting
-          TIMESTAMP=$(date +%s)
-          echo "Configurando Nginx com timestamp: $TIMESTAMP"
-          
-          sudo tee /etc/nginx/sites-available/tutoriaiserp.com.br > /dev/null <<NGINX_EOF
-          server {
-              listen 80;
-              listen [::]:80;
-              server_name tutoriaiserp.com.br www.tutoriaiserp.com.br;
-              return 301 https://\$server_name\$request_uri;
-          }
-
-          server {
-              listen 443 ssl http2;
-              listen [::]:443 ssl http2;
-              server_name tutoriaiserp.com.br www.tutoriaiserp.com.br;
-
-              ssl_certificate /etc/letsencrypt/live/tutoriaiserp.com.br/fullchain.pem;
-              ssl_certificate_key /etc/letsencrypt/live/tutoriaiserp.com.br/privkey.pem;
-
-              root /var/www/tutoriaiserp.com.br/dist;
-              index index.html;
-
-              # Anti-cache headers com timestamp
-              add_header X-Deploy-Time "$TIMESTAMP" always;
-              add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
-              add_header Pragma "no-cache" always;
-              add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT" always;
-
-              location / {
-                  try_files \$uri \$uri/ /index.html;
-                  
-                  add_header X-Deploy-Time "$TIMESTAMP" always;
-                  add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
-                  add_header Pragma "no-cache" always;
-                  add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT" always;
-              }
-
-              location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-                  add_header X-Deploy-Time "$TIMESTAMP" always;
-                  add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
-                  add_header Pragma "no-cache" always;
-                  add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT" always;
-              }
-          }
-          NGINX_EOF
-          
-          # Testar configuração do Nginx
-          echo "Testando configuracao do Nginx..."
-          sudo nginx -t
-          if [ $? -ne 0 ]; then
-            echo "ERRO: Configuracao do Nginx invalida!"
-            exit 1
-          fi
-          
-          # Reiniciar nginx
-          echo "Reiniciando Nginx..."
-          sudo systemctl start nginx
-          sudo systemctl reload nginx
-          
-          # Verificar status
-          echo "Status do Nginx:"
-          sudo systemctl is-active nginx
-          
-          # Teste final - verificar se o site responde
-          echo "Testando resposta do site..."
-          sleep 3
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://tutoriaiserp.com.br/ --max-time 10)
-          echo "Codigo de resposta HTTP: $RESPONSE"
-          
-          if [ "$RESPONSE" = "200" ]; then
-            echo "Site respondendo corretamente!"
-            
-            # Verificar se o conteúdo está correto
-            echo "Verificando conteudo da resposta..."
-            CONTENT=$(curl -s https://tutoriaiserp.com.br/ --max-time 10)
-            if echo "$CONTENT" | grep -q "Tutoriais ERP"; then
-              echo "SUCESSO: 'Tutoriais ERP' encontrado na resposta do site!"
-            else
-              echo "PROBLEMA: 'Tutoriais ERP' NAO encontrado na resposta do site!"
-              echo "Primeiras 500 chars da resposta:"
-              echo "$CONTENT" | head -c 500
-            fi
-          else
-            echo "Site nao esta respondendo corretamente (codigo: $RESPONSE)"
-          fi
-          
-          # Limpeza
-          rm -f /tmp/deploy.tar.gz
-          
-          # Limpar backups antigos
-          sudo find /var/www/tutoriaiserp.com.br -name "dist_backup_*" -type d | sort | head -n -3 | sudo xargs rm -rf 2>/dev/null || true
-          
-          echo ""
-          echo "=== RESUMO DO DEPLOY ==="
-          echo "Deploy concluido em $(date)!"
-          echo "Site: https://tutoriaiserp.com.br"
-          echo "Para verificar mudancas:"
-          echo "   1. Abra o site em uma aba anonima/privada"
-          echo "   2. Pressione Ctrl+F5 (ou Cmd+Shift+R no Mac)"
-          echo "   3. Verifique o header X-Deploy-Time: $TIMESTAMP"
-          echo "Logs completos disponiveis nos Actions do GitHub"
+        timestamp: ${{ needs.build.outputs.deploy-timestamp }}

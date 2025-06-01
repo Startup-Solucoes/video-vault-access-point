@@ -1,0 +1,23 @@
+
+name: 'Verify Build Output'
+description: 'Verifies the build output and checks for required content'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Verify build output
+      shell: bash
+      run: |
+        echo "=== BUILD VERIFICATION ==="
+        echo "Verificando conteudo do build:"
+        ls -la dist/
+        echo ""
+        echo "Verificando index.html:"
+        head -50 dist/index.html
+        echo ""
+        echo "Verificando se 'Tutoriais ERP' esta no build:"
+        grep -n "Tutoriais ERP" dist/index.html || echo "Texto nao encontrado no build!"
+        echo ""
+        echo "Tamanho dos arquivos principais:"
+        du -h dist/index.html
+        find dist/assets -name "*.js" -o -name "*.css" | head -5 | xargs du -h

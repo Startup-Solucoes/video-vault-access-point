@@ -1,0 +1,105 @@
+
+name: 'Deploy to Server'
+description: 'Deploys the application to DigitalOcean server'
+
+inputs:
+  host:
+    description: 'Server host'
+    required: true
+  username:
+    description: 'Server username'
+    required: true
+  password:
+    description: 'Server password'
+    required: true
+  port:
+    description: 'Server port'
+    required: true
+  timestamp:
+    description: 'Deploy timestamp'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Transfer deploy scripts
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ inputs.host }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+        port: ${{ inputs.port }}
+        source: ".github/scripts/*"
+        target: "/tmp/deploy-scripts/"
+        strip_components: 2
+        
+    - name: Make scripts executable
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ inputs.host }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+        port: ${{ inputs.port }}
+        script: |
+          chmod +x /tmp/deploy-scripts/*.sh
+          
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ inputs.host }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+        port: ${{ inputs.port }}
+        script: |
+          echo "=== DIAGNOSTICO PRE-DEPLOY ==="
+          echo "Servidor: $(hostname)"
+          echo "Data/Hora: $(date)"
+          echo "Usuario: $(whoami)"
+          echo "Diretorio atual: $(pwd)"
+          
+          # Verificar se o diretório da aplicação existe
+          if [ ! -d "/var/www/tutoriaiserp.com.br" ]; then
+            echo "ERRO: Diretorio /var/www/tutoriaiserp.com.br nao existe!"
+            echo "Criando diretorio..."
+            sudo mkdir -p /var/www/tutoriaiserp.com.br
+            sudo chown -R www-data:www-data /var/www/tutoriaiserp.com.br
+          fi
+          
+          # Navegar para o diretório da aplicação
+          cd /var/www/tutoriaiserp.com.br
+          echo "Diretorio da aplicacao: $(pwd)"
+          
+          # Verificar arquivo de deploy
+          if [ ! -f "/tmp/deploy.tar.gz" ]; then
+            echo "ERRO: Arquivo deploy.tar.gz nao encontrado em /tmp/"
+            exit 1
+          fi
+          
+          echo "Tamanho do arquivo de deploy: $(du -h /tmp/deploy.tar.gz | cut -f1)"
+          
+          echo "Conteudo ANTES da atualizacao:"
+          ls -la . 2>/dev/null || echo "Diretorio vazio"
+          
+          if [ -f "dist/index.html" ]; then
+            echo "Conteudo atual do index.html (primeiras 10 linhas):"
+            head -10 dist/index.html
+            echo "Verificando 'Tutoriais ERP' no arquivo atual:"
+            grep -n "Tutoriais ERP" dist/index.html || echo "Texto nao encontrado no arquivo atual"
+          fi
+          
+          # Usar script de deploy
+          source /tmp/deploy-scripts/deploy.sh ${{ inputs.timestamp }}
+          
+          # Limpeza
+          rm -f /tmp/deploy.tar.gz
+          rm -rf /tmp/deploy-scripts
+          
+          echo ""
+          echo "=== RESUMO DO DEPLOY ==="
+          echo "Deploy concluido em $(date)!"
+          echo "Site: https://tutoriaiserp.com.br"
+          echo "Para verificar mudancas:"
+          echo "   1. Abra o site em uma aba anonima/privada"
+          echo "   2. Pressione Ctrl+F5 (ou Cmd+Shift+R no Mac)"
+          echo "   3. Verifique o header X-Deploy-Time: ${{ inputs.timestamp }}"
+          echo "Logs completos disponiveis nos Actions do GitHub"
