@@ -73,7 +73,7 @@ export const ClientDashboard = () => {
       {/* Header expandido com informações do cliente */}
       <ClientHeader profile={profile} videoCount={videos.length} />
 
-      {/* Filtro de Categorias expandido */}
+      {/* Filtro de Categorias horizontal */}
       <CategoryFilter
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
@@ -81,32 +81,40 @@ export const ClientDashboard = () => {
         videos={videos}
       />
 
-      {/* Filtros de Plataforma expandido */}
-      <PlatformFilter
-        selectedPlatform={selectedPlatform}
-        onPlatformChange={setSelectedPlatform}
-        videos={videos}
-      />
+      {/* Layout em duas colunas */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Coluna esquerda - Filtros */}
+        <div className="lg:col-span-1 space-y-4">
+          {/* Filtro de Plataformas como sidebar */}
+          <PlatformFilter
+            selectedPlatform={selectedPlatform}
+            onPlatformChange={setSelectedPlatform}
+            videos={videos}
+          />
+          
+          {/* Filtros de busca e data */}
+          <VideoFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            availableCategories={availableCategories}
+            videos={videos}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+          />
+        </div>
 
-      {/* Filtros e Busca expandidos */}
-      <VideoFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        availableCategories={availableCategories}
-        videos={videos}
-        selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
-      />
-
-      {/* Lista de Vídeos */}
-      <VideoGrid
-        videos={filteredVideos}
-        isLoading={isLoading}
-        searchTerm={searchTerm}
-        selectedCategory={selectedCategory}
-      />
+        {/* Coluna direita - Grid de Vídeos */}
+        <div className="lg:col-span-3">
+          <VideoGrid
+            videos={filteredVideos}
+            isLoading={isLoading}
+            searchTerm={searchTerm}
+            selectedCategory={selectedCategory}
+          />
+        </div>
+      </div>
     </div>
   );
 };
