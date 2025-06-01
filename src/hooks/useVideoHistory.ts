@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useCache } from '@/hooks/useCache';
 
 interface Video {
   id: string;
@@ -16,18 +17,37 @@ interface Video {
 
 export const useVideoHistory = (limit: number = 10) => {
   const { user } = useAuth();
+  const { get, set, invalidatePattern } = useCache<Video[]>({
+    defaultTTL: 3 * 60 * 1000, // 3 minutos para histórico
+    maxSize: 20
+  });
+  
   const [videos, setVideos] = useState<Video[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchVideos = async () => {
+  const fetchVideos = async (forceRefresh = false) => {
     if (!user) {
       setIsLoading(false);
       return;
     }
 
-    console.log('🎬 Buscando histórico de vídeos...');
+    const cacheKey = `video_history_${user.id}_${limit}`;
+    
+    // Tentar buscar do cache primeiro, a menos que seja refresh forçado
+    if (!forceRefresh) {
+      const cachedData = get(cacheKey);
+      if (cachedData) {
+        console.log('🎯 Usando histórico de vídeos do cache');
+        setVideos(cachedData);
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    console.log('🎬 Buscando histórico de vídeos do banco...');
     console.log('Usuário:', user.id);
     console.log('Limite:', limit);
+    setIsLoading(true);
 
     try {
       const { data, error } = await supabase
@@ -44,7 +64,11 @@ export const useVideoHistory = (limit: number = 10) => {
       console.log('✅ Vídeos encontrados:', data?.length || 0);
       console.log('Dados dos vídeos:', data);
       
-      setVideos(data || []);
+      const videoData = data || [];
+      
+      // Armazenar no cache
+      set(cacheKey, videoData);
+      setVideos(videoData);
     } catch (error) {
       console.error('💥 Erro no useVideoHistory:', error);
       setVideos([]);
@@ -59,7 +83,10 @@ export const useVideoHistory = (limit: number = 10) => {
 
   // Função para forçar atualização manual
   const refreshVideos = () => {
-    fetchVideos();
+    if (user) {
+      invalidatePattern(`video_history_${user.id}`);
+    }
+    fetchVideos(true);
   };
 
   return {

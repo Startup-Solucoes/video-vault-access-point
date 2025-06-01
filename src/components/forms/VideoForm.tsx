@@ -10,9 +10,12 @@ import { PlatformSelector } from './video-form/PlatformSelector';
 import { PublishDateTimeSelector } from './video-form/PublishDateTimeSelector';
 import { useVideoForm } from './video-form/useVideoForm';
 import { VideoFormProps } from './video-form/VideoFormTypes';
+import { useCacheInvalidation } from '@/hooks/useCacheInvalidation';
 
 export const VideoForm = ({ open, onOpenChange, onVideoCreated }: VideoFormProps) => {
   const clientSelectorRef = useRef<ClientSelectorRef>(null);
+  const { invalidateVideoCache } = useCacheInvalidation();
+  
   const {
     formData,
     isLoading,
@@ -24,7 +27,8 @@ export const VideoForm = ({ open, onOpenChange, onVideoCreated }: VideoFormProps
     handleSubmit
   } = useVideoForm(() => {
     onOpenChange(false);
-    // Chamar onVideoCreated quando o vídeo for criado com sucesso
+    // Invalidar cache e chamar callback quando o vídeo for criado com sucesso
+    invalidateVideoCache();
     if (onVideoCreated) {
       onVideoCreated();
     }

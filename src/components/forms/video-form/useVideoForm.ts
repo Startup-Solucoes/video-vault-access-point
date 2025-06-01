@@ -3,9 +3,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useVideoFormState } from './videoFormState';
 import { validateVideoForm } from './videoFormValidation';
 import { submitVideoData } from './videoSubmissionService';
+import { useCacheInvalidation } from '@/hooks/useCacheInvalidation';
 
 export const useVideoForm = (onClose: () => void) => {
   const { user } = useAuth();
+  const { invalidateVideoCache } = useCacheInvalidation();
   const {
     formData,
     isLoading,
@@ -32,6 +34,8 @@ export const useVideoForm = (onClose: () => void) => {
       const success = await submitVideoData(formData, user);
       
       if (success) {
+        // Invalidar cache após criação bem-sucedida
+        invalidateVideoCache();
         resetForm();
         onClose();
       }

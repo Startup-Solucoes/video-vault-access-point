@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useCache } from '@/hooks/useCache';
 
 interface ClientVideo {
   id: string;
@@ -17,9 +18,13 @@ interface ClientVideo {
 
 export const useClientVideos = (clientId: string) => {
   const { user } = useAuth();
+  const { get, set, invalidatePattern } = useCache<ClientVideo[]>({
+    defaultTTL: 2 * 60 * 1000, // 2 minutos para vídeos do cliente
+    maxSize: 30
+  });
+  
   const [videos, setVideos] = useState<ClientVideo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [lastFetch, setLastFetch] = useState<number>(0);
 
   const fetchClientVideos = async (forceRefresh = false) => {
     if (!user || !clientId) {
@@ -27,17 +32,20 @@ export const useClientVideos = (clientId: string) => {
       return;
     }
 
-    // Implementa cache simples - só busca se passou mais de 2 minutos ou force refresh
-    const now = Date.now();
-    const CACHE_TIME = 2 * 60 * 1000; // 2 minutos
+    const cacheKey = `client_videos_${clientId}`;
     
-    if (!forceRefresh && lastFetch && (now - lastFetch) < CACHE_TIME) {
-      console.log('🎬 Usando cache de vídeos do cliente:', clientId);
-      setIsLoading(false);
-      return;
+    // Tentar buscar do cache primeiro, a menos que seja refresh forçado
+    if (!forceRefresh) {
+      const cachedData = get(cacheKey);
+      if (cachedData) {
+        console.log(`🎯 Usando vídeos do cliente ${clientId} do cache`);
+        setVideos(cachedData);
+        setIsLoading(false);
+        return;
+      }
     }
 
-    console.log('🎬 Buscando vídeos do cliente:', clientId);
+    console.log('🎬 Buscando vídeos do cliente do banco:', clientId);
     setIsLoading(true);
 
     try {
@@ -78,8 +86,10 @@ export const useClientVideos = (clientId: string) => {
       })) || [];
 
       console.log('✅ Vídeos processados:', clientVideos.length);
+      
+      // Armazenar no cache
+      set(cacheKey, clientVideos);
       setVideos(clientVideos);
-      setLastFetch(now);
     } catch (error) {
       console.error('💥 Erro no useClientVideos:', error);
       setVideos([]);
@@ -94,6 +104,7 @@ export const useClientVideos = (clientId: string) => {
 
   // Função para forçar atualização manual
   const refreshClientVideos = () => {
+    invalidatePattern(`client_videos_${clientId}`);
     fetchClientVideos(true);
   };
 

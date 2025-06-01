@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useCache } from '@/hooks/useCache';
 
 interface VideoPermission {
   id: string;
@@ -18,16 +19,35 @@ interface VideoPermission {
 
 export const useVideoPermissions = () => {
   const { user } = useAuth();
+  const { get, set, invalidatePattern } = useCache<VideoPermission[]>({
+    defaultTTL: 3 * 60 * 1000, // 3 minutos para permissões
+    maxSize: 50
+  });
+  
   const [videoPermissions, setVideoPermissions] = useState<VideoPermission[]>([]);
   const [isLoadingPermissions, setIsLoadingPermissions] = useState(true);
 
-  const fetchVideoPermissions = async () => {
+  const fetchVideoPermissions = async (forceRefresh = false) => {
     if (!user) {
       setIsLoadingPermissions(false);
       return;
     }
 
-    console.log('🔐 Buscando permissões de vídeos...');
+    const cacheKey = `video_permissions_${user.id}`;
+    
+    // Tentar buscar do cache primeiro, a menos que seja refresh forçado
+    if (!forceRefresh) {
+      const cachedData = get(cacheKey);
+      if (cachedData) {
+        console.log('🎯 Usando permissões de vídeos do cache');
+        setVideoPermissions(cachedData);
+        setIsLoadingPermissions(false);
+        return;
+      }
+    }
+
+    console.log('🔐 Buscando permissões de vídeos do banco...');
+    setIsLoadingPermissions(true);
 
     try {
       // Buscar permissões primeiro
@@ -43,6 +63,15 @@ export const useVideoPermissions = () => {
 
       // Buscar dados dos clientes separadamente
       const clientIds = permissions?.map(p => p.client_id) || [];
+      
+      if (clientIds.length === 0) {
+        console.log('✅ Nenhuma permissão encontrada');
+        const emptyResult: VideoPermission[] = [];
+        set(cacheKey, emptyResult);
+        setVideoPermissions(emptyResult);
+        return;
+      }
+
       const { data: clients, error: clientsError } = await supabase
         .from('profiles')
         .select('id, full_name, email')
@@ -63,8 +92,9 @@ export const useVideoPermissions = () => {
       }) || [];
 
       console.log('✅ Permissões encontradas:', permissionsWithClients.length);
-      console.log('Dados das permissões:', permissionsWithClients);
       
+      // Armazenar no cache
+      set(cacheKey, permissionsWithClients);
       setVideoPermissions(permissionsWithClients);
     } catch (error) {
       console.error('💥 Erro no useVideoPermissions:', error);
@@ -80,7 +110,10 @@ export const useVideoPermissions = () => {
 
   // Função para forçar atualização manual
   const refreshVideoPermissions = () => {
-    fetchVideoPermissions();
+    if (user) {
+      invalidatePattern(`video_permissions_${user.id}`);
+    }
+    fetchVideoPermissions(true);
   };
 
   return {

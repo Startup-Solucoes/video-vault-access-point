@@ -10,9 +10,12 @@ import { PlatformSelector } from './video-form/PlatformSelector';
 import { PublishDateTimeSelector } from './video-form/PublishDateTimeSelector';
 import { useEditVideoForm } from './video-form/useEditVideoForm';
 import { EditVideoFormProps } from './video-form/EditVideoFormTypes';
+import { useCacheInvalidation } from '@/hooks/useCacheInvalidation';
 
 export const EditVideoForm = ({ open, onOpenChange, videoId }: EditVideoFormProps) => {
   const clientSelectorRef = useRef<ClientSelectorRef>(null);
+  const { invalidateVideoCache } = useCacheInvalidation();
+  
   const {
     formData,
     isLoading,
@@ -23,7 +26,11 @@ export const EditVideoForm = ({ open, onOpenChange, videoId }: EditVideoFormProp
     handleDateTimeChange,
     handlePlatformChange,
     handleSubmit
-  } = useEditVideoForm(videoId, () => onOpenChange(false));
+  } = useEditVideoForm(videoId, () => {
+    // Invalidar cache após edição bem-sucedida
+    invalidateVideoCache();
+    onOpenChange(false);
+  });
 
   if (isLoadingData) {
     return (

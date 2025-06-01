@@ -5,9 +5,11 @@ import { validateEditVideoForm } from './editVideoValidation';
 import { submitEditVideoData } from './editVideoSubmissionService';
 import { loadVideoData } from './editVideoDataService';
 import { useEditVideoFormState } from './useEditVideoFormState';
+import { useCacheInvalidation } from '@/hooks/useCacheInvalidation';
 
 export const useEditVideoForm = (videoId: string, onClose: () => void) => {
   const { user } = useAuth();
+  const { invalidateVideoCache } = useCacheInvalidation();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const isDataLoadedRef = useRef(false);
@@ -63,6 +65,8 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
       const success = await submitEditVideoData(formData, videoId, user);
       
       if (success) {
+        // Invalidar cache após edição bem-sucedida
+        invalidateVideoCache();
         onClose();
       }
       
