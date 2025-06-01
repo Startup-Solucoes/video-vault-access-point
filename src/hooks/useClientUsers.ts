@@ -24,16 +24,21 @@ export const useClientUsers = (clientId: string | null) => {
     queryKey,
     queryFn: () => fetchClientUsers(clientId!),
     enabled: !!clientId,
-    staleTime: 0, // Dados sempre considerados obsoletos
-    gcTime: 0, // Não mantém cache
-    refetchOnMount: true, // Sempre busca ao montar
+    staleTime: 3 * 60 * 1000, // 3 minutos - usuários não mudam com frequência
+    gcTime: 5 * 60 * 1000, // 5 minutos de cache
+    refetchOnMount: false, // Não busca sempre ao montar
+    refetchOnWindowFocus: false, // Evita buscas desnecessárias
+    retry: 2,
   });
 
   const addUserMutation = useMutation({
     mutationFn: ({ userEmail }: { userEmail: string }) =>
       addClientUser(clientId!, userEmail, user!.id),
     onSuccess: (result: CreateUserResult) => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ 
+        queryKey,
+        exact: true
+      });
 
       toast({
         title: "Usuário criado com sucesso",
@@ -41,7 +46,7 @@ export const useClientUsers = (clientId: string | null) => {
           email: result.user.email, 
           password: result.password 
         }),
-        duration: 15000, // Show for longer so they can copy the password
+        duration: 15000,
       });
     },
     onError: (error: Error) => {
@@ -58,7 +63,10 @@ export const useClientUsers = (clientId: string | null) => {
     mutationFn: ({ clientUserId }: { clientUserId: string }) =>
       removeClientUser(clientUserId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ 
+        queryKey,
+        exact: true
+      });
       toast({
         title: "Sucesso",
         description: "Usuário removido com sucesso",

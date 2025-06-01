@@ -14,7 +14,7 @@ const CLIENTS_QUERY_KEY = ['clients'];
 export const useClientData = () => {
   const queryClient = useQueryClient();
 
-  // Query para buscar clientes - SEMPRE BUSCA DADOS FRESCOS
+  // Query para buscar clientes - CONFIGURAÇÕES OTIMIZADAS
   const {
     data: clients = [],
     isLoading,
@@ -22,11 +22,13 @@ export const useClientData = () => {
   } = useQuery({
     queryKey: CLIENTS_QUERY_KEY,
     queryFn: fetchClientsFromDB,
-    staleTime: 0, // Dados sempre considerados obsoletos
-    gcTime: 0, // Não mantém cache
-    refetchOnMount: 'always', // Sempre busca ao montar
-    refetchOnWindowFocus: true, // Busca quando volta para a aba
-    refetchOnReconnect: true, // Busca ao reconectar
+    staleTime: 5 * 60 * 1000, // 5 minutos - dados frescos por mais tempo
+    gcTime: 10 * 60 * 1000, // 10 minutos - mantém cache por mais tempo
+    refetchOnMount: false, // Não busca sempre ao montar se dados estão frescos
+    refetchOnWindowFocus: false, // Evita buscas ao voltar para aba
+    refetchOnReconnect: true, // Mantém busca ao reconectar (importante)
+    retry: 2, // Retry em caso de erro
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Backoff exponencial
   });
 
   // Mutation para atualizar cliente
@@ -34,8 +36,11 @@ export const useClientData = () => {
     mutationFn: ({ clientId, editForm }: { clientId: string; editForm: EditClientForm }) =>
       updateClientInDB(clientId, editForm),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
-      queryClient.removeQueries({ queryKey: CLIENTS_QUERY_KEY });
+      // Invalidação mais específica e eficiente
+      queryClient.invalidateQueries({ 
+        queryKey: CLIENTS_QUERY_KEY,
+        exact: true // Só invalida esta query específica
+      });
       toast({
         title: "Sucesso",
         description: "Cliente atualizado com sucesso",
@@ -56,8 +61,10 @@ export const useClientData = () => {
     mutationFn: ({ clientId, clientEmail }: { clientId: string; clientEmail: string }) =>
       approveClientInDB(clientId, clientEmail),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
-      queryClient.removeQueries({ queryKey: CLIENTS_QUERY_KEY });
+      queryClient.invalidateQueries({ 
+        queryKey: CLIENTS_QUERY_KEY,
+        exact: true
+      });
       toast({
         title: "Sucesso",
         description: "Cliente aprovado com sucesso",
@@ -78,8 +85,10 @@ export const useClientData = () => {
     mutationFn: ({ clientId, clientName }: { clientId: string; clientName: string }) =>
       deleteClientFromDB(clientId, clientName),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
-      queryClient.removeQueries({ queryKey: CLIENTS_QUERY_KEY });
+      queryClient.invalidateQueries({ 
+        queryKey: CLIENTS_QUERY_KEY,
+        exact: true
+      });
       toast({
         title: "Sucesso",
         description: "Cliente removido com sucesso",
@@ -95,11 +104,14 @@ export const useClientData = () => {
     }
   });
 
-  // Função para forçar atualização manual
+  // Função para forçar atualização manual - OTIMIZADA
   const refreshClients = () => {
-    console.log('useClientData: refreshClients chamado - removendo cache e invalidando queries');
-    queryClient.removeQueries({ queryKey: CLIENTS_QUERY_KEY });
-    queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
+    console.log('useClientData: refreshClients chamado - invalidando queries de forma otimizada');
+    queryClient.invalidateQueries({ 
+      queryKey: CLIENTS_QUERY_KEY,
+      exact: true,
+      refetchType: 'active' // Só refetch se a query estiver ativa
+    });
   };
 
   const updateClient = (clientId: string, editForm: EditClientForm) => {
