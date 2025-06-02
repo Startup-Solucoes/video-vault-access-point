@@ -209,7 +209,7 @@ export const AllVideosView = () => {
                 variant="outline"
                 onClick={handleSelectAllVisible}
               >
-                {videos.every(video => selectedVideos.includes(video.id)) ? 'Desmarcar Página' : 'Selecionar Página'}
+                {videos.every(video => selectedVideos.includes(video.id)) ? 'Desmarcar' : 'Selecionar Vídeos'}
               </Button>
               {selectedVideos.length > 0 && (
                 <Button
