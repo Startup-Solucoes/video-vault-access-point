@@ -85,7 +85,13 @@ export const createUser = async ({ formData, logoFile }: CreateUserParams) => {
         
         console.log('Resultado da limpeza:', cleanupResult);
         
-        if (cleanupResult?.success) {
+        // Verificação de tipo mais segura para o resultado da função RPC
+        const isCleanupSuccessful = cleanupResult && 
+          typeof cleanupResult === 'object' && 
+          'success' in cleanupResult && 
+          cleanupResult.success === true;
+        
+        if (isCleanupSuccessful) {
           // Aguardar e tentar criar novamente
           await new Promise(resolve => setTimeout(resolve, 2000));
           
