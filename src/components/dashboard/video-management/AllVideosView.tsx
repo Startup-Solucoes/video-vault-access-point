@@ -3,13 +3,12 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useClientSelector } from '@/hooks/useClientSelector';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Video, Calendar, Tag, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ClientSelectionModal } from '@/components/forms/client-selector/ClientSelectionModal';
+import { VideoListHeader } from './VideoListHeader';
+import { VideosList } from './VideosList';
+import { VideoListPagination } from './VideoListPagination';
 import { toast } from '@/hooks/use-toast';
 
 interface VideoData {
@@ -64,14 +63,6 @@ export const AllVideosView = () => {
       setSelectedVideos(prev => [...prev, videoId]);
     } else {
       setSelectedVideos(prev => prev.filter(id => id !== videoId));
-    }
-  };
-
-  const handleSelectAll = () => {
-    if (selectedVideos.length === videos.length) {
-      setSelectedVideos([]);
-    } else {
-      setSelectedVideos(videos.map(video => video.id));
     }
   };
 
@@ -152,21 +143,9 @@ export const AllVideosView = () => {
     setSelectedVideos([]);
   };
 
-  const goToPage = (page: number) => {
+  const handlePageChange = (page: number) => {
     setCurrentPage(page);
     setSelectedVideos([]);
-  };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      goToPage(currentPage - 1);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      goToPage(currentPage + 1);
-    }
   };
 
   if (isLoading) {
@@ -184,168 +163,30 @@ export const AllVideosView = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center space-x-2">
-              <Video className="h-5 w-5" />
-              <span>Todos os Vídeos ({allVideos.length})</span>
-            </CardTitle>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">Mostrar:</span>
-                <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
-                  <SelectTrigger className="w-20">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="15">15</SelectItem>
-                    <SelectItem value="30">30</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                    <SelectItem value="100">100</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                variant="outline"
-                onClick={handleSelectAllVisible}
-              >
-                {videos.every(video => selectedVideos.includes(video.id)) ? 'Desmarcar' : 'Selecionar Vídeos'}
-              </Button>
-              {selectedVideos.length > 0 && (
-                <Button
-                  onClick={() => setShowClientSelector(true)}
-                  className="flex items-center space-x-2"
-                >
-                  <Users className="h-4 w-4" />
-                  <span>Atribuir para Clientes ({selectedVideos.length})</span>
-                </Button>
-              )}
-            </div>
-          </div>
+          <VideoListHeader
+            totalVideos={allVideos.length}
+            currentVideos={videos}
+            selectedVideos={selectedVideos}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={handleItemsPerPageChange}
+            onSelectAllVisible={handleSelectAllVisible}
+            onAssignToClients={() => setShowClientSelector(true)}
+          />
         </CardHeader>
         <CardContent>
-          {allVideos.length === 0 ? (
-            <div className="text-center py-12">
-              <Video className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Nenhum vídeo cadastrado
-              </h3>
-              <p className="text-gray-500">
-                Cadastre vídeos para começar a gerenciar as permissões
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="space-y-4">
-                {videos.map((video) => (
-                  <div key={video.id} className="flex items-start space-x-4 p-4 border rounded-lg hover:bg-gray-50">
-                    <Checkbox
-                      checked={selectedVideos.includes(video.id)}
-                      onCheckedChange={(checked) => handleVideoSelect(video.id, checked as boolean)}
-                    />
-                    
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-start justify-between">
-                        <h3 className="font-semibold text-gray-900 line-clamp-1">
-                          {video.title}
-                        </h3>
-                        <div className="flex items-center space-x-2 text-sm text-gray-500">
-                          <Calendar className="h-3 w-3" />
-                          <span>{new Date(video.created_at).toLocaleDateString('pt-BR')}</span>
-                        </div>
-                      </div>
-                      
-                      {video.description && (
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {video.description}
-                        </p>
-                      )}
-                      
-                      <div className="flex items-center space-x-4">
-                        {video.platform && (
-                          <Badge variant="secondary">
-                            {video.platform}
-                          </Badge>
-                        )}
-                        {video.category && (
-                          <Badge variant="outline">
-                            {video.category}
-                          </Badge>
-                        )}
-                        {video.tags && video.tags.length > 0 && (
-                          <div className="flex items-center space-x-1">
-                            <Tag className="h-3 w-3 text-gray-400" />
-                            <span className="text-xs text-gray-500">
-                              {video.tags.slice(0, 3).join(', ')}
-                              {video.tags.length > 3 && ` +${video.tags.length - 3}`}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Paginação */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6 pt-4 border-t">
-                  <div className="text-sm text-gray-600">
-                    Mostrando {startIndex + 1} a {Math.min(endIndex, allVideos.length)} de {allVideos.length} vídeos
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={goToPreviousPage}
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      Anterior
-                    </Button>
-                    
-                    <div className="flex items-center space-x-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        let pageNum;
-                        if (totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
-                        }
-                        
-                        return (
-                          <Button
-                            key={pageNum}
-                            variant={currentPage === pageNum ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => goToPage(pageNum)}
-                            className="w-8 h-8 p-0"
-                          >
-                            {pageNum}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={goToNextPage}
-                      disabled={currentPage === totalPages}
-                    >
-                      Próximo
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
+          <VideosList
+            videos={videos}
+            selectedVideos={selectedVideos}
+            onVideoSelect={handleVideoSelect}
+          />
+          
+          <VideoListPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalVideos={allVideos.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+          />
         </CardContent>
       </Card>
 
