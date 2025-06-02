@@ -25,10 +25,10 @@ export const ClientHeader = ({ profile, videoCount }: ClientHeaderProps) => {
           <User className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
         </div>
       )}
-      <div className="flex-1 min-w-0 w-full">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 break-words">{profile.full_name}</h1>
-        <p className="text-sm sm:text-base text-gray-600 break-all">{profile.email}</p>
-        <div className="flex items-center mt-2">
+      <div className="flex-1 min-w-0 w-full space-y-2">
+        <h1 className="text-xl sm:text-3xl font-bold text-gray-900">{profile.full_name}</h1>
+        <p className="text-sm sm:text-base text-gray-600">{profile.email}</p>
+        <div className="flex items-center">
           <Badge variant="secondary" className="flex items-center space-x-1 text-xs sm:text-sm">
             <Video className="h-3 w-3" />
             <span>{videoCount} vídeo{videoCount !== 1 ? 's' : ''} disponível{videoCount !== 1 ? 'eis' : ''}</span>
