@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useClientData } from '@/hooks/useClientData';
+import { useClientSelector } from '@/hooks/useClientSelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -25,8 +25,16 @@ interface VideoData {
 }
 
 export const AllVideosView = () => {
-  const { clients } = useClientData();
+  const {
+    clients,
+    filteredClients,
+    isLoading: clientsLoading,
+    searchValue,
+    setSearchValue
+  } = useClientSelector();
+  
   const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
+  const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [showClientSelector, setShowClientSelector] = useState(false);
 
   const { data: videos = [], isLoading } = useQuery({
@@ -58,13 +66,40 @@ export const AllVideosView = () => {
     }
   };
 
-  const handleAssignToClients = async (selectedClientIds: string[]) => {
+  const handleClientToggle = (clientId: string) => {
+    setSelectedClients(prev => 
+      prev.includes(clientId) 
+        ? prev.filter(id => id !== clientId)
+        : [...prev, clientId]
+    );
+  };
+
+  const handleBulkClientChange = (clientIds: string[]) => {
+    setSelectedClients(clientIds);
+  };
+
+  const handleAssignToClients = async () => {
+    if (selectedClients.length === 0) {
+      toast({
+        title: "Aviso",
+        description: "Selecione pelo menos um cliente",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
+      // Aguardar o user ID de forma correta
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Usuário não autenticado');
+      }
+
       const permissions = selectedVideos.flatMap(videoId =>
-        selectedClientIds.map(clientId => ({
+        selectedClients.map(clientId => ({
           video_id: videoId,
           client_id: clientId,
-          granted_by: supabase.auth.getUser().then(u => u.data.user?.id)
+          granted_by: user.id // Agora é string, não Promise
         }))
       );
 
@@ -76,10 +111,11 @@ export const AllVideosView = () => {
 
       toast({
         title: "Sucesso",
-        description: `${selectedVideos.length} vídeo(s) atribuído(s) para ${selectedClientIds.length} cliente(s)`,
+        description: `${selectedVideos.length} vídeo(s) atribuído(s) para ${selectedClients.length} cliente(s)`,
       });
 
       setSelectedVideos([]);
+      setSelectedClients([]);
       setShowClientSelector(false);
     } catch (error) {
       console.error('Erro ao atribuir vídeos:', error);
@@ -200,10 +236,22 @@ export const AllVideosView = () => {
         open={showClientSelector}
         onOpenChange={setShowClientSelector}
         clients={clients}
-        onClientsSelected={handleAssignToClients}
-        title="Selecionar Clientes"
-        description={`Selecione os clientes que receberão acesso aos ${selectedVideos.length} vídeo(s) selecionado(s)`}
+        selectedClients={selectedClients}
+        onClientToggle={handleClientToggle}
+        onBulkClientChange={handleBulkClientChange}
+        isLoading={clientsLoading}
+        searchValue={searchValue}
+        onSearchValueChange={setSearchValue}
+        filteredClients={filteredClients}
       />
+
+      {selectedClients.length > 0 && showClientSelector && (
+        <div className="fixed bottom-4 right-4">
+          <Button onClick={handleAssignToClients} size="lg">
+            Confirmar Atribuição ({selectedVideos.length} vídeos → {selectedClients.length} clientes)
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
