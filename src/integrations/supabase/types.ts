@@ -54,6 +54,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          is_deleted: boolean | null
           logo_url: string | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string | null
@@ -63,6 +64,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          is_deleted?: boolean | null
           logo_url?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
@@ -72,6 +74,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          is_deleted?: boolean | null
           logo_url?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
@@ -157,6 +160,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_user_exists: {
+        Args: { user_email: string }
+        Returns: boolean
+      }
+      delete_user_completely: {
+        Args: { user_email: string }
+        Returns: Json
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
