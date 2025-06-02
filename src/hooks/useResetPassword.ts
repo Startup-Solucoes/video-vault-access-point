@@ -14,6 +14,9 @@ export const useResetPassword = () => {
   useEffect(() => {
     const checkTokenAndSetSession = async () => {
       try {
+        console.log('Checking for reset password tokens...');
+        console.log('Current URL:', window.location.href);
+        
         // Verificar se há parâmetros na URL para reset de senha
         const urlParams = new URLSearchParams(window.location.search);
         const fragment = new URLSearchParams(window.location.hash.substring(1));
@@ -23,7 +26,13 @@ export const useResetPassword = () => {
         const refreshToken = urlParams.get('refresh_token') || fragment.get('refresh_token');
         const type = urlParams.get('type') || fragment.get('type');
 
-        console.log('Reset password params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
+        console.log('Reset password params:', { 
+          accessToken: !!accessToken, 
+          refreshToken: !!refreshToken, 
+          type,
+          hasHash: !!window.location.hash,
+          hasSearch: !!window.location.search
+        });
 
         if (type === 'recovery' && accessToken && refreshToken) {
           console.log('Setting session with recovery tokens...');
