@@ -4,7 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { VideoList } from './video-management/VideoList';
-import { LazyClientVideoView } from './LazyComponents';
+
+// Importação direta ao invés de lazy para evitar problemas de carregamento
+const ClientVideoView = React.lazy(() => 
+  import('./video-management/ClientVideoView').then(module => ({ 
+    default: module.ClientVideoView 
+  }))
+);
 
 // Componente de Loading para Suspense
 const ComponentLoader = () => (
@@ -16,7 +22,7 @@ const ComponentLoader = () => (
   </div>
 );
 
-export const VideoManagement = () => {
+const VideoManagement = () => {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [selectedClientName, setSelectedClientName] = useState<string>('');
 
@@ -43,7 +49,7 @@ export const VideoManagement = () => {
           </Button>
         </div>
         <Suspense fallback={<ComponentLoader />}>
-          <LazyClientVideoView 
+          <ClientVideoView 
             clientId={selectedClientId} 
             clientName={selectedClientName}
           />
@@ -65,3 +71,6 @@ export const VideoManagement = () => {
     </div>
   );
 };
+
+export default VideoManagement;
+export { VideoManagement };
