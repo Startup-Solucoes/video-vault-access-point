@@ -1,5 +1,4 @@
 
-
 name: Deploy Application
 
 on:
@@ -65,7 +64,9 @@ jobs:
         echo "📦 Build SHA: ${{ github.sha }}"
         echo "🕒 Build time: $(date)"
         if [ "${{ github.event_name }}" = "push" ]; then
-          echo "📝 Para fazer deploy, execute o workflow manualmente escolhendo 'production'"
+          echo "📝 Para fazer deploy em produção, execute o workflow manualmente escolhendo 'production'"
+        elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "🚀 Deploy em produção será executado após aprovação manual"
         fi
 
   deploy-production:
@@ -110,4 +111,4 @@ jobs:
         echo "🔗 URL: https://tutoriaiserp.com.br"
         echo "👤 Approved by: ${{ github.actor }}"
         echo "📅 Deploy time: $(date)"
-
+        echo "🔄 Funcionalidade de reset de senha atualizada"
