@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -53,7 +52,15 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <User className="h-5 w-5 mr-2" />
+            {clientLogoUrl ? (
+              <img 
+                src={clientLogoUrl} 
+                alt={`Logo ${clientName}`}
+                className="h-8 w-8 mr-3 object-contain rounded"
+              />
+            ) : (
+              <User className="h-5 w-5 mr-2" />
+            )}
             Vídeos de {clientName}
           </CardTitle>
         </CardHeader>

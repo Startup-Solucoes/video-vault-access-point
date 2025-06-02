@@ -1,176 +1,110 @@
 
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Folder, Calendar, User, Trash2, Video, Search } from 'lucide-react';
-import { useVideoPermissions } from '@/hooks/useVideoPermissions';
-import { useClientData } from '@/hooks/useClientData';
+import { Search, Users, Video, User } from 'lucide-react';
+import { useClientManagement } from '@/hooks/useClientManagement';
+import { useClientVideos } from '@/hooks/useClientVideos';
 
 interface VideoListProps {
   onClientSelect: (clientId: string, clientName: string, clientLogoUrl?: string) => void;
 }
 
 export const VideoList = ({ onClientSelect }: VideoListProps) => {
-  const { videoPermissions, isLoadingPermissions } = useVideoPermissions();
-  const { clients, deleteClient } = useClientData();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { filteredClients, searchTerm, setSearchTerm, isLoading } = useClientManagement();
+  const [searchFilter, setSearchFilter] = useState('');
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit', 
-      year: 'numeric'
-    });
-  };
+  // Filtrar clientes baseado no termo de busca local
+  const displayedClients = filteredClients.filter(client =>
+    client.full_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+    client.email.toLowerCase().includes(searchFilter.toLowerCase())
+  );
 
-  const getClientVideoCount = (clientId: string) => {
-    return videoPermissions.filter(permission => permission.client_id === clientId).length;
-  };
-
-  // Filtrar e ordenar clientes
-  const filteredAndSortedClients = useMemo(() => {
-    // Filtrar apenas clientes que têm vídeos
-    let clientsWithVideos = clients.filter(client => 
-      !client.is_deleted && getClientVideoCount(client.id) > 0
-    );
-
-    // Aplicar filtro de busca
-    if (searchTerm) {
-      clientsWithVideos = clientsWithVideos.filter(client =>
-        client.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  const ClientVideoSummary = ({ clientId }: { clientId: string }) => {
+    const { videos, isLoading: videosLoading } = useClientVideos(clientId);
+    
+    if (videosLoading) {
+      return <span className="text-gray-500">Carregando...</span>;
     }
-
-    // Ordenar por data de criação (mais recente primeiro)
-    return clientsWithVideos.sort((a, b) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-  }, [clients, videoPermissions, searchTerm]);
-
-  const handleDeleteClient = async (clientId: string, clientName: string) => {
-    if (confirm(`Tem certeza que deseja deletar todo o diretório de "${clientName}"? Esta ação removerá o cliente e todas as suas permissões de vídeos.`)) {
-      await deleteClient(clientId, clientName);
-    }
-  };
-
-  if (isLoadingPermissions) {
+    
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center space-x-2">
+        <Video className="h-4 w-4 text-blue-600" />
+        <span className="text-sm text-gray-600">
+          {videos.length} vídeo{videos.length !== 1 ? 's' : ''}
+        </span>
       </div>
     );
-  }
+  };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Clientes com Vídeos ({filteredAndSortedClients.length})</h3>
-      </div>
-
-      {/* Barra de busca */}
-      <div className="flex items-center space-x-2 border rounded-md px-3 py-2 bg-white">
-        <Search className="h-4 w-4 text-gray-500" />
+      {/* Filtro de busca */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         <Input
-          placeholder="Buscar por nome ou e-mail do cliente..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+          placeholder="Buscar cliente por nome ou email..."
+          value={searchFilter}
+          onChange={(e) => setSearchFilter(e.target.value)}
+          className="pl-10"
         />
       </div>
 
-      {filteredAndSortedClients.length === 0 ? (
+      {/* Lista de clientes */}
+      {isLoading && displayedClients.length === 0 ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="flex items-center space-x-2">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="text-gray-600">Carregando clientes...</span>
+          </div>
+        </div>
+      ) : displayedClients.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          <Folder className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-          {searchTerm ? (
-            <>
-              <p>Nenhum cliente encontrado com "{searchTerm}"</p>
-              <p className="text-sm">Tente outro termo de busca</p>
-            </>
-          ) : (
-            <>
-              <p>Nenhum cliente com vídeos encontrado</p>
-              <p className="text-sm">Adicione permissões de vídeos para os clientes</p>
-            </>
-          )}
+          <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <p>Nenhum cliente encontrado</p>
+          <p className="text-sm">Tente ajustar o filtro de busca</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredAndSortedClients.map((client) => {
-            const videoCount = getClientVideoCount(client.id);
-            return (
-              <Card key={client.id} className="hover:shadow-md transition-shadow cursor-pointer group">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div 
-                      className="flex items-center space-x-3 flex-1 cursor-pointer"
-                      onClick={() => onClientSelect(client.id, client.full_name, client.logo_url)}
-                    >
-                      <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
-                        {client.logo_url ? (
-                          <img 
-                            src={client.logo_url} 
-                            alt={`Logo ${client.full_name}`}
-                            className="h-8 w-8 object-contain"
-                          />
-                        ) : (
-                          <Folder className="h-8 w-8 text-blue-600" />
-                        )}
+        <div className="grid gap-4">
+          {displayedClients.map((client) => (
+            <Card key={client.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onClientSelect(client.id, client.full_name, client.logo_url || undefined)}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    {/* Logo do cliente */}
+                    {client.logo_url ? (
+                      <img 
+                        src={client.logo_url} 
+                        alt={`Logo ${client.full_name}`}
+                        className="h-10 w-10 object-contain rounded border flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
+                        <User className="h-5 w-5 text-blue-600" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900 truncate">
-                          {client.full_name}
-                        </h4>
-                        <p className="text-sm text-gray-500 truncate">
-                          {client.email}
-                        </p>
-                      </div>
+                    )}
+                    
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 truncate">{client.full_name}</h3>
+                      <p className="text-sm text-gray-600 truncate">{client.email}</p>
+                      <ClientVideoSummary clientId={client.id} />
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClient(client.id, client.full_name);
-                      }}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="h-4 w-4" />
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 flex-shrink-0">
+                    <Badge variant={client.role === 'admin' ? 'default' : 'secondary'}>
+                      {client.role === 'admin' ? 'Admin' : 'Cliente'}
+                    </Badge>
+                    <Button variant="outline" size="sm">
+                      Ver Vídeos
                     </Button>
                   </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Badge variant="secondary" className="flex items-center space-x-1">
-                        <Video className="h-3 w-3" />
-                        <span>{videoCount} vídeo{videoCount !== 1 ? 's' : ''}</span>
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {client.role === 'admin' ? 'Admin' : 'Cliente'}
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex items-center text-xs text-gray-500">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      Criado em {formatDate(client.created_at)}
-                    </div>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full mt-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => onClientSelect(client.id, client.full_name, client.logo_url)}
-                  >
-                    <User className="h-4 w-4 mr-1" />
-                    Ver Vídeos
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>

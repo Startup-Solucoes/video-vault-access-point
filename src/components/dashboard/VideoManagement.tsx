@@ -25,15 +25,18 @@ const ComponentLoader = () => (
 const VideoManagement = () => {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [selectedClientName, setSelectedClientName] = useState<string>('');
+  const [selectedClientLogoUrl, setSelectedClientLogoUrl] = useState<string | undefined>();
 
-  const handleClientSelect = (clientId: string, clientName: string) => {
+  const handleClientSelect = (clientId: string, clientName: string, clientLogoUrl?: string) => {
     setSelectedClientId(clientId);
     setSelectedClientName(clientName);
+    setSelectedClientLogoUrl(clientLogoUrl);
   };
 
   const handleBackToVideos = () => {
     setSelectedClientId(null);
     setSelectedClientName('');
+    setSelectedClientLogoUrl(undefined);
   };
 
   if (selectedClientId) {
@@ -52,6 +55,7 @@ const VideoManagement = () => {
           <ClientVideoView 
             clientId={selectedClientId} 
             clientName={selectedClientName}
+            clientLogoUrl={selectedClientLogoUrl}
           />
         </Suspense>
       </div>
