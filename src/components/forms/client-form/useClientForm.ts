@@ -150,17 +150,15 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
       // Resetar formulário
       resetForm();
       
-      // Chamar callback para atualizar lista de usuários
-      if (onClientCreated) {
-        console.log('Chamando callback para atualizar lista...');
-        // Aguardar um pouco antes de atualizar a lista
-        setTimeout(() => {
-          onClientCreated();
-        }, 1000);
-      }
-      
+      // Fechar modal
       if (onOpenChange) {
         onOpenChange(false);
+      }
+      
+      // Chamar callback para atualizar lista de usuários (sem atraso)
+      if (onClientCreated) {
+        console.log('Chamando callback para atualizar lista...');
+        onClientCreated();
       }
     } catch (error: any) {
       console.error('=== ERRO NO CADASTRO ===');
