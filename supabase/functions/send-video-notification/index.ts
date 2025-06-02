@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -20,23 +19,13 @@ const sendEmail = async (emailData: EmailData): Promise<boolean> => {
 
     if (!gmailUser || !gmailPassword) {
       console.error('❌ Credenciais do Gmail não configuradas');
-      console.error('GMAIL_USER:', gmailUser ? 'Configurado' : 'Não configurado');
-      console.error('GMAIL_APP_PASSWORD:', gmailPassword ? 'Configurado' : 'Não configurado');
       return false;
     }
 
     console.log('📧 Enviando email para:', emailData.to);
-    console.log('📧 Gmail user:', gmailUser);
 
-    // Configurar conexão SMTP com Gmail
-    const smtpConfig = {
-      hostname: 'smtp.gmail.com',
-      port: 587,
-      username: gmailUser,
-      password: gmailPassword,
-    };
-
-    // Criar o corpo do email no formato SMTP
+    // Usar uma API de email mais confiável
+    // Implementação simplificada usando fetch para Gmail API ou fallback para SMTP
     const emailMessage = [
       `From: ${gmailUser}`,
       `To: ${emailData.to}`,
@@ -46,105 +35,145 @@ const sendEmail = async (emailData: EmailData): Promise<boolean> => {
       emailData.body
     ].join('\r\n');
 
-    // Fazer conexão SMTP
-    const conn = await Deno.connect({
-      hostname: smtpConfig.hostname,
-      port: smtpConfig.port,
-    });
-
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-
-    // Função para enviar comando e aguardar resposta
-    const sendCommand = async (command: string): Promise<string> => {
-      await conn.write(encoder.encode(command + '\r\n'));
-      const buffer = new Uint8Array(1024);
-      const bytesRead = await conn.read(buffer);
-      return decoder.decode(buffer.subarray(0, bytesRead || 0));
-    };
-
-    // Processo SMTP
-    console.log('🔗 Conectando ao Gmail SMTP...');
-    
-    // Aguardar saudação do servidor
-    const greeting = await sendCommand('');
-    console.log('📨 Resposta do servidor:', greeting.trim());
-
-    // EHLO
-    const ehlo = await sendCommand(`EHLO ${smtpConfig.hostname}`);
-    console.log('📨 EHLO response:', ehlo.trim());
-
-    // STARTTLS
-    const starttls = await sendCommand('STARTTLS');
-    console.log('📨 STARTTLS response:', starttls.trim());
-
-    // Upgrade para TLS
-    const tlsConn = await Deno.startTls(conn, { hostname: smtpConfig.hostname });
-
-    // AUTH LOGIN
-    const auth = await sendCommand('AUTH LOGIN');
-    console.log('📨 AUTH response:', auth.trim());
-
-    // Enviar username (base64)
-    const usernameB64 = btoa(smtpConfig.username);
-    const userResp = await sendCommand(usernameB64);
-    console.log('📨 Username response:', userResp.trim());
-
-    // Enviar password (base64)
-    const passwordB64 = btoa(smtpConfig.password);
-    const passResp = await sendCommand(passwordB64);
-    console.log('📨 Password response:', passResp.trim());
-
-    // MAIL FROM
-    const mailFrom = await sendCommand(`MAIL FROM: <${gmailUser}>`);
-    console.log('📨 MAIL FROM response:', mailFrom.trim());
-
-    // RCPT TO
-    const rcptTo = await sendCommand(`RCPT TO: <${emailData.to}>`);
-    console.log('📨 RCPT TO response:', rcptTo.trim());
-
-    // DATA
-    const dataCmd = await sendCommand('DATA');
-    console.log('📨 DATA response:', dataCmd.trim());
-
-    // Enviar corpo do email
-    const emailBody = await sendCommand(emailMessage + '\r\n.');
-    console.log('📨 Email body response:', emailBody.trim());
-
-    // QUIT
-    await sendCommand('QUIT');
-    
-    tlsConn.close();
-    
-    console.log('✅ Email enviado com sucesso para:', emailData.to);
-    return true;
-
-  } catch (error) {
-    console.error('❌ Erro ao enviar email:', error);
-    
-    // Fallback: usar uma API de email mais simples
+    // Tentar usar uma abordagem mais simples com nodemailer-like implementation
     try {
-      console.log('🔄 Tentando fallback com fetch...');
-      
-      // Usando uma abordagem mais simples com fetch para Gmail API
-      // Nota: Este é um fallback simplificado, em produção considere usar Resend ou SendGrid
-      const response = await fetch('https://www.googleapis.com/gmail/v1/users/me/messages/send', {
+      // Implementação SMTP mais robusta usando fetch para um serviço de relay
+      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${Deno.env.get('GMAIL_APP_PASSWORD')}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          raw: btoa(emailMessage)
+          service_id: 'gmail',
+          template_id: 'template_basic',
+          user_id: 'public_key',
+          template_params: {
+            from_name: 'Sistema ERP',
+            from_email: gmailUser,
+            to_email: emailData.to,
+            subject: emailData.subject,
+            message: emailData.body
+          }
         })
       });
 
       if (response.ok) {
-        console.log('✅ Email enviado via fallback');
+        console.log('✅ Email enviado via EmailJS');
         return true;
       }
-    } catch (fallbackError) {
-      console.error('❌ Erro no fallback:', fallbackError);
+    } catch (emailJsError) {
+      console.log('ℹ️ EmailJS não disponível, tentando SMTP direto...');
+    }
+
+    // Fallback: usar implementação SMTP nativa mais simples
+    try {
+      // Criar o corpo do email no formato raw
+      const rawEmail = `To: ${emailData.to}\r\nSubject: ${emailData.subject}\r\nContent-Type: text/html; charset=utf-8\r\n\r\n${emailData.body}`;
+      
+      // Usar uma implementação SMTP mais robusta
+      const smtpResponse = await fetch('https://smtp.gmail.com:587', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${btoa(`${gmailUser}:${gmailPassword}`)}`,
+          'Content-Type': 'text/plain',
+        },
+        body: rawEmail
+      });
+
+      if (smtpResponse.ok) {
+        console.log('✅ Email enviado via SMTP direto');
+        return true;
+      }
+    } catch (smtpError) {
+      console.log('ℹ️ SMTP direto falhou, usando implementação manual...');
+    }
+
+    // Implementação SMTP manual mais robusta
+    let conn;
+    try {
+      conn = await Deno.connect({
+        hostname: 'smtp.gmail.com',
+        port: 587,
+      });
+
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
+      let buffer = new Uint8Array(1024);
+
+      // Função helper para ler resposta
+      const readResponse = async (): Promise<string> => {
+        const bytesRead = await conn.read(buffer);
+        return decoder.decode(buffer.subarray(0, bytesRead || 0));
+      };
+
+      // Função helper para enviar comando
+      const sendCommand = async (command: string): Promise<string> => {
+        console.log(`📤 Enviando: ${command}`);
+        await conn.write(encoder.encode(command + '\r\n'));
+        const response = await readResponse();
+        console.log(`📨 Recebido: ${response.trim()}`);
+        return response;
+      };
+
+      // Sequência SMTP
+      console.log('🔗 Conectando ao Gmail SMTP...');
+      
+      // Aguardar saudação
+      const greeting = await readResponse();
+      console.log('📨 Saudação:', greeting.trim());
+
+      // EHLO
+      await sendCommand(`EHLO ${Deno.env.get('GMAIL_USER')?.split('@')[1] || 'localhost'}`);
+
+      // STARTTLS
+      await sendCommand('STARTTLS');
+
+      // Upgrade para TLS
+      const tlsConn = await Deno.startTls(conn, { hostname: 'smtp.gmail.com' });
+      conn = tlsConn;
+
+      // Re-EHLO após TLS
+      await sendCommand(`EHLO ${Deno.env.get('GMAIL_USER')?.split('@')[1] || 'localhost'}`);
+
+      // AUTH LOGIN
+      await sendCommand('AUTH LOGIN');
+      await sendCommand(btoa(gmailUser));
+      await sendCommand(btoa(gmailPassword));
+
+      // MAIL FROM
+      await sendCommand(`MAIL FROM: <${gmailUser}>`);
+
+      // RCPT TO
+      await sendCommand(`RCPT TO: <${emailData.to}>`);
+
+      // DATA
+      await sendCommand('DATA');
+
+      // Enviar corpo do email
+      await sendCommand(emailMessage + '\r\n.');
+
+      // QUIT
+      await sendCommand('QUIT');
+
+      console.log('✅ Email enviado com sucesso via SMTP manual');
+      return true;
+
+    } finally {
+      if (conn) {
+        try {
+          conn.close();
+        } catch (e) {
+          console.log('ℹ️ Conexão já fechada');
+        }
+      }
+    }
+
+  } catch (error) {
+    console.error('❌ Erro ao enviar email:', error);
+    
+    // Log mais detalhado do erro
+    if (error.name === 'BadResource') {
+      console.error('💡 Erro de conexão TCP - possível problema de firewall ou timeout');
     }
     
     return false;
