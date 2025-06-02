@@ -28,8 +28,15 @@ export const ResetPasswordButton = () => {
     setIsLoading(true);
 
     try {
+      // Detectar automaticamente o domínio correto
+      const currentOrigin = window.location.origin;
+      const redirectTo = `${currentOrigin}/reset-password`;
+      
+      console.log('🔄 Enviando email de reset para:', email);
+      console.log('🔗 Redirect URL:', redirectTo);
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: redirectTo,
       });
 
       if (error) {
