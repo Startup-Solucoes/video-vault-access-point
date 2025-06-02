@@ -19,28 +19,48 @@ export const ResetPasswordForm = () => {
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
-    // Verificar se há um token de redefinição de senha na URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const accessToken = urlParams.get('access_token');
-    const refreshToken = urlParams.get('refresh_token');
-    const type = urlParams.get('type');
+    const checkTokenAndSetSession = async () => {
+      try {
+        // Verificar se há parâmetros na URL para reset de senha
+        const urlParams = new URLSearchParams(window.location.search);
+        const fragment = new URLSearchParams(window.location.hash.substring(1));
+        
+        // Verificar tanto query params quanto hash params
+        const accessToken = urlParams.get('access_token') || fragment.get('access_token');
+        const refreshToken = urlParams.get('refresh_token') || fragment.get('refresh_token');
+        const type = urlParams.get('type') || fragment.get('type');
 
-    if (type === 'recovery' && accessToken && refreshToken) {
-      // Definir a sessão com os tokens recebidos
-      supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken
-      }).then(({ error }) => {
-        if (error) {
-          console.error('Erro ao validar token:', error);
-          setIsValidToken(false);
+        console.log('Reset password params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
+
+        if (type === 'recovery' && accessToken && refreshToken) {
+          console.log('Setting session with recovery tokens...');
+          
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+
+          if (error) {
+            console.error('Erro ao validar token:', error);
+            setIsValidToken(false);
+          } else {
+            console.log('Session set successfully:', data);
+            setIsValidToken(true);
+            
+            // Limpar a URL dos parâmetros sensíveis
+            window.history.replaceState({}, document.title, '/reset-password');
+          }
         } else {
-          setIsValidToken(true);
+          console.log('No valid recovery tokens found');
+          setIsValidToken(false);
         }
-      });
-    } else {
-      setIsValidToken(false);
-    }
+      } catch (error) {
+        console.error('Error checking token:', error);
+        setIsValidToken(false);
+      }
+    };
+
+    checkTokenAndSetSession();
   }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -77,15 +97,20 @@ export const ResetPasswordForm = () => {
     setIsLoading(true);
 
     try {
+      console.log('Updating user password...');
+      
       const { error } = await supabase.auth.updateUser({
         password: password
       });
 
       if (error) {
+        console.error('Password update error:', error);
         throw error;
       }
 
+      console.log('Password updated successfully');
       setIsSuccess(true);
+      
       toast({
         title: "Sucesso!",
         description: "Sua senha foi alterada com sucesso",
