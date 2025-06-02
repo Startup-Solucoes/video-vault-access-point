@@ -23,11 +23,35 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
     handleLogoChange
   } = useClientForm(onClientCreated, onOpenChange);
 
+  const getDialogTitle = () => {
+    switch (formData.userType) {
+      case 'admin':
+        return 'Cadastrar Novo Administrador';
+      case 'client':
+        return 'Cadastrar Novo Cliente';
+      default:
+        return 'Cadastrar Novo Usuário';
+    }
+  };
+
+  const getSubmitButtonText = () => {
+    if (isLoading) return 'Cadastrando...';
+    
+    switch (formData.userType) {
+      case 'admin':
+        return 'Cadastrar Administrador';
+      case 'client':
+        return 'Cadastrar Cliente';
+      default:
+        return 'Cadastrar Usuário';
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Cadastrar Novo Cliente</DialogTitle>
+          <DialogTitle>{getDialogTitle()}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -36,11 +60,13 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
             onFormDataChange={setFormData} 
           />
           
-          <ClientLogoUpload
-            logoFile={logoFile}
-            logoPreview={logoPreview}
-            onLogoChange={handleLogoChange}
-          />
+          {formData.userType === 'client' && (
+            <ClientLogoUpload
+              logoFile={logoFile}
+              logoPreview={logoPreview}
+              onLogoChange={handleLogoChange}
+            />
+          )}
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button
@@ -52,7 +78,7 @@ export const ClientForm = ({ open, onOpenChange, onClientCreated }: ClientFormPr
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Cadastrando...' : 'Cadastrar Cliente'}
+              {getSubmitButtonText()}
             </Button>
           </div>
         </form>

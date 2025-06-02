@@ -1,82 +1,65 @@
 
 import { toast } from '@/hooks/use-toast';
-import { validatePasswordStrength } from '@/utils/passwordGenerator';
 
 export interface ClientFormData {
   full_name: string;
   email: string;
   password: string;
   confirmPassword: string;
+  userType: 'admin' | 'client';
 }
 
 export const validateClientForm = (formData: ClientFormData): boolean => {
+  // Validação do nome
   if (!formData.full_name.trim()) {
     toast({
-      title: "Erro",
-      description: "Nome do cliente é obrigatório",
+      title: "Erro de validação",
+      description: "Nome é obrigatório",
       variant: "destructive"
     });
     return false;
   }
 
-  if (!formData.email.trim()) {
-    toast({
-      title: "Erro",
-      description: "E-mail é obrigatório",
-      variant: "destructive"
-    });
-    return false;
-  }
-
-  // Validação básica de formato de email
+  // Validação do email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(formData.email)) {
+  if (!formData.email || !emailRegex.test(formData.email)) {
     toast({
-      title: "Erro",
-      description: "Por favor, insira um e-mail válido",
+      title: "Erro de validação",
+      description: "Email inválido",
       variant: "destructive"
     });
     return false;
   }
 
-  if (!formData.password.trim()) {
+  // Validação da senha
+  if (!formData.password || formData.password.length < 8) {
     toast({
-      title: "Erro",
-      description: "Senha é obrigatória",
+      title: "Erro de validação",
+      description: "Senha deve ter pelo menos 8 caracteres",
       variant: "destructive"
     });
     return false;
   }
 
-  // Validação de força da senha
-  const passwordValidation = validatePasswordStrength(formData.password);
-  if (!passwordValidation.isStrong) {
-    toast({
-      title: "Senha muito fraca",
-      description: "A senha deve conter: letra maiúscula, minúscula, número e caractere especial",
-      variant: "destructive"
-    });
-    return false;
-  }
-
-  if (!formData.confirmPassword.trim()) {
-    toast({
-      title: "Erro",
-      description: "Confirmação de senha é obrigatória",
-      variant: "destructive"
-    });
-    return false;
-  }
-
+  // Validação da confirmação de senha
   if (formData.password !== formData.confirmPassword) {
     toast({
-      title: "Erro",
-      description: "As senhas não coincidem. Verifique e tente novamente.",
+      title: "Erro de validação",
+      description: "Senhas não coincidem",
       variant: "destructive"
     });
     return false;
   }
 
-  console.log('Validação do formulário passou com sucesso');
+  // Validação do tipo de usuário
+  if (!formData.userType || !['admin', 'client'].includes(formData.userType)) {
+    toast({
+      title: "Erro de validação",
+      description: "Tipo de usuário é obrigatório",
+      variant: "destructive"
+    });
+    return false;
+  }
+
   return true;
 };

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PasswordInput } from '@/components/ui/password-input';
 import { ClientFormData } from './clientFormValidation';
 
@@ -18,7 +19,25 @@ export const ClientFormFields = ({ formData, onFormDataChange }: ClientFormField
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="client-name">Nome do Cliente *</Label>
+        <Label htmlFor="user-type">Tipo de Usuário *</Label>
+        <Select 
+          value={formData.userType} 
+          onValueChange={(value: 'admin' | 'client') => handleInputChange('userType', value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione o tipo de usuário" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="client">Cliente</SelectItem>
+            <SelectItem value="admin">Administrador</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="client-name">
+          {formData.userType === 'admin' ? 'Nome do Administrador' : 'Nome do Cliente'} *
+        </Label>
         <Input
           id="client-name"
           value={formData.full_name}
@@ -35,7 +54,7 @@ export const ClientFormFields = ({ formData, onFormDataChange }: ClientFormField
           type="email"
           value={formData.email}
           onChange={(e) => handleInputChange('email', e.target.value)}
-          placeholder="cliente@email.com"
+          placeholder="usuario@email.com"
           required
         />
       </div>

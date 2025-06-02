@@ -9,7 +9,8 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
     full_name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    userType: 'client'
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -50,7 +51,8 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
       full_name: '',
       email: '',
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      userType: 'client'
     });
     setLogoFile(null);
     setLogoPreview(null);
@@ -71,10 +73,11 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
     setIsLoading(true);
 
     try {
-      console.log('=== INICIANDO CADASTRO DE CLIENTE ===');
+      console.log('=== INICIANDO CADASTRO DE USUÁRIO ===');
       console.log('Dados do formulário:', {
         full_name: formData.full_name,
         email: formData.email,
+        userType: formData.userType,
         hasLogo: !!logoFile
       });
       
@@ -86,7 +89,7 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
         options: {
           data: {
             full_name: formData.full_name,
-            role: 'client'
+            role: formData.userType
           }
         }
       });
@@ -104,6 +107,7 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
       console.log('Usuário criado no Auth com sucesso:', {
         id: authData.user.id,
         email: authData.user.email,
+        userType: formData.userType,
         emailConfirmed: authData.user.email_confirmed_at
       });
 
@@ -134,18 +138,19 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
         }
       }
 
-      console.log('=== CLIENTE CADASTRADO COM SUCESSO ===');
+      console.log('=== USUÁRIO CADASTRADO COM SUCESSO ===');
       
       // Mostrar mensagem de sucesso
+      const userTypeLabel = formData.userType === 'admin' ? 'Administrador' : 'Cliente';
       toast({
         title: "Sucesso!",
-        description: `Cliente ${formData.full_name} cadastrado com sucesso`,
+        description: `${userTypeLabel} ${formData.full_name} cadastrado com sucesso`,
       });
       
       // Resetar formulário
       resetForm();
       
-      // Chamar callback para atualizar lista de clientes
+      // Chamar callback para atualizar lista de usuários
       if (onClientCreated) {
         console.log('Chamando callback para atualizar lista...');
         // Aguardar um pouco antes de atualizar a lista
@@ -163,7 +168,7 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
       console.error('Message:', error.message);
       console.error('Code:', error.code);
       
-      let errorMessage = "Erro ao cadastrar cliente. Tente novamente.";
+      let errorMessage = "Erro ao cadastrar usuário. Tente novamente.";
       
       if (error.message?.includes('User already registered')) {
         errorMessage = "Este e-mail já está cadastrado no sistema.";
