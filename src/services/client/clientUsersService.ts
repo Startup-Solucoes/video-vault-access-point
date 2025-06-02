@@ -3,117 +3,107 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface ClientUser {
   id: string;
-  client_id: string;
   user_email: string;
+  client_id: string;
   created_at: string;
-  created_by: string;
 }
 
 export interface CreateUserResult {
-  user: any;
+  user: {
+    id: string;
+    email: string;
+  };
   password: string;
 }
 
 export const fetchClientUsers = async (clientId: string): Promise<ClientUser[]> => {
-  console.log('clientUsersService: Buscando usuários do cliente:', clientId);
-  
-  if (!clientId) {
-    throw new Error('ID do cliente é obrigatório');
-  }
+  if (!clientId) return [];
+
+  console.log('🔍 Buscando usuários do cliente:', clientId);
   
   const { data, error } = await supabase
     .from('client_users')
     .select('*')
     .eq('client_id', clientId)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('clientUsersService: Erro ao buscar usuários do cliente:', error);
-    throw error;
+    console.error('❌ Erro ao buscar usuários do cliente:', error);
+    throw new Error(`Erro ao buscar usuários: ${error.message}`);
   }
 
-  console.log('clientUsersService: Usuários encontrados:', data?.length || 0);
+  console.log('✅ Usuários encontrados:', data?.length || 0);
   return data || [];
 };
 
 export const addClientUser = async (
   clientId: string, 
   userEmail: string, 
-  createdBy: string
+  adminId: string
 ): Promise<CreateUserResult> => {
-  console.log('clientUsersService: Adicionando usuário ao cliente:', { clientId, userEmail, createdBy });
-  
-  // Validação dos dados
-  if (!clientId || !userEmail || !createdBy) {
-    throw new Error('Todos os campos são obrigatórios');
-  }
+  console.log('👤 Criando usuário para cliente:', { clientId, userEmail, adminId });
 
-  const email = userEmail.toLowerCase().trim();
-  
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  // Validação de email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(userEmail)) {
     throw new Error('Email inválido');
   }
 
+  // Verificar se o email já existe
+  const { data: existingUsers } = await supabase
+    .from('client_users')
+    .select('user_email')
+    .eq('user_email', userEmail.toLowerCase());
+
+  if (existingUsers && existingUsers.length > 0) {
+    throw new Error('Este email já está cadastrado no sistema');
+  }
+
   try {
-    // Chamar a Edge Function para criar o usuário
     const { data, error } = await supabase.functions.invoke('create-client-user', {
       body: {
-        clientId,
-        userEmail: email,
-        createdBy
+        client_id: clientId,
+        user_email: userEmail.toLowerCase(),
+        admin_id: adminId
       }
     });
 
     if (error) {
-      console.error('clientUsersService: Erro na função:', error);
+      console.error('❌ Erro na função create-client-user:', error);
       throw new Error(error.message || 'Erro ao criar usuário');
     }
 
-    if (data?.error) {
-      console.error('clientUsersService: Erro retornado pela função:', data.error);
-      throw new Error(data.error);
+    if (!data || !data.user || !data.password) {
+      console.error('❌ Resposta inválida da função:', data);
+      throw new Error('Resposta inválida do servidor');
     }
 
-    console.log('clientUsersService: Usuário adicionado com sucesso');
+    console.log('✅ Usuário criado com sucesso:', data.user.email);
+    
+    // NÃO enviar email de confirmação - usuário pode acessar diretamente
+    console.log('ℹ️ Email de confirmação desabilitado - usuário pode fazer login diretamente');
     
     return {
       user: data.user,
       password: data.password
     };
   } catch (error) {
-    console.error('clientUsersService: Erro no processo de criação:', error);
+    console.error('💥 Erro ao criar usuário:', error);
     throw error;
   }
 };
 
 export const removeClientUser = async (clientUserId: string): Promise<void> => {
-  console.log('clientUsersService: Removendo usuário do cliente:', clientUserId);
-  
-  if (!clientUserId) {
-    throw new Error('ID do usuário é obrigatório');
+  console.log('🗑️ Removendo usuário:', clientUserId);
+
+  const { error } = await supabase.functions.invoke('delete-client-user', {
+    body: { client_user_id: clientUserId }
+  });
+
+  if (error) {
+    console.error('❌ Erro ao remover usuário:', error);
+    throw new Error(`Erro ao remover usuário: ${error.message}`);
   }
 
-  try {
-    // Chamar a Edge Function para deletar o usuário
-    const { data, error } = await supabase.functions.invoke('delete-client-user', {
-      body: {
-        clientUserId
-      }
-    });
-
-    if (error) {
-      console.error('clientUsersService: Erro na função:', error);
-      throw new Error(error.message || 'Erro ao remover usuário');
-    }
-
-    if (data?.error) {
-      console.error('clientUsersService: Erro retornado pela função:', data.error);
-      throw new Error(data.error);
-    }
-
-    console.log('clientUsersService: Usuário removido com sucesso');
-  } catch (error) {
-    console.error('clientUsersService: Erro no processo de remoção:', error);
-    throw error;
-  }
+  console.log('✅ Usuário removido com sucesso');
 };
