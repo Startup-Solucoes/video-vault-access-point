@@ -59,42 +59,42 @@ export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: Vide
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-full h-[80vh] p-0">
+      <DialogContent className="max-w-4xl w-[95vw] h-[85vh] sm:h-[80vh] p-0 max-h-screen overflow-hidden">
         <div className="flex flex-col h-full">
-          <DialogHeader className="p-6 pb-4">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <DialogTitle className="text-xl font-semibold mb-2">
+          <DialogHeader className="p-4 sm:p-6 pb-2 sm:pb-4 flex-shrink-0">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-2 sm:space-y-0">
+              <div className="flex-1 min-w-0">
+                <DialogTitle className="text-lg sm:text-xl font-semibold mb-2 break-words hyphens-auto leading-tight">
                   {video.title}
                 </DialogTitle>
                 
                 {video.description && (
-                  <p className="text-sm text-gray-600 mb-3">
+                  <p className="text-sm text-gray-600 mb-3 break-words">
                     {video.description}
                   </p>
                 )}
                 
-                <div className="flex items-center gap-4 text-xs text-gray-500">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-gray-500">
                   <div className="flex items-center">
-                    <Calendar className="h-3 w-3 mr-1" />
+                    <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
                     <span>Publicado em {format(new Date(video.created_at), 'dd/MM/yyyy', { locale: ptBR })}</span>
                   </div>
                   <div className="flex items-center">
-                    <Clock className="h-3 w-3 mr-1" />
+                    <Clock className="h-3 w-3 mr-1 flex-shrink-0" />
                     <span>às {format(new Date(video.created_at), 'HH:mm', { locale: ptBR })}</span>
                   </div>
                 </div>
               </div>
               
               {video.category && getCategoryColor && (
-                <Badge className={getCategoryColor(video.category)}>
+                <Badge className={`${getCategoryColor(video.category)} flex-shrink-0 mt-2 sm:mt-0`}>
                   {video.category}
                 </Badge>
               )}
             </div>
           </DialogHeader>
           
-          <div className="flex-1 px-6 pb-6">
+          <div className="flex-1 px-4 sm:px-6 pb-4 sm:pb-6 overflow-hidden">
             <div className="w-full h-full bg-black rounded-lg overflow-hidden">
               <iframe
                 src={embedUrl}

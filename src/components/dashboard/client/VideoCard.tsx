@@ -53,7 +53,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
 
   return (
     <>
-      <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={handleWatchVideo}>
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer w-full max-w-full overflow-hidden" onClick={handleWatchVideo}>
         <CardContent className="p-0">
           <div className="aspect-video bg-gradient-to-br from-blue-100 to-blue-200 rounded-t-lg flex items-center justify-center relative overflow-hidden">
             {thumbnailUrl ? (
@@ -96,35 +96,35 @@ export const VideoCard = ({ video }: VideoCardProps) => {
             {/* Badge da categoria com cores customizadas */}
             {video.category && (
               <Badge 
-                className={`absolute top-2 right-2 font-semibold border-0 ${categoryColors}`}
+                className={`absolute top-2 right-2 font-semibold border-0 text-xs ${categoryColors}`}
               >
                 {video.category}
               </Badge>
             )}
           </div>
           
-          <div className="p-4">
+          <div className="p-3 sm:p-4">
             {/* Título */}
-            <h3 className="font-semibold mb-2 line-clamp-2 text-gray-900">
+            <h3 className="font-semibold mb-2 text-sm sm:text-base text-gray-900 break-words hyphens-auto leading-tight">
               {video.title}
             </h3>
             
             {/* Descrição */}
             {video.description && (
-              <p className="text-sm text-gray-600 mb-3 line-clamp-3">
+              <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-3 break-words">
                 {video.description}
               </p>
             )}
             
             {/* Data de publicação */}
-            <div className="flex items-center text-xs text-gray-500 mb-3">
-              <Calendar className="h-3 w-3 mr-1" />
-              <span>Publicado em {format(new Date(video.created_at), 'dd/MM/yyyy', { locale: ptBR })}</span>
+            <div className="flex items-center text-xs text-gray-500 mb-2">
+              <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
+              <span className="truncate">Publicado em {format(new Date(video.created_at), 'dd/MM/yyyy', { locale: ptBR })}</span>
             </div>
             
             {/* Horário de publicação */}
             <div className="flex items-center text-xs text-gray-500 mb-4">
-              <Clock className="h-3 w-3 mr-1" />
+              <Clock className="h-3 w-3 mr-1 flex-shrink-0" />
               <span>às {format(new Date(video.created_at), 'HH:mm', { locale: ptBR })}</span>
             </div>
             
@@ -136,7 +136,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
                   e.stopPropagation();
                   handleWatchVideo();
                 }}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm"
               >
                 <Play className="h-3 w-3 mr-1" />
                 Assistir

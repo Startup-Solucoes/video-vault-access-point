@@ -69,22 +69,24 @@ export const ClientDashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
       {/* Header expandido com informações do cliente */}
       <ClientHeader profile={profile} videoCount={videos.length} />
 
       {/* Filtro de Categorias horizontal */}
-      <CategoryFilter
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        availableCategories={availableCategories}
-        videos={videos}
-      />
+      <div className="w-full overflow-x-auto">
+        <CategoryFilter
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          availableCategories={availableCategories}
+          videos={videos}
+        />
+      </div>
 
-      {/* Layout em duas colunas */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* Layout responsivo */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 w-full">
         {/* Coluna esquerda - Filtros */}
-        <div className="lg:col-span-1 space-y-4">
+        <div className="lg:col-span-1 space-y-4 w-full overflow-hidden">
           {/* Filtro de Plataformas como sidebar */}
           <PlatformFilter
             selectedPlatform={selectedPlatform}
@@ -106,7 +108,7 @@ export const ClientDashboard = () => {
         </div>
 
         {/* Coluna direita - Grid de Vídeos */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 w-full overflow-hidden">
           <VideoGrid
             videos={filteredVideos}
             isLoading={isLoading}
