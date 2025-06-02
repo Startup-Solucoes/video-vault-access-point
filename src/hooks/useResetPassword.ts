@@ -20,7 +20,17 @@ export const useResetPassword = () => {
         console.log('Hash:', window.location.hash);
         console.log('Search:', window.location.search);
         
-        // Verificar se há parâmetros na URL para reset de senha
+        // Primeiro verificar se já temos uma sessão ativa
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Current session:', session ? 'Active session found' : 'No session');
+        
+        if (session) {
+          console.log('✅ Already authenticated, session is valid');
+          setIsValidToken(true);
+          return;
+        }
+        
+        // Se não temos sessão, tentar extrair tokens da URL
         const urlParams = new URLSearchParams(window.location.search);
         const fragment = new URLSearchParams(window.location.hash.substring(1));
         
@@ -68,6 +78,8 @@ export const useResetPassword = () => {
             accessToken: !accessToken,
             refreshToken: !refreshToken
           });
+          
+          // Se não encontrou tokens válidos e não tem sessão, é link inválido
           setIsValidToken(false);
         }
       } catch (error) {
