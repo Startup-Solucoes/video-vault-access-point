@@ -14,8 +14,11 @@ export const useResetPassword = () => {
   useEffect(() => {
     const checkTokenAndSetSession = async () => {
       try {
-        console.log('Checking for reset password tokens...');
+        console.log('=== RESET PASSWORD DEBUG ===');
         console.log('Current URL:', window.location.href);
+        console.log('Pathname:', window.location.pathname);
+        console.log('Hash:', window.location.hash);
+        console.log('Search:', window.location.search);
         
         // Verificar se há parâmetros na URL para reset de senha
         const urlParams = new URLSearchParams(window.location.search);
@@ -26,16 +29,16 @@ export const useResetPassword = () => {
         const refreshToken = urlParams.get('refresh_token') || fragment.get('refresh_token');
         const type = urlParams.get('type') || fragment.get('type');
 
-        console.log('Reset password params:', { 
-          accessToken: !!accessToken, 
-          refreshToken: !!refreshToken, 
+        console.log('Extracted tokens:', { 
+          accessToken: accessToken ? `${accessToken.substring(0, 20)}...` : null, 
+          refreshToken: refreshToken ? `${refreshToken.substring(0, 10)}...` : null, 
           type,
           hasHash: !!window.location.hash,
           hasSearch: !!window.location.search
         });
 
         if (type === 'recovery' && accessToken && refreshToken) {
-          console.log('Setting session with recovery tokens...');
+          console.log('Valid recovery tokens found! Setting session...');
           
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
@@ -43,30 +46,45 @@ export const useResetPassword = () => {
           });
 
           if (error) {
-            console.error('Erro ao validar token:', error);
+            console.error('❌ Error setting session:', error);
             setIsValidToken(false);
+            toast({
+              title: "Erro",
+              description: "Link de reset inválido ou expirado",
+              variant: "destructive"
+            });
           } else {
-            console.log('Session set successfully:', data);
+            console.log('✅ Session set successfully:', data.session ? 'Session created' : 'No session');
             setIsValidToken(true);
             
             // Limpar a URL dos parâmetros sensíveis
+            console.log('Cleaning URL...');
             window.history.replaceState({}, document.title, '/reset-password');
           }
         } else {
-          console.log('No valid recovery tokens found');
+          console.log('❌ Invalid or missing recovery tokens');
+          console.log('Missing:', {
+            type: !type || type !== 'recovery',
+            accessToken: !accessToken,
+            refreshToken: !refreshToken
+          });
           setIsValidToken(false);
         }
       } catch (error) {
-        console.error('Error checking token:', error);
+        console.error('❌ Error in checkTokenAndSetSession:', error);
         setIsValidToken(false);
       }
     };
 
-    checkTokenAndSetSession();
+    // Pequeno delay para garantir que a página carregou completamente
+    const timer = setTimeout(checkTokenAndSetSession, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log('=== PASSWORD RESET ATTEMPT ===');
 
     if (!password || !confirmPassword) {
       toast({
@@ -106,11 +124,11 @@ export const useResetPassword = () => {
       });
 
       if (error) {
-        console.error('Password update error:', error);
+        console.error('❌ Password update error:', error);
         throw error;
       }
 
-      console.log('Password updated successfully');
+      console.log('✅ Password updated successfully');
       setIsSuccess(true);
       
       toast({
@@ -124,7 +142,7 @@ export const useResetPassword = () => {
       }, 3000);
 
     } catch (error: any) {
-      console.error('Erro ao redefinir senha:', error);
+      console.error('❌ Erro ao redefinir senha:', error);
       toast({
         title: "Erro",
         description: error.message || "Erro ao redefinir senha",
