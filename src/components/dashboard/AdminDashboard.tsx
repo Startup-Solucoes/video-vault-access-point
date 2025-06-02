@@ -7,12 +7,10 @@ import { Plus } from 'lucide-react';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import { VideoHistory } from './VideoHistory';
 import { ThumbnailGenerator } from './ThumbnailGenerator';
-import { 
-  LazyVideoManagement, 
-  LazyClientManagement, 
-  LazyVideoForm, 
-  LazyClientForm 
-} from './LazyComponents';
+import VideoManagement from './VideoManagement';
+import { ClientManagement } from './ClientManagement';
+import { VideoForm } from '@/components/forms/VideoForm';
+import { ClientForm } from '@/components/forms/ClientForm';
 
 // Componente de Loading para Suspense
 const ComponentLoader = () => (
@@ -117,13 +115,13 @@ export const AdminDashboard = () => {
 
         <TabsContent value="videos">
           <Suspense fallback={<ComponentLoader />}>
-            <LazyVideoManagement />
+            <VideoManagement />
           </Suspense>
         </TabsContent>
 
         <TabsContent value="clients">
           <Suspense fallback={<ComponentLoader />}>
-            <LazyClientManagement />
+            <ClientManagement />
           </Suspense>
         </TabsContent>
 
@@ -136,26 +134,22 @@ export const AdminDashboard = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Formulários modais com lazy loading */}
-      <Suspense fallback={null}>
-        {showVideoForm && (
-          <LazyVideoForm
-            open={showVideoForm}
-            onOpenChange={setShowVideoForm}
-            onVideoCreated={refreshCurrentTab}
-          />
-        )}
-      </Suspense>
+      {/* Formulários modais */}
+      {showVideoForm && (
+        <VideoForm
+          open={showVideoForm}
+          onOpenChange={setShowVideoForm}
+          onVideoCreated={refreshCurrentTab}
+        />
+      )}
 
-      <Suspense fallback={null}>
-        {showClientForm && (
-          <LazyClientForm
-            open={showClientForm}
-            onOpenChange={setShowClientForm}
-            onClientCreated={refreshCurrentTab}
-          />
-        )}
-      </Suspense>
+      {showClientForm && (
+        <ClientForm
+          open={showClientForm}
+          onOpenChange={setShowClientForm}
+          onClientCreated={refreshCurrentTab}
+        />
+      )}
     </div>
   );
 };
