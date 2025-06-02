@@ -24,9 +24,6 @@ export const useClientFilters = (clients: Client[]) => {
       case 'clients':
         filtered = clients.filter(client => client.role === 'client' && !client.is_deleted);
         break;
-      case 'verified':
-        filtered = clients.filter(client => client.email_confirmed_at && !client.is_deleted);
-        break;
       case 'unverified':
         filtered = clients.filter(client => !client.email_confirmed_at && !client.is_deleted);
         break;
@@ -55,7 +52,6 @@ export const useClientFilters = (clients: Client[]) => {
       all: clients.filter(client => !client.is_deleted).length,
       admins: clients.filter(client => client.role === 'admin' && !client.is_deleted).length,
       clients: clients.filter(client => client.role === 'client' && !client.is_deleted).length,
-      verified: clients.filter(client => client.email_confirmed_at && !client.is_deleted).length,
       unverified: clients.filter(client => !client.email_confirmed_at && !client.is_deleted).length,
       deleted: clients.filter(client => client.is_deleted === true).length
     };

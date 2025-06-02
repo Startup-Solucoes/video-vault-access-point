@@ -38,7 +38,7 @@ export const ClientManagement = () => {
   };
 
   const handleTabChange = (value: string) => {
-    setActiveTab(value as 'all' | 'admins' | 'clients' | 'verified' | 'unverified' | 'deleted');
+    setActiveTab(value as 'all' | 'admins' | 'clients' | 'unverified' | 'deleted');
   };
 
   const handleRefresh = () => {
@@ -69,7 +69,7 @@ export const ClientManagement = () => {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="all">
                 Todos ({counts.all})
               </TabsTrigger>
@@ -78,9 +78,6 @@ export const ClientManagement = () => {
               </TabsTrigger>
               <TabsTrigger value="clients">
                 Clientes ({counts.clients})
-              </TabsTrigger>
-              <TabsTrigger value="verified">
-                Verificados ({counts.verified})
               </TabsTrigger>
               <TabsTrigger value="unverified">
                 Pendentes ({counts.unverified})
