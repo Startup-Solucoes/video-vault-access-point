@@ -7,13 +7,14 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
   console.log('clientDataService: Buscando clientes (OTIMIZADO)...');
   
   try {
-    // Query otimizada - incluindo is_deleted para filtros
+    // Query otimizada - incluindo logo_url que estava faltando
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select(`
         id,
         email,
         full_name,
+        logo_url,
         role,
         created_at,
         updated_at,
@@ -41,7 +42,7 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
             id: profile.id,
             email: profile.email,
             full_name: profile.full_name,
-            logo_url: null,
+            logo_url: profile.logo_url,
             role: profile.role,
             created_at: profile.created_at,
             updated_at: profile.updated_at,
@@ -57,7 +58,7 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
             id: profile.id,
             email: profile.email,
             full_name: profile.full_name,
-            logo_url: null,
+            logo_url: profile.logo_url,
             role: profile.role,
             created_at: profile.created_at,
             updated_at: profile.updated_at,

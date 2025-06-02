@@ -2,10 +2,8 @@
 import React, { useState, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
 import { VideoList } from './video-management/VideoList';
-import { AllVideosView } from './video-management/AllVideosView';
 
 // Importação direta ao invés de lazy para evitar problemas de carregamento
 const ClientVideoView = React.lazy(() => 
@@ -71,20 +69,7 @@ const VideoManagement = () => {
           <CardTitle>Gerenciamento de Vídeos</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="by-client" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="by-client">Vídeos por Cliente</TabsTrigger>
-              <TabsTrigger value="all-videos">Todos os Vídeos</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="by-client" className="mt-6">
-              <VideoList onClientSelect={handleClientSelect} />
-            </TabsContent>
-            
-            <TabsContent value="all-videos" className="mt-6">
-              <AllVideosView />
-            </TabsContent>
-          </Tabs>
+          <VideoList onClientSelect={handleClientSelect} />
         </CardContent>
       </Card>
     </div>
