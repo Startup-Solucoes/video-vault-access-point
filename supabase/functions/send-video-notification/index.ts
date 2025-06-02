@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -290,10 +291,10 @@ serve(async (req) => {
       try {
         console.log(`\n👥 Processando cliente: ${clientId}`);
         
-        // Buscar nome do cliente
+        // Buscar dados do cliente (nome e email)
         const { data: client, error: clientError } = await supabaseAdmin
           .from('profiles')
-          .select('full_name')
+          .select('full_name, email')
           .eq('id', clientId)
           .single()
 
@@ -304,9 +305,22 @@ serve(async (req) => {
         }
 
         const clientName = client?.full_name || 'Cliente'
-        console.log(`✅ Cliente encontrado: ${clientName}`);
+        const clientEmail = client?.email
+        console.log(`✅ Cliente encontrado: ${clientName} (${clientEmail})`);
 
-        // Buscar todos os usuários para este cliente
+        // Array para armazenar todos os emails que receberão a notificação
+        const emailsToNotify = [];
+
+        // 1. Adicionar o email do próprio cliente
+        if (clientEmail) {
+          emailsToNotify.push({
+            email: clientEmail,
+            type: 'cliente'
+          });
+          console.log(`📧 Email do cliente adicionado: ${clientEmail}`);
+        }
+
+        // 2. Buscar todos os usuários para este cliente
         const { data: clientUsers, error: usersError } = await supabaseAdmin
           .from('client_users')
           .select('user_email')
@@ -315,15 +329,23 @@ serve(async (req) => {
         if (usersError) {
           console.error(`❌ Erro ao buscar usuários para cliente ${clientId}:`, usersError)
           errors.push(`Usuários do cliente ${clientId}: ${usersError.message}`)
-          continue
+        } else if (clientUsers && clientUsers.length > 0) {
+          // Adicionar emails dos usuários
+          for (const user of clientUsers) {
+            emailsToNotify.push({
+              email: user.user_email,
+              type: 'usuário'
+            });
+          }
+          console.log(`📧 ${clientUsers.length} usuários adicionados à lista de notificações`);
         }
 
-        console.log(`📧 Encontrados ${clientUsers?.length || 0} usuários para cliente ${clientName}`)
+        console.log(`📤 Total de emails para notificar: ${emailsToNotify.length}`);
 
-        // Enviar email para cada usuário
-        if (clientUsers && clientUsers.length > 0) {
-          for (const user of clientUsers) {
-            console.log(`📤 Preparando email para: ${user.user_email}`);
+        // 3. Enviar email para todos na lista
+        if (emailsToNotify.length > 0) {
+          for (const recipient of emailsToNotify) {
+            console.log(`📤 Preparando email para ${recipient.type}: ${recipient.email}`);
             
             const emailBody = createEmailTemplate(
               videoTitle, 
@@ -335,21 +357,21 @@ serve(async (req) => {
             )
             
             const emailSent = await sendEmail({
-              to: user.user_email,
+              to: recipient.email,
               subject: `🎬 Novo tutorial foi adicionado à sua conta`,
               body: emailBody
             })
 
             if (emailSent) {
               totalEmailsSent++
-              console.log(`✅ Email enviado para: ${user.user_email}`);
+              console.log(`✅ Email enviado para ${recipient.type}: ${recipient.email}`);
             } else {
-              console.error(`❌ Falha ao enviar email para: ${user.user_email}`);
-              errors.push(`Falha ao enviar email para ${user.user_email}`)
+              console.error(`❌ Falha ao enviar email para ${recipient.type}: ${recipient.email}`);
+              errors.push(`Falha ao enviar email para ${recipient.email}`)
             }
           }
         } else {
-          console.log(`ℹ️ Nenhum usuário encontrado para cliente ${clientName}`);
+          console.log(`ℹ️ Nenhum email encontrado para notificar sobre o cliente ${clientName}`);
         }
       } catch (error) {
         console.error(`💥 Erro ao processar cliente ${clientId}:`, error)
