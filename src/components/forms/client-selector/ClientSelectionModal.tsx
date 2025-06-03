@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { Client } from './ClientSelectorTypes';
 
 interface ClientSelectionModalProps {
@@ -18,6 +18,8 @@ interface ClientSelectionModalProps {
   searchValue: string;
   onSearchValueChange: (value: string) => void;
   filteredClients: Client[];
+  onConfirmSelection?: () => void;
+  isAssigning?: boolean;
 }
 
 export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
@@ -30,7 +32,9 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
   isLoading,
   searchValue,
   onSearchValueChange,
-  filteredClients
+  filteredClients,
+  onConfirmSelection,
+  isAssigning = false
 }) => {
   const handleSelectAll = () => {
     console.log('=== BOTÃO SELECIONAR TODOS CLICADO ===');
@@ -60,6 +64,18 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
     }
   };
 
+  const handleConfirm = () => {
+    console.log('=== BOTÃO CONFIRMAR CLICADO ===');
+    console.log('Clientes selecionados:', selectedClients);
+    
+    if (onConfirmSelection) {
+      onConfirmSelection();
+    } else {
+      // Fallback: apenas fechar o modal
+      onOpenChange(false);
+    }
+  };
+
   const allFilteredSelected = filteredClients.length > 0 && 
     filteredClients.every(client => selectedClients.includes(client.id));
 
@@ -69,7 +85,7 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
         <DialogHeader>
           <DialogTitle>Selecionar Clientes</DialogTitle>
           <DialogDescription>
-            Escolha quais clientes terão acesso a este vídeo. Você pode selecionar múltiplos clientes.
+            Escolha quais clientes terão acesso aos vídeos selecionados. Você pode selecionar múltiplos clientes.
           </DialogDescription>
         </DialogHeader>
         
@@ -150,14 +166,23 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
+            disabled={isAssigning}
           >
             Cancelar
           </Button>
           <Button
             type="button"
-            onClick={() => onOpenChange(false)}
+            onClick={handleConfirm}
+            disabled={selectedClients.length === 0 || isAssigning}
           >
-            Confirmar Seleção
+            {isAssigning ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Atribuindo...
+              </>
+            ) : (
+              `Confirmar Atribuição (${selectedClients.length} cliente${selectedClients.length !== 1 ? 's' : ''})`
+            )}
           </Button>
         </div>
       </DialogContent>

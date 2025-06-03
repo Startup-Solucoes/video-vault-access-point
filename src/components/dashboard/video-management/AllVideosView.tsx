@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useClientSelector } from '@/hooks/useClientSelector';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { ClientSelectionModal } from '@/components/forms/client-selector/ClientSelectionModal';
 import { VideoListHeader } from './VideoListHeader';
 import { VideosList } from './VideosList';
@@ -38,6 +37,7 @@ export const AllVideosView = () => {
   const [showClientSelector, setShowClientSelector] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isAssigning, setIsAssigning] = useState(false);
 
   const { data: allVideos = [], isLoading } = useQuery({
     queryKey: ['all-videos'],
@@ -90,6 +90,19 @@ export const AllVideosView = () => {
   };
 
   const handleAssignToClients = async () => {
+    console.log('=== INICIANDO ATRIBUIÇÃO ===');
+    console.log('Vídeos selecionados:', selectedVideos);
+    console.log('Clientes selecionados:', selectedClients);
+    
+    if (selectedVideos.length === 0) {
+      toast({
+        title: "Aviso",
+        description: "Selecione pelo menos um vídeo",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (selectedClients.length === 0) {
       toast({
         title: "Aviso",
@@ -99,34 +112,79 @@ export const AllVideosView = () => {
       return;
     }
 
+    setIsAssigning(true);
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error('Usuário não autenticado');
       }
 
-      const permissions = selectedVideos.flatMap(videoId =>
-        selectedClients.map(clientId => ({
-          video_id: videoId,
-          client_id: clientId,
-          granted_by: user.id
-        }))
-      );
+      console.log('Usuário autenticado:', user.id);
+
+      // Verificar permissões já existentes para evitar duplicatas
+      const { data: existingPermissions, error: checkError } = await supabase
+        .from('video_permissions')
+        .select('video_id, client_id')
+        .in('video_id', selectedVideos)
+        .in('client_id', selectedClients);
+
+      if (checkError) {
+        console.error('Erro ao verificar permissões existentes:', checkError);
+        throw checkError;
+      }
+
+      console.log('Permissões existentes:', existingPermissions);
+
+      // Criar lista de novas permissões (evitando duplicatas)
+      const newPermissions = [];
+      for (const videoId of selectedVideos) {
+        for (const clientId of selectedClients) {
+          const exists = existingPermissions?.some(
+            p => p.video_id === videoId && p.client_id === clientId
+          );
+          if (!exists) {
+            newPermissions.push({
+              video_id: videoId,
+              client_id: clientId,
+              granted_by: user.id
+            });
+          }
+        }
+      }
+
+      console.log('Novas permissões a serem inseridas:', newPermissions);
+
+      if (newPermissions.length === 0) {
+        toast({
+          title: "Aviso",
+          description: "Todos os vídeos selecionados já estão atribuídos aos clientes escolhidos",
+        });
+        setIsAssigning(false);
+        return;
+      }
 
       const { error } = await supabase
         .from('video_permissions')
-        .insert(permissions);
+        .insert(newPermissions);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao inserir permissões:', error);
+        throw error;
+      }
+
+      console.log('✅ Permissões inseridas com sucesso');
 
       toast({
         title: "Sucesso",
         description: `${selectedVideos.length} vídeo(s) atribuído(s) para ${selectedClients.length} cliente(s)`,
       });
 
+      // Limpar seleções
       setSelectedVideos([]);
       setSelectedClients([]);
       setShowClientSelector(false);
+
     } catch (error) {
       console.error('Erro ao atribuir vídeos:', error);
       toast({
@@ -134,6 +192,8 @@ export const AllVideosView = () => {
         description: "Erro ao atribuir vídeos aos clientes",
         variant: "destructive"
       });
+    } finally {
+      setIsAssigning(false);
     }
   };
 
@@ -146,6 +206,25 @@ export const AllVideosView = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     setSelectedVideos([]);
+  };
+
+  const handleModalClose = (open: boolean) => {
+    setShowClientSelector(open);
+    if (!open) {
+      // Limpar busca quando fechar o modal sem confirmar
+      setSearchValue('');
+    }
+  };
+
+  const handleConfirmSelection = () => {
+    console.log('=== CONFIRMANDO SELEÇÃO ===');
+    console.log('Clientes selecionados no modal:', selectedClients);
+    
+    // Fechar o modal
+    setShowClientSelector(false);
+    
+    // Executar a atribuição imediatamente
+    handleAssignToClients();
   };
 
   if (isLoading) {
@@ -192,7 +271,7 @@ export const AllVideosView = () => {
 
       <ClientSelectionModal
         open={showClientSelector}
-        onOpenChange={setShowClientSelector}
+        onOpenChange={handleModalClose}
         clients={clients}
         selectedClients={selectedClients}
         onClientToggle={handleClientToggle}
@@ -201,15 +280,9 @@ export const AllVideosView = () => {
         searchValue={searchValue}
         onSearchValueChange={setSearchValue}
         filteredClients={filteredClients}
+        onConfirmSelection={handleConfirmSelection}
+        isAssigning={isAssigning}
       />
-
-      {selectedClients.length > 0 && showClientSelector && (
-        <div className="fixed bottom-4 right-4">
-          <Button onClick={handleAssignToClients} size="lg">
-            Confirmar Atribuição ({selectedVideos.length} vídeos → {selectedClients.length} clientes)
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
