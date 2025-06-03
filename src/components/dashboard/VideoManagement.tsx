@@ -1,28 +1,10 @@
 
-import React, { useState, Suspense } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
 import { VideoList } from './video-management/VideoList';
-import { AllVideosView } from './video-management/AllVideosView';
-
-// Importação direta ao invés de lazy para evitar problemas de carregamento
-const ClientVideoView = React.lazy(() => 
-  import('./video-management/ClientVideoView').then(module => ({ 
-    default: module.ClientVideoView 
-  }))
-);
-
-// Componente de Loading para Suspense
-const ComponentLoader = () => (
-  <div className="flex items-center justify-center py-8">
-    <div className="flex items-center space-x-2">
-      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-      <span className="text-gray-600">Carregando...</span>
-    </div>
-  </div>
-);
+import { ClientVideoView } from './video-management/ClientVideoView';
 
 const VideoManagement = () => {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
@@ -30,12 +12,14 @@ const VideoManagement = () => {
   const [selectedClientLogoUrl, setSelectedClientLogoUrl] = useState<string | undefined>();
 
   const handleClientSelect = (clientId: string, clientName: string, clientLogoUrl?: string) => {
+    console.log('🎯 Selecionando cliente:', { clientId, clientName });
     setSelectedClientId(clientId);
     setSelectedClientName(clientName);
     setSelectedClientLogoUrl(clientLogoUrl);
   };
 
   const handleBackToVideos = () => {
+    console.log('🔙 Voltando para lista de vídeos');
     setSelectedClientId(null);
     setSelectedClientName('');
     setSelectedClientLogoUrl(undefined);
@@ -53,13 +37,11 @@ const VideoManagement = () => {
             Voltar aos Vídeos
           </Button>
         </div>
-        <Suspense fallback={<ComponentLoader />}>
-          <ClientVideoView 
-            clientId={selectedClientId} 
-            clientName={selectedClientName}
-            clientLogoUrl={selectedClientLogoUrl}
-          />
-        </Suspense>
+        <ClientVideoView 
+          clientId={selectedClientId} 
+          clientName={selectedClientName}
+          clientLogoUrl={selectedClientLogoUrl}
+        />
       </div>
     );
   }
@@ -71,20 +53,7 @@ const VideoManagement = () => {
           <CardTitle>Gerenciamento de Vídeos</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="by-client" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="by-client">Vídeos por Cliente</TabsTrigger>
-              <TabsTrigger value="all-videos">Todos os Vídeos</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="by-client" className="mt-6">
-              <VideoList onClientSelect={handleClientSelect} />
-            </TabsContent>
-            
-            <TabsContent value="all-videos" className="mt-6">
-              <AllVideosView />
-            </TabsContent>
-          </Tabs>
+          <VideoList onClientSelect={handleClientSelect} />
         </CardContent>
       </Card>
     </div>

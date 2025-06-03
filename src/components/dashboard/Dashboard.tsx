@@ -1,3 +1,4 @@
+
 import React, { Suspense, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ const ComponentLoader = () => <div className="flex items-center justify-center p
       <span className="text-gray-600">Carregando...</span>
     </div>
   </div>;
+
 export const Dashboard = () => {
   const {
     profile,
@@ -27,38 +29,43 @@ export const Dashboard = () => {
   const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
   const [isClientFormOpen, setIsClientFormOpen] = useState(false);
   const isAdmin = profile?.role === 'admin';
+  
   const handleTabChange = (tab: string) => {
+    console.log('🏷️ Mudando aba para:', tab);
     setActiveTab(tab);
   };
+  
   const handleVideoCreated = () => {
     console.log('✅ Vídeo criado com sucesso');
     setIsVideoFormOpen(false);
   };
+  
   const handleClientCreated = () => {
     console.log('✅ Cliente criado com sucesso');
     setIsClientFormOpen(false);
   };
+  
   const renderContent = () => {
+    console.log('🎨 Renderizando conteúdo para aba:', activeTab);
+    
     switch (activeTab) {
       case 'dashboard':
         return isAdmin ? <AdminDashboard /> : <ClientDashboard />;
       case 'videos':
-        return <Suspense fallback={<ComponentLoader />}>
-            <VideoManagement />
-          </Suspense>;
+        return <VideoManagement />;
       case 'clients':
-        return <Suspense fallback={<ComponentLoader />}>
-            <ClientManagement />
-          </Suspense>;
+        return <ClientManagement />;
       default:
         return isAdmin ? <AdminDashboard /> : <ClientDashboard />;
     }
   };
+  
   if (!profile) {
     return <div className="flex items-center justify-center min-h-screen">
         <ComponentLoader />
       </div>;
   }
+  
   return <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
@@ -93,18 +100,27 @@ export const Dashboard = () => {
           
           {/* Navigation Tabs */}
           <div className="flex space-x-8 -mb-px">
-            <button onClick={() => handleTabChange('dashboard')} className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'dashboard' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
+            <button 
+              onClick={() => handleTabChange('dashboard')} 
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'dashboard' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >
               <BarChart3 className="h-4 w-4 inline mr-2" />
               Dashboard
             </button>
             
             {isAdmin && <>
-                <button onClick={() => handleTabChange('videos')} className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'videos' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
+                <button 
+                  onClick={() => handleTabChange('videos')} 
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'videos' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                >
                   <Video className="h-4 w-4 inline mr-2" />
                   Vídeos
                 </button>
                 
-                <button onClick={() => handleTabChange('clients')} className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'clients' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
+                <button 
+                  onClick={() => handleTabChange('clients')} 
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'clients' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                >
                   <Users className="h-4 w-4 inline mr-2" />
                   Clientes
                 </button>
