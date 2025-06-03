@@ -18,6 +18,7 @@ export const ClientDashboard = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
 
   // Filtrar vídeos baseado na busca, categoria, plataforma e data
+  // Os vídeos já vêm ordenados por display_order do hook
   const filteredVideos = useMemo(() => {
     let filtered = videos;
 
@@ -48,6 +49,7 @@ export const ClientDashboard = () => {
       });
     }
 
+    // Manter a ordenação por display_order (que já vem do banco)
     return filtered;
   }, [videos, searchTerm, selectedCategory, selectedPlatform, selectedDate]);
 

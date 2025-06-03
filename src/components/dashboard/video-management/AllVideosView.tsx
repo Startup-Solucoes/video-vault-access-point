@@ -42,10 +42,11 @@ export const AllVideosView = () => {
   const { data: allVideos = [], isLoading } = useQuery({
     queryKey: ['all-videos'],
     queryFn: async () => {
+      // Remover ordenação por data - usar ordenação padrão por ID
       const { data, error } = await supabase
         .from('videos')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('title', { ascending: true }); // Ordenar por título alfabeticamente
 
       if (error) throw error;
       return data as VideoData[];
@@ -136,6 +137,26 @@ export const AllVideosView = () => {
 
       console.log('Permissões existentes:', existingPermissions);
 
+      // Obter próximo display_order para cada cliente
+      const clientOrderPromises = selectedClients.map(async (clientId) => {
+        const { data: lastOrder } = await supabase
+          .from('video_permissions')
+          .select('display_order')
+          .eq('client_id', clientId)
+          .order('display_order', { ascending: false })
+          .limit(1);
+        
+        return {
+          clientId,
+          nextOrder: (lastOrder?.[0]?.display_order || 0) + 1
+        };
+      });
+
+      const clientOrders = await Promise.all(clientOrderPromises);
+      const orderMap = Object.fromEntries(
+        clientOrders.map(co => [co.clientId, co.nextOrder])
+      );
+
       // Criar lista de novas permissões (evitando duplicatas)
       const newPermissions = [];
       for (const videoId of selectedVideos) {
@@ -147,7 +168,8 @@ export const AllVideosView = () => {
             newPermissions.push({
               video_id: videoId,
               client_id: clientId,
-              granted_by: user.id
+              granted_by: user.id,
+              display_order: orderMap[clientId]++
             });
           }
         }
@@ -226,6 +248,12 @@ export const AllVideosView = () => {
     // Executar a atribuição imediatamente
     handleAssignToClients();
   };
+
+  // Calcular paginação
+  const totalPages = Math.ceil(allVideos.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const videos = allVideos.slice(startIndex, endIndex);
 
   if (isLoading) {
     return (

@@ -85,6 +85,7 @@ export type Database = {
         Row: {
           client_id: string
           created_at: string
+          display_order: number | null
           granted_by: string
           id: string
           video_id: string
@@ -92,6 +93,7 @@ export type Database = {
         Insert: {
           client_id: string
           created_at?: string
+          display_order?: number | null
           granted_by: string
           id?: string
           video_id: string
@@ -99,6 +101,7 @@ export type Database = {
         Update: {
           client_id?: string
           created_at?: string
+          display_order?: number | null
           granted_by?: string
           id?: string
           video_id?: string

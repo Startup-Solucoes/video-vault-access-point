@@ -7,27 +7,31 @@ import { useCache } from '@/hooks/useCache';
 interface ClientVideo {
   id: string;
   title: string;
-  description: string | null;
+  description?: string;
   video_url: string;
-  thumbnail_url: string | null;
-  category: string | null;
-  platform: string | null;
+  thumbnail_url?: string;
+  platform?: string;
+  category?: string;
+  tags?: string[];
   created_at: string;
+  created_by: string;
   permission_created_at: string;
+  permission_id: string;
+  display_order: number;
 }
 
 export const useClientVideos = (clientId: string) => {
   const { user } = useAuth();
   const { get, set, invalidatePattern } = useCache<ClientVideo[]>({
     defaultTTL: 2 * 60 * 1000,
-    maxSize: 30
+    maxSize: 100
   });
   
   const [videos, setVideos] = useState<ClientVideo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchClientVideos = async (forceRefresh = false) => {
-    if (!user || !clientId) {
+    if (!clientId) {
       setIsLoading(false);
       return;
     }
@@ -37,58 +41,66 @@ export const useClientVideos = (clientId: string) => {
     if (!forceRefresh) {
       const cachedData = get(cacheKey);
       if (cachedData) {
-        console.log(`🎯 Cache hit: vídeos do cliente ${clientId}`);
+        console.log('🎯 Cache hit: vídeos do cliente', clientId);
         setVideos(cachedData);
         setIsLoading(false);
         return;
       }
     }
 
-    console.log('🎬 Buscando vídeos do cliente (OTIMIZADO):', clientId);
+    console.log('🎬 Buscando vídeos do cliente:', clientId);
     setIsLoading(true);
 
     try {
-      // Query otimizada com select específico
       const { data, error } = await supabase
         .from('video_permissions')
         .select(`
+          id,
           created_at,
-          videos!inner (
+          display_order,
+          videos (
             id,
             title,
             description,
             video_url,
             thumbnail_url,
-            category,
             platform,
-            created_at
+            category,
+            tags,
+            created_at,
+            created_by
           )
         `)
         .eq('client_id', clientId)
-        .order('created_at', { ascending: false })
-        .limit(50); // Limite para performance
+        .order('display_order', { ascending: true });
 
       if (error) {
         console.error('❌ Erro ao buscar vídeos do cliente:', error);
         throw error;
       }
 
-      const clientVideos = data?.map(permission => ({
-        id: permission.videos.id,
-        title: permission.videos.title,
-        description: permission.videos.description,
-        video_url: permission.videos.video_url,
-        thumbnail_url: permission.videos.thumbnail_url,
-        category: permission.videos.category,
-        platform: permission.videos.platform,
-        created_at: permission.videos.created_at,
-        permission_created_at: permission.created_at
-      })) || [];
+      const formattedVideos: ClientVideo[] = (data || [])
+        .filter(permission => permission.videos)
+        .map(permission => ({
+          id: permission.videos.id,
+          title: permission.videos.title,
+          description: permission.videos.description,
+          video_url: permission.videos.video_url,
+          thumbnail_url: permission.videos.thumbnail_url,
+          platform: permission.videos.platform,
+          category: permission.videos.category,
+          tags: permission.videos.tags,
+          created_at: permission.videos.created_at,
+          created_by: permission.videos.created_by,
+          permission_created_at: permission.created_at,
+          permission_id: permission.id,
+          display_order: permission.display_order || 0
+        }));
 
-      console.log('✅ Vídeos otimizados processados:', clientVideos.length);
+      console.log('✅ Vídeos do cliente encontrados:', formattedVideos.length);
       
-      set(cacheKey, clientVideos);
-      setVideos(clientVideos);
+      set(cacheKey, formattedVideos);
+      setVideos(formattedVideos);
     } catch (error) {
       console.error('💥 Erro no useClientVideos:', error);
       setVideos([]);
@@ -99,16 +111,18 @@ export const useClientVideos = (clientId: string) => {
 
   useEffect(() => {
     fetchClientVideos();
-  }, [user, clientId]);
+  }, [clientId]);
 
-  const refreshClientVideos = () => {
-    invalidatePattern(`client_videos_${clientId}`);
+  const refreshVideos = () => {
+    if (clientId) {
+      invalidatePattern(`client_videos_${clientId}`);
+    }
     fetchClientVideos(true);
   };
 
   return {
     videos,
     isLoading,
-    refreshClientVideos
+    refreshVideos
   };
 };

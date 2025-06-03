@@ -1,12 +1,14 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Video, Calendar, Eye, User, Edit, Trash2, Users } from 'lucide-react';
+import { Video, Calendar, Eye, User, Edit, Trash2, Users, ArrowUpDown } from 'lucide-react';
 import { useClientVideos } from '@/hooks/useClientVideos';
 import { EditVideoForm } from '@/components/forms/EditVideoForm';
 import { ClientUsersManager } from '@/components/dashboard/client-management/ClientUsersManager';
+import { VideoReorderList } from './VideoReorderList';
 
 interface ClientVideoViewProps {
   clientId: string;
@@ -15,10 +17,11 @@ interface ClientVideoViewProps {
 }
 
 export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientVideoViewProps) => {
-  const { videos, isLoading } = useClientVideos(clientId);
+  const { videos, isLoading, refreshVideos } = useClientVideos(clientId);
   const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showUsersManager, setShowUsersManager] = useState(false);
+  const [showReorderMode, setShowReorderMode] = useState(false);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('pt-BR', {
@@ -47,6 +50,11 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
     setEditingVideoId(null);
   };
 
+  const handleReorderComplete = () => {
+    refreshVideos();
+    setShowReorderMode(false);
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -73,6 +81,43 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
     );
   }
 
+  if (showReorderMode) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center">
+              {clientLogoUrl ? (
+                <img 
+                  src={clientLogoUrl} 
+                  alt={`Logo ${clientName}`}
+                  className="h-8 w-8 mr-3 object-contain rounded"
+                />
+              ) : (
+                <User className="h-5 w-5 mr-2" />
+              )}
+              Reordenar Vídeos - {clientName}
+            </CardTitle>
+            <Button
+              variant="outline"
+              onClick={() => setShowReorderMode(false)}
+            >
+              Voltar para Lista
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <VideoReorderList
+            clientId={clientId}
+            clientName={clientName}
+            videos={videos}
+            onReorderComplete={handleReorderComplete}
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <>
       <Card>
@@ -90,15 +135,28 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
               )}
               Vídeos de {clientName}
             </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowUsersManager(!showUsersManager)}
-              className="flex items-center gap-2"
-            >
-              <Users className="h-4 w-4" />
-              {showUsersManager ? 'Ocultar Usuários' : 'Gerenciar Usuários'}
-            </Button>
+            <div className="flex items-center gap-2">
+              {videos.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowReorderMode(true)}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowUpDown className="h-4 w-4" />
+                  Reordenar Vídeos
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowUsersManager(!showUsersManager)}
+                className="flex items-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                {showUsersManager ? 'Ocultar Usuários' : 'Gerenciar Usuários'}
+              </Button>
+            </div>
           </div>
           <p className="text-gray-600 mt-2">
             {videos.length} vídeo{videos.length !== 1 ? 's' : ''} disponível{videos.length !== 1 ? 'eis' : ''}
@@ -128,6 +186,7 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Ordem</TableHead>
                     <TableHead className="w-[300px]">Título e Descrição</TableHead>
                     <TableHead>Categoria</TableHead>
                     <TableHead>Data de Criação</TableHead>
@@ -137,8 +196,13 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {videos.map((video) => (
+                  {videos.map((video, index) => (
                     <TableRow key={video.id}>
+                      <TableCell>
+                        <Badge variant="outline">
+                          #{video.display_order || index + 1}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <div className="space-y-2">
                           <div className="font-medium text-gray-900">{video.title}</div>
