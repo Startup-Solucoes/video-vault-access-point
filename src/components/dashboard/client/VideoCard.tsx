@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,17 +7,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { VideoModal } from '@/components/ui/video-modal';
 import { getVideoThumbnail } from '@/utils/videoThumbnails';
-
-interface ClientVideo {
-  id: string;
-  title: string;
-  description: string | null;
-  video_url: string;
-  thumbnail_url: string | null;
-  category: string | null;
-  created_at: string;
-  permission_created_at: string;
-}
+import { ClientVideo } from '@/types/clientVideo';
 
 interface VideoCardProps {
   video: ClientVideo;

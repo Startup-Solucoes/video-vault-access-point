@@ -1,19 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Video, Clock } from 'lucide-react';
 import { VideoCard } from './VideoCard';
-
-interface ClientVideo {
-  id: string;
-  title: string;
-  description: string | null;
-  video_url: string;
-  thumbnail_url: string | null;
-  category: string | null;
-  created_at: string;
-  permission_created_at: string;
-}
+import { ClientVideo } from '@/types/clientVideo';
 
 interface VideoGridProps {
   videos: ClientVideo[];

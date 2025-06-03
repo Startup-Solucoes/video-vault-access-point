@@ -1,26 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useClientVideos, type ClientVideoData } from '@/hooks/useClientVideos';
+import { useClientVideos } from '@/hooks/useClientVideos';
 import { ClientHeader } from './client/ClientHeader';
 import { CategoryFilter } from './client/CategoryFilter';
 import { VideoFilters } from './client/VideoFilters';
 import { VideoGrid } from './client/VideoGrid';
 import { PlatformFilter } from './client/PlatformFilter';
 import { format } from 'date-fns';
-
-// Define ClientVideo interface to match existing usage
-interface ClientVideo {
-  id: string;
-  title: string;
-  description: string; // required to match existing interface
-  video_url: string;
-  thumbnail_url?: string;
-  platform?: string;
-  category?: string;
-  tags?: string[];
-  created_at: string;
-  created_by: string;
-}
+import { ClientVideo } from '@/types/clientVideo';
 
 export const ClientDashboard = () => {
   const { profile } = useAuth();
