@@ -7,7 +7,7 @@ export interface ClientVideo {
   video_url: string;
   thumbnail_url?: string;
   platform?: string;
-  category?: string;
+  category: string; // Made required to match VideoModal expectations
   tags?: string[];
   created_at: string;
   created_by: string;
