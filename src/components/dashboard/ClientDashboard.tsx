@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useClientVideos } from '@/hooks/useClientVideos';
@@ -21,7 +22,8 @@ export const ClientDashboard = () => {
   const videos: ClientVideo[] = useMemo(() => {
     return rawVideos.map(video => ({
       ...video,
-      description: video.description || '' // ensure description is not undefined
+      description: video.description || '', // ensure description is not undefined
+      category: video.category || 'Outros' // ensure category is always a string
     }));
   }, [rawVideos]);
 
