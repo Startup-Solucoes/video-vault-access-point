@@ -5,10 +5,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Video, Calendar, Eye, User, Edit, Trash2, Users, ArrowUpDown } from 'lucide-react';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
 import { useClientVideos } from '@/hooks/useClientVideos';
 import { EditVideoForm } from '@/components/forms/EditVideoForm';
 import { ClientUsersManager } from '@/components/dashboard/client-management/ClientUsersManager';
 import { VideoReorderList } from './VideoReorderList';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface ClientVideoViewProps {
   clientId: string;
@@ -22,6 +35,8 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showUsersManager, setShowUsersManager] = useState(false);
   const [showReorderMode, setShowReorderMode] = useState(false);
+  const [deletingVideoId, setDeletingVideoId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('pt-BR', {
@@ -33,10 +48,66 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
     });
   };
 
-  const handleDeleteVideo = (videoId: string, videoTitle: string) => {
-    if (confirm(`Tem certeza que deseja deletar o vídeo "${videoTitle}"?`)) {
-      // TODO: Implementar função de deletar vídeo
-      console.log('Deletando vídeo:', videoId);
+  const handleDeleteVideo = async (videoId: string, videoTitle: string) => {
+    console.log('🗑️ Iniciando exclusão do vídeo:', { videoId, videoTitle, clientId });
+    setDeletingVideoId(videoId);
+
+    try {
+      // Buscar a permissão específica para este cliente e vídeo
+      const { data: permission, error: permissionError } = await supabase
+        .from('video_permissions')
+        .select('id')
+        .eq('video_id', videoId)
+        .eq('client_id', clientId)
+        .single();
+
+      if (permissionError) {
+        console.error('❌ Erro ao buscar permissão:', permissionError);
+        toast({
+          title: "Erro",
+          description: "Erro ao buscar permissão do vídeo",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('🔍 Permissão encontrada:', permission);
+
+      // Deletar apenas a permissão (não o vídeo em si)
+      const { error: deleteError } = await supabase
+        .from('video_permissions')
+        .delete()
+        .eq('id', permission.id);
+
+      if (deleteError) {
+        console.error('❌ Erro ao deletar permissão:', deleteError);
+        toast({
+          title: "Erro",
+          description: "Erro ao remover vídeo do cliente",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('✅ Permissão deletada com sucesso');
+      
+      toast({
+        title: "Sucesso",
+        description: `Vídeo "${videoTitle}" removido do cliente com sucesso`,
+      });
+
+      // Atualizar a lista de vídeos
+      refreshVideos();
+      
+    } catch (error) {
+      console.error('💥 Erro inesperado ao deletar vídeo:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao remover vídeo",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingVideoId(null);
     }
   };
 
@@ -258,14 +329,38 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleDeleteVideo(video.id, video.title)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                disabled={deletingVideoId === video.id}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Remover vídeo do cliente?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja remover o vídeo <strong>"{video.title}"</strong> do cliente <strong>{clientName}</strong>?
+                                  <br /><br />
+                                  Esta ação irá apenas remover o acesso do cliente a este vídeo. O vídeo não será deletado permanentemente.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteVideo(video.id, video.title)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Sim, remover
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
