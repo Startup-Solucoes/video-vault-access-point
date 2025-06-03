@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useClientVideos, type ClientVideoData } from '@/hooks/useClientVideos';
@@ -9,13 +8,35 @@ import { VideoGrid } from './client/VideoGrid';
 import { PlatformFilter } from './client/PlatformFilter';
 import { format } from 'date-fns';
 
+// Define ClientVideo interface to match existing usage
+interface ClientVideo {
+  id: string;
+  title: string;
+  description: string; // required to match existing interface
+  video_url: string;
+  thumbnail_url?: string;
+  platform?: string;
+  category?: string;
+  tags?: string[];
+  created_at: string;
+  created_by: string;
+}
+
 export const ClientDashboard = () => {
   const { profile } = useAuth();
-  const { videos, isLoading } = useClientVideos(profile?.id || '');
+  const { videos: rawVideos, isLoading } = useClientVideos(profile?.id || '');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedPlatform, setSelectedPlatform] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+
+  // Convert ClientVideoData to ClientVideo format
+  const videos: ClientVideo[] = useMemo(() => {
+    return rawVideos.map(video => ({
+      ...video,
+      description: video.description || '' // ensure description is not undefined
+    }));
+  }, [rawVideos]);
 
   // Filtrar vídeos baseado na busca, categoria, plataforma e data
   // Os vídeos já vêm ordenados por display_order do hook
