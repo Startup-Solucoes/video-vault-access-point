@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useClientVideos } from '@/hooks/useClientVideos';
+import { useClientVideos, type ClientVideoData } from '@/hooks/useClientVideos';
 import { ClientHeader } from './client/ClientHeader';
 import { CategoryFilter } from './client/CategoryFilter';
 import { VideoFilters } from './client/VideoFilters';

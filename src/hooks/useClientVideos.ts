@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCache } from '@/hooks/useCache';
 
-interface ClientVideo {
+interface ClientVideoData {
   id: string;
   title: string;
   description?: string;
@@ -22,12 +22,12 @@ interface ClientVideo {
 
 export const useClientVideos = (clientId: string) => {
   const { user } = useAuth();
-  const { get, set, invalidatePattern } = useCache<ClientVideo[]>({
+  const { get, set, invalidatePattern } = useCache<ClientVideoData[]>({
     defaultTTL: 2 * 60 * 1000,
     maxSize: 100
   });
   
-  const [videos, setVideos] = useState<ClientVideo[]>([]);
+  const [videos, setVideos] = useState<ClientVideoData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchClientVideos = async (forceRefresh = false) => {
@@ -79,7 +79,7 @@ export const useClientVideos = (clientId: string) => {
         throw error;
       }
 
-      const formattedVideos: ClientVideo[] = (data || [])
+      const formattedVideos: ClientVideoData[] = (data || [])
         .filter(permission => permission.videos)
         .map(permission => ({
           id: permission.videos.id,
@@ -126,3 +126,5 @@ export const useClientVideos = (clientId: string) => {
     refreshVideos
   };
 };
+
+export type { ClientVideoData };

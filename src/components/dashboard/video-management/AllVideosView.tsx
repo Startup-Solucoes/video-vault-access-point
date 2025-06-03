@@ -54,10 +54,11 @@ export const AllVideosView = () => {
   });
 
   // Calcular paginação
-  const totalPages = Math.ceil(allVideos.length / itemsPerPage);
+  const totalItems = allVideos.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const videos = allVideos.slice(startIndex, endIndex);
+  const currentPageVideos = allVideos.slice(startIndex, endIndex);
 
   const handleVideoSelect = (videoId: string, checked: boolean) => {
     if (checked) {
@@ -68,7 +69,7 @@ export const AllVideosView = () => {
   };
 
   const handleSelectAllVisible = () => {
-    const currentPageVideoIds = videos.map(video => video.id);
+    const currentPageVideoIds = currentPageVideos.map(video => video.id);
     const allCurrentSelected = currentPageVideoIds.every(id => selectedVideos.includes(id));
     
     if (allCurrentSelected) {
@@ -249,12 +250,6 @@ export const AllVideosView = () => {
     handleAssignToClients();
   };
 
-  // Calcular paginação
-  const totalPages = Math.ceil(allVideos.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const videos = allVideos.slice(startIndex, endIndex);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -272,7 +267,7 @@ export const AllVideosView = () => {
         <CardHeader>
           <VideoListHeader
             totalVideos={allVideos.length}
-            currentVideos={videos}
+            currentVideos={currentPageVideos}
             selectedVideos={selectedVideos}
             itemsPerPage={itemsPerPage}
             onItemsPerPageChange={handleItemsPerPageChange}
@@ -282,7 +277,7 @@ export const AllVideosView = () => {
         </CardHeader>
         <CardContent>
           <VideosList
-            videos={videos}
+            videos={currentPageVideos}
             selectedVideos={selectedVideos}
             onVideoSelect={handleVideoSelect}
           />
