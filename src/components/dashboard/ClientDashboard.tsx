@@ -2,17 +2,20 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useClientVideos } from '@/hooks/useClientVideos';
+import { useClientAdvertisements } from '@/hooks/useClientAdvertisements';
 import { ClientHeader } from './client/ClientHeader';
 import { CategoryFilter } from './client/CategoryFilter';
 import { VideoFilters } from './client/VideoFilters';
 import { VideoGrid } from './client/VideoGrid';
 import { PlatformFilter } from './client/PlatformFilter';
+import { AdvertisementBanner } from './client/AdvertisementBanner';
 import { format } from 'date-fns';
 import { ClientVideo } from '@/types/clientVideo';
 
 export const ClientDashboard = () => {
   const { profile } = useAuth();
   const { videos: rawVideos, isLoading } = useClientVideos(profile?.id || '');
+  const { advertisements } = useClientAdvertisements(profile?.id || '');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedPlatform, setSelectedPlatform] = useState<string>('');
@@ -86,6 +89,18 @@ export const ClientDashboard = () => {
       <div className="w-full overflow-hidden">
         <ClientHeader profile={profile} videoCount={videos.length} />
       </div>
+
+      {/* Anúncios */}
+      {advertisements.length > 0 && (
+        <div className="w-full overflow-hidden">
+          <h2 className="text-lg font-semibold mb-3 text-gray-900">Anúncios</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {advertisements.map((ad) => (
+              <AdvertisementBanner key={ad.id} advertisement={ad} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Filtro de Categorias horizontal */}
       <div className="w-full overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">

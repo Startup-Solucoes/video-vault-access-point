@@ -9,6 +9,7 @@ import { VideoHistory } from './VideoHistory';
 import { ThumbnailGenerator } from './ThumbnailGenerator';
 import VideoManagement from './VideoManagement';
 import { ClientManagement } from './ClientManagement';
+import { AdvertisementManagement } from './advertisement-management/AdvertisementManagement';
 import { VideoForm } from '@/components/forms/VideoForm';
 import { ClientForm } from '@/components/forms/ClientForm';
 
@@ -94,10 +95,11 @@ export const AdminDashboard = () => {
 
       {/* Tabs principais */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="videos">Vídeos</TabsTrigger>
           <TabsTrigger value="clients">Clientes</TabsTrigger>
+          <TabsTrigger value="advertisements">Anúncios</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
           <TabsTrigger value="tools">Ferramentas</TabsTrigger>
         </TabsList>
@@ -108,7 +110,7 @@ export const AdminDashboard = () => {
               <CardTitle>Dashboard Administrativo</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Bem-vindo ao painel administrativo. Use as abas acima para gerenciar vídeos, clientes e visualizar relatórios.</p>
+              <p>Bem-vindo ao painel administrativo. Use as abas acima para gerenciar vídeos, clientes, anúncios e visualizar relatórios.</p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -122,6 +124,12 @@ export const AdminDashboard = () => {
         <TabsContent value="clients">
           <Suspense fallback={<ComponentLoader />}>
             <ClientManagement />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="advertisements">
+          <Suspense fallback={<ComponentLoader />}>
+            <AdvertisementManagement />
           </Suspense>
         </TabsContent>
 
