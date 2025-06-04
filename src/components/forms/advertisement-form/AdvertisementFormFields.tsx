@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { UseFormReturn } from 'react-hook-form';
 import { AdvertisementFormData } from './advertisementFormValidation';
 import { ClientSelector, ClientSelectorRef } from '../ClientSelector';
+import { ImageUpload } from './ImageUpload';
 
 interface AdvertisementFormFieldsProps {
   form: UseFormReturn<AdvertisementFormData>;
@@ -58,16 +59,37 @@ export const AdvertisementFormFields = ({
 
       <FormField
         control={form.control}
+        name="price"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Preço</FormLabel>
+            <FormControl>
+              <Input 
+                placeholder="R$ 99,90" 
+                {...field}
+                type="text"
+              />
+            </FormControl>
+            <div className="text-sm text-gray-600">
+              Opcional. Use formato: 99,90 ou 99.90
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
         name="image_url"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>URL da Imagem</FormLabel>
+            <FormLabel>Imagem do Anúncio</FormLabel>
             <FormControl>
-              <Input placeholder="https://exemplo.com/imagem.jpg" {...field} />
+              <ImageUpload
+                value={field.value || ''}
+                onChange={field.onChange}
+              />
             </FormControl>
-            <div className="text-sm text-gray-600">
-              Recomendado: 1920x1080px (16:9) ou similar para melhor qualidade
-            </div>
             <FormMessage />
           </FormItem>
         )}

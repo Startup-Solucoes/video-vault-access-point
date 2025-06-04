@@ -6,6 +6,11 @@ export const advertisementSchema = z.object({
   description: z.string().optional(),
   image_url: z.string().url('URL da imagem deve ser válida').optional().or(z.literal('')),
   link_url: z.string().url('URL do link deve ser válida'),
+  price: z.string().optional().refine((val) => {
+    if (!val || val === '') return true;
+    const num = parseFloat(val.replace(',', '.'));
+    return !isNaN(num) && num >= 0;
+  }, 'Preço deve ser um valor válido'),
   is_active: z.boolean(),
   client_ids: z.array(z.string()).optional(),
 });

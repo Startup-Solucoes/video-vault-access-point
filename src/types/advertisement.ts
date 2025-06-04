@@ -5,6 +5,7 @@ export interface Advertisement {
   description: string | null;
   image_url: string | null;
   link_url: string;
+  price: number | null;
   is_active: boolean;
   created_by: string;
   created_at: string;

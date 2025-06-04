@@ -34,6 +34,7 @@ export const useAdvertisementForm = ({
       description: '',
       image_url: '',
       link_url: '',
+      price: '',
       is_active: true,
       client_ids: [],
     },
@@ -67,6 +68,7 @@ export const useAdvertisementForm = ({
           description: data.description || '',
           image_url: data.image_url || '',
           link_url: data.link_url,
+          price: data.price ? data.price.toString() : '',
           is_active: data.is_active,
           client_ids: clientIds,
         });
@@ -80,6 +82,7 @@ export const useAdvertisementForm = ({
         description: '',
         image_url: '',
         link_url: '',
+        price: '',
         is_active: true,
         client_ids: [],
       });
@@ -93,11 +96,22 @@ export const useAdvertisementForm = ({
     console.log('📝 Salvando anúncio:', data);
 
     try {
+      // Converter preço para número se fornecido
+      let priceValue = null;
+      if (data.price && data.price.trim() !== '') {
+        const cleanPrice = data.price.replace(',', '.');
+        const numPrice = parseFloat(cleanPrice);
+        if (!isNaN(numPrice)) {
+          priceValue = numPrice;
+        }
+      }
+
       const advertisementData = {
         title: data.title,
         description: data.description || null,
         image_url: data.image_url || null,
         link_url: data.link_url,
+        price: priceValue,
         is_active: data.is_active,
         created_by: profile.id,
         updated_at: new Date().toISOString(),
