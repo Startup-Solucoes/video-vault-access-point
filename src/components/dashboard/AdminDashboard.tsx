@@ -28,6 +28,7 @@ export const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showVideoForm, setShowVideoForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
+  const [toolsTab, setToolsTab] = useState('thumbnails');
 
   const refreshCurrentTab = () => {
     console.log('AdminDashboard: Refresh solicitado para tab:', activeTab);
@@ -95,11 +96,10 @@ export const AdminDashboard = () => {
 
       {/* Tabs principais */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="videos">Vídeos</TabsTrigger>
           <TabsTrigger value="clients">Clientes</TabsTrigger>
-          <TabsTrigger value="advertisements">Anúncios</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
           <TabsTrigger value="tools">Ferramentas</TabsTrigger>
         </TabsList>
@@ -127,18 +127,27 @@ export const AdminDashboard = () => {
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="advertisements">
-          <Suspense fallback={<ComponentLoader />}>
-            <AdvertisementManagement />
-          </Suspense>
-        </TabsContent>
-
         <TabsContent value="history">
           <VideoHistory />
         </TabsContent>
 
         <TabsContent value="tools">
-          <ThumbnailGenerator />
+          <Tabs value={toolsTab} onValueChange={setToolsTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="thumbnails">Gerador de Thumbnails</TabsTrigger>
+              <TabsTrigger value="advertisements">Gerenciar Anúncios</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="thumbnails">
+              <ThumbnailGenerator />
+            </TabsContent>
+
+            <TabsContent value="advertisements">
+              <Suspense fallback={<ComponentLoader />}>
+                <AdvertisementManagement />
+              </Suspense>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
 
