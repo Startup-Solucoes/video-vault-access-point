@@ -3,7 +3,7 @@ import React, { Suspense, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Image, Megaphone } from 'lucide-react';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import { VideoHistory } from './VideoHistory';
 import { ThumbnailGenerator } from './ThumbnailGenerator';
@@ -28,7 +28,7 @@ export const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showVideoForm, setShowVideoForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
-  const [toolsTab, setToolsTab] = useState('thumbnails');
+  const [selectedTool, setSelectedTool] = useState<string | null>(null);
 
   const refreshCurrentTab = () => {
     console.log('AdminDashboard: Refresh solicitado para tab:', activeTab);
@@ -132,22 +132,70 @@ export const AdminDashboard = () => {
         </TabsContent>
 
         <TabsContent value="tools">
-          <Tabs value={toolsTab} onValueChange={setToolsTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="thumbnails">Gerador de Thumbnails</TabsTrigger>
-              <TabsTrigger value="advertisements">Gerenciar Anúncios</TabsTrigger>
-            </TabsList>
+          {!selectedTool ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedTool('thumbnails')}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <Image className="h-6 w-6 text-blue-600" />
+                    Gerador de Thumbnails
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    Gere thumbnails automaticamente para vídeos que não possuem imagem de capa
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">Suporta: ScreenPal, YouTube e Vimeo</span>
+                    <Button variant="outline" size="sm">
+                      Acessar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
-            <TabsContent value="thumbnails">
-              <ThumbnailGenerator />
-            </TabsContent>
-
-            <TabsContent value="advertisements">
-              <Suspense fallback={<ComponentLoader />}>
-                <AdvertisementManagement />
-              </Suspense>
-            </TabsContent>
-          </Tabs>
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedTool('advertisements')}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <Megaphone className="h-6 w-6 text-green-600" />
+                    Gerenciar Anúncios
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    Crie, edite e gerencie anúncios que serão exibidos para os clientes
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">Controle total de permissões</span>
+                    <Button variant="outline" size="sm">
+                      Acessar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedTool(null)}
+                >
+                  ← Voltar às Ferramentas
+                </Button>
+                <h2 className="text-xl font-semibold">
+                  {selectedTool === 'thumbnails' ? 'Gerador de Thumbnails' : 'Gerenciar Anúncios'}
+                </h2>
+              </div>
+              
+              {selectedTool === 'thumbnails' && <ThumbnailGenerator />}
+              {selectedTool === 'advertisements' && (
+                <Suspense fallback={<ComponentLoader />}>
+                  <AdvertisementManagement />
+                </Suspense>
+              )}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
