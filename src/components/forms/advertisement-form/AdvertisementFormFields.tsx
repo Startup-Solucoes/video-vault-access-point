@@ -65,6 +65,9 @@ export const AdvertisementFormFields = ({
             <FormControl>
               <Input placeholder="https://exemplo.com/imagem.jpg" {...field} />
             </FormControl>
+            <div className="text-sm text-gray-600">
+              Recomendado: 1920x1080px (16:9) ou similar para melhor qualidade
+            </div>
             <FormMessage />
           </FormItem>
         )}
