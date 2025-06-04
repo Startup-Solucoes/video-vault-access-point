@@ -26,9 +26,9 @@ export const AdvertisementBanner = ({
   return (
     <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border-l-4 border-l-yellow-500 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200" onClick={handleClick}>
       <CardContent className="p-0">
-        <div className="flex items-center h-28 sm:h-32">
-          {/* Imagem Quadrada */}
-          <div className="w-28 h-28 sm:w-32 sm:h-32 bg-gradient-to-br from-yellow-100 via-yellow-200 to-yellow-300 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+        <div className="flex items-stretch min-h-[140px]">
+          {/* Imagem */}
+          <div className="w-32 h-full bg-gradient-to-br from-yellow-100 via-yellow-200 to-yellow-300 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
             {advertisement.image_url ? (
               <img 
                 src={advertisement.image_url} 
@@ -54,42 +54,50 @@ export const AdvertisementBanner = ({
             </div>
           </div>
 
-          {/* Conteúdo */}
-          <div className="flex-1 p-4 sm:p-5 min-w-0">
-            <div className="flex justify-between items-start h-full">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-bold text-base sm:text-lg text-yellow-600 break-words">
-                    {advertisement.title}
-                  </h3>
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse flex-shrink-0"></div>
-                </div>
-                {advertisement.description && (
-                  <p className="text-sm sm:text-base text-gray-700 line-clamp-2 leading-relaxed mb-3">
-                    {advertisement.description}
-                  </p>
-                )}
-                <div className="flex items-center gap-2">
-                  {advertisement.price && (
-                    <span className="font-bold text-yellow-600 bg-yellow-100 py-1 rounded-full px-[11px] text-lg">
-                      {formatPrice(advertisement.price)}
-                    </span>
-                  )}
-                  <span className="text-xs text-gray-500">Clique para saber mais</span>
-                </div>
+          {/* Conteúdo Principal */}
+          <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
+            {/* Título e Descrição */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="font-bold text-lg text-yellow-600 leading-tight">
+                  {advertisement.title}
+                </h3>
+                <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse flex-shrink-0"></div>
+              </div>
+              {advertisement.description && (
+                <p className="text-gray-700 leading-relaxed text-sm">
+                  {advertisement.description}
+                </p>
+              )}
+            </div>
+
+            {/* Preço e Botão */}
+            <div className="flex items-end justify-between">
+              <div className="text-xs text-gray-500">
+                Clique para saber mais
               </div>
               
-              <Button 
-                size="sm" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleClick();
-                }} 
-                className="ml-3 flex-shrink-0 bg-yellow-500 hover:bg-yellow-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 my-[30px] px-[20px] py-[20px]"
-              >
-                <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline ml-1">EU QUERO</span>
-              </Button>
+              <div className="flex flex-col items-end gap-2">
+                {advertisement.price && (
+                  <div className="text-right">
+                    <span className="font-bold text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full text-lg">
+                      {formatPrice(advertisement.price)}
+                    </span>
+                  </div>
+                )}
+                
+                <Button 
+                  size="sm" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleClick();
+                  }} 
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-6 py-2 font-semibold"
+                >
+                  <ExternalLink className="h-4 w-4 mr-1" />
+                  EU QUERO
+                </Button>
+              </div>
             </div>
           </div>
         </div>
