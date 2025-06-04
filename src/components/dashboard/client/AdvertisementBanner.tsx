@@ -14,6 +14,13 @@ export const AdvertisementBanner = ({ advertisement }: AdvertisementBannerProps)
     window.open(advertisement.link_url, '_blank', 'noopener,noreferrer');
   };
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(price);
+  };
+
   return (
     <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border-l-4 border-l-yellow-500 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200" onClick={handleClick}>
       <CardContent className="p-0">
@@ -61,9 +68,11 @@ export const AdvertisementBanner = ({ advertisement }: AdvertisementBannerProps)
                   </p>
                 )}
                 <div className="flex items-center gap-2">
-                  <span className="text-xs bg-yellow-500 text-white px-2 py-1 rounded-full font-medium">
-                    Anúncio
-                  </span>
+                  {advertisement.price && (
+                    <span className="text-sm font-bold text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full">
+                      {formatPrice(advertisement.price)}
+                    </span>
+                  )}
                   <span className="text-xs text-gray-500">Clique para saber mais</span>
                 </div>
               </div>
