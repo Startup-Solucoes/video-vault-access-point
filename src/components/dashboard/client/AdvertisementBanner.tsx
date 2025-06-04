@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { Image as ImageIcon, Sparkles, MessageCircle } from 'lucide-react';
 import { Advertisement } from '@/types/advertisement';
 interface AdvertisementBannerProps {
   advertisement: Advertisement;
@@ -40,33 +41,40 @@ export const AdvertisementBanner = ({
           </div>
 
           {/* Conteúdo */}
-          <div className="flex-1 p-4 sm:p-5 min-w-0">
-            <div className="flex justify-between items-start h-full">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-bold text-base sm:text-lg text-gray-900 truncate text-yellow-600">
-                    {advertisement.title}
-                  </h3>
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                </div>
-                {advertisement.description && <p className="text-sm sm:text-base text-gray-700 line-clamp-2 leading-relaxed mb-3">
-                    {advertisement.description}
-                  </p>}
-                <div className="flex items-center gap-2">
-                  {advertisement.price && <span className="font-bold text-yellow-600 bg-yellow-100 py-1 rounded-full px-[11px] text-lg">
-                      {formatPrice(advertisement.price)}
-                    </span>}
-                  <span className="text-xs text-gray-500">Clique para saber mais</span>
-                </div>
+          <div className="flex-1 p-4 sm:p-5 min-w-0 flex flex-col justify-center">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <h3 className="font-bold text-base sm:text-lg text-yellow-600">
+                  {advertisement.title}
+                </h3>
+                <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
               </div>
               
-              <Button size="sm" onClick={e => {
-              e.stopPropagation();
-              handleClick();
-            }} className="ml-3 flex-shrink-0 bg-yellow-500 hover:bg-yellow-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 my-[30px] px-[20px] py-[20px]">
-                <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline ml-1">EU QUERO</span>
+              {advertisement.description && <p className="text-sm sm:text-base text-gray-700 line-clamp-2 leading-relaxed mb-3 text-center">
+                  {advertisement.description}
+                </p>}
+              
+              {advertisement.price && (
+                <div className="mb-3">
+                  <span className="font-bold text-yellow-600 bg-yellow-100 py-1 rounded-full px-[11px] text-lg">
+                    {formatPrice(advertisement.price)}
+                  </span>
+                </div>
+              )}
+              
+              <Button 
+                size="sm" 
+                onClick={e => {
+                  e.stopPropagation();
+                  handleClick();
+                }} 
+                className="bg-yellow-500 hover:bg-yellow-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-[20px] py-[20px]"
+              >
+                <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="ml-1">EU QUERO</span>
               </Button>
+              
+              <p className="text-xs text-gray-500 mt-2">Clique para saber mais</p>
             </div>
           </div>
         </div>
