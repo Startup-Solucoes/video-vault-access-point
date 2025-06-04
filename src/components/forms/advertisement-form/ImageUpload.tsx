@@ -112,11 +112,13 @@ export const ImageUpload = ({ value, onChange }: ImageUploadProps) => {
 
       {previewUrl && (
         <div className="relative">
-          <img
-            src={previewUrl}
-            alt="Preview"
-            className="w-full h-32 object-cover rounded-lg border"
-          />
+          <div className="max-w-md mx-auto">
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="w-full h-auto object-contain rounded-lg border max-h-64"
+            />
+          </div>
           <Button
             type="button"
             variant="destructive"
