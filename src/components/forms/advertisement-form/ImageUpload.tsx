@@ -130,7 +130,7 @@ export const ImageUpload = ({ value, onChange }: ImageUploadProps) => {
       )}
 
       <div className="text-sm text-gray-600">
-        Recomendado: 1920x1080px (16:9) ou similar para melhor qualidade. Máximo 5MB.
+        Recomendado: 400x400px (formato quadrado 1:1) para melhor visualização. Máximo 5MB.
       </div>
     </div>
   );

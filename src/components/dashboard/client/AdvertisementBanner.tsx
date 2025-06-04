@@ -18,8 +18,8 @@ export const AdvertisementBanner = ({ advertisement }: AdvertisementBannerProps)
     <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border-l-4 border-l-gradient-to-b from-blue-500 to-purple-500 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100" onClick={handleClick}>
       <CardContent className="p-0">
         <div className="flex items-center h-28 sm:h-32">
-          {/* Imagem */}
-          <div className="w-24 sm:w-28 h-full bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+          {/* Imagem Quadrada */}
+          <div className="w-28 h-28 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
             {advertisement.image_url ? (
               <img 
                 src={advertisement.image_url} 
