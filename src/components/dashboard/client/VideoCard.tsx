@@ -8,6 +8,7 @@ import { ptBR } from 'date-fns/locale';
 import { VideoModal } from '@/components/ui/video-modal';
 import { getVideoThumbnail } from '@/utils/videoThumbnails';
 import { ClientVideo } from '@/types/clientVideo';
+import { getCategoryColor } from '@/utils/categoryColors';
 
 interface VideoCardProps {
   video: ClientVideo;

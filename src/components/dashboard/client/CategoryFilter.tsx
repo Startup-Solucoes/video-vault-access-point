@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tag } from 'lucide-react';
@@ -9,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getCategoryTextColor } from '@/utils/categoryColors';
 
 interface CategoryFilterProps {
   selectedCategory: string;
@@ -77,7 +77,7 @@ export const CategoryFilter = ({
             </SelectItem>
             {availableCategories.map((category) => {
               const count = videos.filter(v => v.category === category).length;
-              const categoryColor = getCategoryColor(category);
+              const categoryColor = getCategoryTextColor(category);
               
               return (
                 <SelectItem key={category} value={category}>

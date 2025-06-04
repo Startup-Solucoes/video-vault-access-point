@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,7 @@ import {
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
 import { ClientVideoData } from '@/hooks/useClientVideos';
+import { getCategoryColor } from '@/utils/categoryColors';
 
 interface ClientVideoTableProps {
   videos: ClientVideoData[];
@@ -104,7 +104,9 @@ export const ClientVideoTable = ({
               </TableCell>
               <TableCell>
                 {video.category ? (
-                  <Badge variant="secondary">{video.category}</Badge>
+                  <Badge className={`font-semibold border-0 ${getCategoryColor(video.category)}`}>
+                    {video.category}
+                  </Badge>
                 ) : (
                   <span className="text-gray-400 text-sm">Sem categoria</span>
                 )}

@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Tag } from 'lucide-react';
+import { getCategoryColor } from '@/utils/categoryColors';
 
 interface VideoData {
   id: string;
@@ -59,7 +59,7 @@ export const VideoItem: React.FC<VideoItemProps> = ({
             </Badge>
           )}
           {video.category && (
-            <Badge variant="outline">
+            <Badge className={`font-semibold border-0 ${getCategoryColor(video.category)}`}>
               {video.category}
             </Badge>
           )}

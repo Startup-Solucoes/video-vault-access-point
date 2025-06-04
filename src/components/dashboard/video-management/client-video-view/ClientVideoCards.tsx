@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,7 @@ import {
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
 import { ClientVideoData } from '@/hooks/useClientVideos';
+import { getCategoryColor } from '@/utils/categoryColors';
 
 interface ClientVideoCardsProps {
   videos: ClientVideoData[];
@@ -122,7 +122,9 @@ export const ClientVideoCards = ({
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-700">Categoria:</span>
                 {video.category ? (
-                  <Badge variant="secondary" className="text-xs">{video.category}</Badge>
+                  <Badge className={`text-xs font-semibold border-0 ${getCategoryColor(video.category)}`}>
+                    {video.category}
+                  </Badge>
                 ) : (
                   <span className="text-gray-400 text-sm">Sem categoria</span>
                 )}
