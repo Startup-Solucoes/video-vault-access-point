@@ -50,7 +50,7 @@ export const VideoListHeader: React.FC<VideoListHeaderProps> = ({
           variant="outline"
           onClick={onSelectAllVisible}
         >
-          {currentVideos.every(video => selectedVideos.includes(video.id)) ? 'Desmarcar' : 'Selecionar Vídeos'}
+          {currentVideos.every(video => selectedVideos.includes(video.id)) ? 'Desmarcar Todos' : 'Selecionar Todos'}
         </Button>
         {selectedVideos.length > 0 && (
           <Button

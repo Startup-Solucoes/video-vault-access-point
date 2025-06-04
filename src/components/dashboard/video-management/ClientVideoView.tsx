@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Video, Calendar, Eye, User, Edit, Trash2, Users, ArrowUpDown } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Video, Calendar, Eye, User, Edit, Trash2, Users, ArrowUpDown, CheckSquare, Square } from 'lucide-react';
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -36,6 +36,7 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
   const [showUsersManager, setShowUsersManager] = useState(false);
   const [showReorderMode, setShowReorderMode] = useState(false);
   const [deletingVideoId, setDeletingVideoId] = useState<string | null>(null);
+  const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
   const { toast } = useToast();
 
   const formatDate = (dateString: string) => {
@@ -46,6 +47,67 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleVideoSelect = (videoId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedVideos(prev => [...prev, videoId]);
+    } else {
+      setSelectedVideos(prev => prev.filter(id => id !== videoId));
+    }
+  };
+
+  const handleSelectAllVisible = () => {
+    const allSelected = videos.every(video => selectedVideos.includes(video.id));
+    if (allSelected) {
+      setSelectedVideos([]);
+    } else {
+      setSelectedVideos(videos.map(video => video.id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedVideos.length === 0) return;
+    
+    console.log('🗑️ Iniciando exclusão em lote:', { selectedVideos, clientId });
+
+    try {
+      // Deletar todas as permissões selecionadas
+      const { error } = await supabase
+        .from('video_permissions')
+        .delete()
+        .eq('client_id', clientId)
+        .in('video_id', selectedVideos);
+
+      if (error) {
+        console.error('❌ Erro ao deletar permissões:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao remover vídeos do cliente",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('✅ Permissões deletadas com sucesso');
+      
+      toast({
+        title: "Sucesso",
+        description: `${selectedVideos.length} vídeo(s) removido(s) do cliente com sucesso`,
+      });
+
+      // Limpar seleção e atualizar lista
+      setSelectedVideos([]);
+      refreshVideos();
+      
+    } catch (error) {
+      console.error('💥 Erro inesperado ao deletar vídeos:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao remover vídeos",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteVideo = async (videoId: string, videoTitle: string) => {
@@ -214,20 +276,73 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
               </CardTitle>
               <p className="text-gray-600 mt-2">
                 {videos.length} vídeo{videos.length !== 1 ? 's' : ''} disponível{videos.length !== 1 ? 'eis' : ''}
+                {selectedVideos.length > 0 && (
+                  <span className="ml-2 text-blue-600">
+                    • {selectedVideos.length} selecionado{selectedVideos.length !== 1 ? 's' : ''}
+                  </span>
+                )}
               </p>
             </div>
             
             <div className="flex flex-col sm:flex-row gap-2">
               {videos.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowReorderMode(true)}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowUpDown className="h-4 w-4" />
-                  Reordenar Vídeos
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSelectAllVisible}
+                    className="flex items-center gap-2"
+                  >
+                    {videos.every(video => selectedVideos.includes(video.id)) ? (
+                      <CheckSquare className="h-4 w-4" />
+                    ) : (
+                      <Square className="h-4 w-4" />
+                    )}
+                    {videos.every(video => selectedVideos.includes(video.id)) ? 'Desmarcar Todos' : 'Selecionar Todos'}
+                  </Button>
+                  {selectedVideos.length > 0 && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Remover Selecionados ({selectedVideos.length})
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Remover vídeos selecionados?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja remover <strong>{selectedVideos.length} vídeo(s)</strong> do cliente <strong>{clientName}</strong>?
+                            <br /><br />
+                            Esta ação irá apenas remover o acesso do cliente a estes vídeos. Os vídeos não serão deletados permanentemente.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleBulkDelete}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Sim, remover todos
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowReorderMode(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowUpDown className="h-4 w-4" />
+                    Reordenar Vídeos
+                  </Button>
+                </>
               )}
               <Button
                 variant="outline"
@@ -278,6 +393,12 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={videos.length > 0 && videos.every(video => selectedVideos.includes(video.id))}
+                          onCheckedChange={handleSelectAllVisible}
+                        />
+                      </TableHead>
                       <TableHead className="w-20">Ordem</TableHead>
                       <TableHead className="min-w-[300px]">Título e Descrição</TableHead>
                       <TableHead className="w-32">Categoria</TableHead>
@@ -290,6 +411,12 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
                   <TableBody>
                     {videos.map((video, index) => (
                       <TableRow key={video.id} className="hover:bg-gray-50">
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedVideos.includes(video.id)}
+                            onCheckedChange={(checked) => handleVideoSelect(video.id, checked as boolean)}
+                          />
+                        </TableCell>
                         <TableCell>
                           <Badge variant="outline">
                             #{video.display_order || index + 1}
@@ -398,11 +525,17 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
                   <Card key={video.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-4">
                       <div className="space-y-4">
-                        {/* Header with order and actions */}
+                        {/* Header with checkbox, order and actions */}
                         <div className="flex items-start justify-between">
-                          <Badge variant="outline" className="text-xs">
-                            #{video.display_order || index + 1}
-                          </Badge>
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              checked={selectedVideos.includes(video.id)}
+                              onCheckedChange={(checked) => handleVideoSelect(video.id, checked as boolean)}
+                            />
+                            <Badge variant="outline" className="text-xs">
+                              #{video.display_order || index + 1}
+                            </Badge>
+                          </div>
                           <div className="flex gap-2">
                             <Button 
                               variant="outline" 
