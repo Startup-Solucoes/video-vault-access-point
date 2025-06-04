@@ -2,9 +2,11 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Users, Video } from 'lucide-react';
 import { VideoList } from './video-management/VideoList';
 import { ClientVideoView } from './video-management/ClientVideoView';
+import { AllVideosView } from './video-management/AllVideosView';
 
 const VideoManagement = () => {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
@@ -53,7 +55,26 @@ const VideoManagement = () => {
           <CardTitle>Gerenciamento de Vídeos</CardTitle>
         </CardHeader>
         <CardContent>
-          <VideoList onClientSelect={handleClientSelect} />
+          <Tabs defaultValue="by-client" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="by-client" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Por Cliente
+              </TabsTrigger>
+              <TabsTrigger value="all-videos" className="flex items-center gap-2">
+                <Video className="h-4 w-4" />
+                Todos os Vídeos
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="by-client" className="mt-6">
+              <VideoList onClientSelect={handleClientSelect} />
+            </TabsContent>
+            
+            <TabsContent value="all-videos" className="mt-6">
+              <AllVideosView />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
