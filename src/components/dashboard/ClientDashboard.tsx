@@ -11,6 +11,7 @@ import { PlatformFilter } from './client/PlatformFilter';
 import { AdvertisementBanner } from './client/AdvertisementBanner';
 import { format } from 'date-fns';
 import { ClientVideo } from '@/types/clientVideo';
+import { Sparkles } from 'lucide-react';
 
 export const ClientDashboard = () => {
   const { profile } = useAuth();
@@ -90,11 +91,16 @@ export const ClientDashboard = () => {
         <ClientHeader profile={profile} videoCount={videos.length} />
       </div>
 
-      {/* Anúncios */}
+      {/* Anúncios em destaque */}
       {advertisements.length > 0 && (
         <div className="w-full overflow-hidden">
-          <h2 className="text-lg font-semibold mb-3 text-gray-900">Anúncios</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="h-5 w-5 text-yellow-500" />
+            <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Destaques para Você
+            </h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
             {advertisements.map((ad) => (
               <AdvertisementBanner key={ad.id} advertisement={ad} />
             ))}

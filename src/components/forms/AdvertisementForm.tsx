@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { ClientSelector, ClientSelectorRef } from './ClientSelector';
 
 const advertisementSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -19,6 +20,7 @@ const advertisementSchema = z.object({
   image_url: z.string().url('URL da imagem deve ser válida').optional().or(z.literal('')),
   link_url: z.string().url('URL do link deve ser válida'),
   is_active: z.boolean(),
+  client_ids: z.array(z.string()).optional(),
 });
 
 type AdvertisementFormData = z.infer<typeof advertisementSchema>;
@@ -39,6 +41,8 @@ export const AdvertisementForm = ({
   const { profile } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedClients, setSelectedClients] = useState<string[]>([]);
+  const clientSelectorRef = useRef<ClientSelectorRef>(null);
 
   const form = useForm<AdvertisementFormData>({
     resolver: zodResolver(advertisementSchema),
@@ -48,6 +52,7 @@ export const AdvertisementForm = ({
       image_url: '',
       link_url: '',
       is_active: true,
+      client_ids: [],
     },
   });
 
@@ -57,7 +62,10 @@ export const AdvertisementForm = ({
       const fetchAdvertisement = async () => {
         const { data, error } = await supabase
           .from('advertisements')
-          .select('*')
+          .select(`
+            *,
+            advertisement_permissions (client_id)
+          `)
           .eq('id', advertisementId)
           .single();
 
@@ -66,23 +74,31 @@ export const AdvertisementForm = ({
           return;
         }
 
+        const clientIds = data.advertisement_permissions
+          ?.filter(p => p.client_id)
+          .map(p => p.client_id) || [];
+
+        setSelectedClients(clientIds);
         form.reset({
           title: data.title,
           description: data.description || '',
           image_url: data.image_url || '',
           link_url: data.link_url,
           is_active: data.is_active,
+          client_ids: clientIds,
         });
       };
 
       fetchAdvertisement();
     } else if (open && !advertisementId) {
+      setSelectedClients([]);
       form.reset({
         title: '',
         description: '',
         image_url: '',
         link_url: '',
         is_active: true,
+        client_ids: [],
       });
     }
   }, [advertisementId, open, form]);
@@ -104,6 +120,8 @@ export const AdvertisementForm = ({
         updated_at: new Date().toISOString(),
       };
 
+      let advertisementIdToUse = advertisementId;
+
       if (advertisementId) {
         // Editando anúncio existente
         const { error } = await supabase
@@ -112,24 +130,45 @@ export const AdvertisementForm = ({
           .eq('id', advertisementId);
 
         if (error) throw error;
-
-        toast({
-          title: "Sucesso",
-          description: "Anúncio atualizado com sucesso",
-        });
       } else {
         // Criando novo anúncio
-        const { error } = await supabase
+        const { data: newAd, error } = await supabase
           .from('advertisements')
-          .insert([advertisementData]);
+          .insert([advertisementData])
+          .select()
+          .single();
 
         if (error) throw error;
-
-        toast({
-          title: "Sucesso",
-          description: "Anúncio criado com sucesso",
-        });
+        advertisementIdToUse = newAd.id;
       }
+
+      // Gerenciar permissões de clientes
+      if (advertisementIdToUse) {
+        // Remover permissões existentes
+        await supabase
+          .from('advertisement_permissions')
+          .delete()
+          .eq('advertisement_id', advertisementIdToUse);
+
+        // Adicionar novas permissões se houver clientes selecionados
+        if (selectedClients.length > 0) {
+          const permissions = selectedClients.map(clientId => ({
+            advertisement_id: advertisementIdToUse,
+            client_id: clientId
+          }));
+
+          const { error: permError } = await supabase
+            .from('advertisement_permissions')
+            .insert(permissions);
+
+          if (permError) throw permError;
+        }
+      }
+
+      toast({
+        title: "Sucesso",
+        description: advertisementId ? "Anúncio atualizado com sucesso" : "Anúncio criado com sucesso",
+      });
 
       onAdvertisementCreated?.();
       onOpenChange(false);
@@ -147,7 +186,7 @@ export const AdvertisementForm = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {advertisementId ? 'Editar Anúncio' : 'Novo Anúncio'}
@@ -216,6 +255,18 @@ export const AdvertisementForm = ({
                 </FormItem>
               )}
             />
+
+            <div className="space-y-2">
+              <FormLabel>Clientes que verão o anúncio</FormLabel>
+              <p className="text-sm text-gray-600">
+                Se nenhum cliente for selecionado, o anúncio será global (visível para todos)
+              </p>
+              <ClientSelector
+                ref={clientSelectorRef}
+                selectedClients={selectedClients}
+                onClientChange={setSelectedClients}
+              />
+            </div>
 
             <FormField
               control={form.control}

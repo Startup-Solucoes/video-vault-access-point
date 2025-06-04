@@ -16,9 +16,13 @@ export const useClientAdvertisements = (clientId: string) => {
     setIsLoading(true);
 
     try {
+      // Buscar anúncios ativos que são globais OU específicos para este cliente
       const { data: ads, error } = await supabase
         .from('advertisements')
-        .select('*')
+        .select(`
+          *,
+          advertisement_permissions!left (client_id)
+        `)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
@@ -32,8 +36,21 @@ export const useClientAdvertisements = (clientId: string) => {
         return;
       }
 
-      console.log('✅ Anúncios do cliente carregados:', ads);
-      setAdvertisements(ads || []);
+      // Filtrar anúncios que são globais (sem permissões) ou específicos para este cliente
+      const clientAds = ads?.filter(ad => {
+        const permissions = ad.advertisement_permissions || [];
+        
+        // Se não há permissões, é um anúncio global
+        if (permissions.length === 0) {
+          return true;
+        }
+        
+        // Se há permissões, verificar se este cliente está incluído
+        return permissions.some(p => p.client_id === clientId);
+      }) || [];
+
+      console.log('✅ Anúncios do cliente carregados:', clientAds);
+      setAdvertisements(clientAds);
     } catch (error) {
       console.error('💥 Erro inesperado:', error);
       toast({
