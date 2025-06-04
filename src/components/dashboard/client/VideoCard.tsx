@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,23 +14,6 @@ import { getCategoryColor } from '@/utils/categoryColors';
 interface VideoCardProps {
   video: ClientVideo;
 }
-
-// Cores para cada categoria (mesmas do CategoryFilter)
-const getCategoryColor = (category: string) => {
-  const colors: { [key: string]: string } = {
-    'Gerais': 'bg-blue-600 text-white',
-    'Produto': 'bg-green-600 text-white',
-    'Financeiro': 'bg-yellow-600 text-white',
-    'Relatórios': 'bg-purple-600 text-white',
-    'Pedidos de venda': 'bg-orange-600 text-white',
-    'Fiscal': 'bg-red-600 text-white',
-    'Integrações': 'bg-teal-600 text-white',
-    'Serviços': 'bg-indigo-600 text-white'
-  };
-  
-  // Cor padrão se a categoria não estiver mapeada
-  return colors[category] || 'bg-gray-600 text-white';
-};
 
 export const VideoCard = ({ video }: VideoCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
