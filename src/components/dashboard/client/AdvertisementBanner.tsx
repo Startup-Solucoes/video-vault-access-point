@@ -15,11 +15,11 @@ export const AdvertisementBanner = ({ advertisement }: AdvertisementBannerProps)
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border-l-4 border-l-gradient-to-b from-yellow-500 to-black bg-gradient-to-r from-yellow-50 to-gray-50 hover:from-yellow-100 hover:to-gray-100" onClick={handleClick}>
+    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border-l-4 border-l-yellow-500 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200" onClick={handleClick}>
       <CardContent className="p-0">
         <div className="flex items-center h-28 sm:h-32">
           {/* Imagem Quadrada */}
-          <div className="w-28 h-28 sm:w-32 sm:h-32 bg-gradient-to-br from-yellow-100 via-yellow-200 to-gray-200 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+          <div className="w-28 h-28 sm:w-32 sm:h-32 bg-gradient-to-br from-yellow-100 via-yellow-200 to-yellow-300 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
             {advertisement.image_url ? (
               <img 
                 src={advertisement.image_url} 
@@ -50,10 +50,10 @@ export const AdvertisementBanner = ({ advertisement }: AdvertisementBannerProps)
             <div className="flex justify-between items-start h-full">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-bold text-base sm:text-lg text-gray-900 truncate bg-gradient-to-r from-yellow-600 to-black bg-clip-text text-transparent">
+                  <h3 className="font-bold text-base sm:text-lg text-gray-900 truncate text-yellow-600">
                     {advertisement.title}
                   </h3>
-                  <div className="w-2 h-2 bg-gradient-to-r from-yellow-500 to-black rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
                 </div>
                 {advertisement.description && (
                   <p className="text-sm sm:text-base text-gray-700 line-clamp-2 leading-relaxed mb-3">
@@ -61,7 +61,7 @@ export const AdvertisementBanner = ({ advertisement }: AdvertisementBannerProps)
                   </p>
                 )}
                 <div className="flex items-center gap-2">
-                  <span className="text-xs bg-gradient-to-r from-yellow-500 to-black text-white px-2 py-1 rounded-full font-medium">
+                  <span className="text-xs bg-yellow-500 text-white px-2 py-1 rounded-full font-medium">
                     Anúncio
                   </span>
                   <span className="text-xs text-gray-500">Clique para saber mais</span>
@@ -70,7 +70,7 @@ export const AdvertisementBanner = ({ advertisement }: AdvertisementBannerProps)
               
               <Button
                 size="sm"
-                className="ml-3 flex-shrink-0 bg-gradient-to-r from-yellow-500 to-black hover:from-yellow-600 hover:to-gray-900 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                className="ml-3 flex-shrink-0 bg-yellow-500 hover:bg-yellow-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleClick();
