@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User, ArrowUpDown } from 'lucide-react';
@@ -13,6 +12,7 @@ import { ClientVideoHeader } from './client-video-view/ClientVideoHeader';
 import { ClientVideoTable } from './client-video-view/ClientVideoTable';
 import { ClientVideoCards } from './client-video-view/ClientVideoCards';
 import { ClientVideoEmptyState } from './client-video-view/ClientVideoEmptyState';
+import { ClientVideoPagination } from './client-video-view/ClientVideoPagination';
 
 interface ClientVideoViewProps {
   clientId: string;
@@ -28,7 +28,30 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
   const [showReorderMode, setShowReorderMode] = useState(false);
   const [deletingVideoId, setDeletingVideoId] = useState<string | null>(null);
   const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
   const { toast } = useToast();
+
+  // Cálculo da paginação
+  const totalPages = Math.ceil(videos.length / itemsPerPage);
+  const paginatedVideos = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return videos.slice(startIndex, startIndex + itemsPerPage);
+  }, [videos, currentPage, itemsPerPage]);
+
+  // Reset da página quando mudamos o número de itens por página
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1);
+    // Limpa seleções ao mudar paginação para evitar confusão
+    setSelectedVideos([]);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Limpa seleções ao mudar página para evitar confusão
+    setSelectedVideos([]);
+  };
 
   const handleVideoSelect = (videoId: string, checked: boolean) => {
     if (checked) {
@@ -39,11 +62,18 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
   };
 
   const handleSelectAllVisible = () => {
-    const allSelected = videos.every(video => selectedVideos.includes(video.id));
-    if (allSelected) {
-      setSelectedVideos([]);
+    const visibleVideoIds = paginatedVideos.map(video => video.id);
+    const allVisibleSelected = visibleVideoIds.every(id => selectedVideos.includes(id));
+    
+    if (allVisibleSelected) {
+      // Remove apenas os vídeos visíveis da seleção
+      setSelectedVideos(prev => prev.filter(id => !visibleVideoIds.includes(id)));
     } else {
-      setSelectedVideos(videos.map(video => video.id));
+      // Adiciona os vídeos visíveis que não estão selecionados
+      setSelectedVideos(prev => {
+        const newSelections = visibleVideoIds.filter(id => !prev.includes(id));
+        return [...prev, ...newSelections];
+      });
     }
   };
 
@@ -231,7 +261,7 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
     );
   }
 
-  const allVideosSelected = videos.length > 0 && videos.every(video => selectedVideos.includes(video.id));
+  const allVisibleVideosSelected = paginatedVideos.length > 0 && paginatedVideos.every(video => selectedVideos.includes(video.id));
 
   return (
     <div className="space-y-6 w-full">
@@ -246,7 +276,7 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
         onToggleUsersManager={() => setShowUsersManager(!showUsersManager)}
         onShowReorderMode={() => setShowReorderMode(true)}
         onBulkDelete={handleBulkDelete}
-        allVideosSelected={allVideosSelected}
+        allVideosSelected={allVisibleVideosSelected}
       />
 
       {/* Users Manager */}
@@ -272,7 +302,7 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
           ) : (
             <>
               <ClientVideoTable
-                videos={videos}
+                videos={paginatedVideos}
                 selectedVideos={selectedVideos}
                 deletingVideoId={deletingVideoId}
                 clientName={clientName}
@@ -283,13 +313,22 @@ export const ClientVideoView = ({ clientId, clientName, clientLogoUrl }: ClientV
               />
               
               <ClientVideoCards
-                videos={videos}
+                videos={paginatedVideos}
                 selectedVideos={selectedVideos}
                 deletingVideoId={deletingVideoId}
                 clientName={clientName}
                 onVideoSelect={handleVideoSelect}
                 onEditVideo={handleEditVideo}
                 onDeleteVideo={handleDeleteVideo}
+              />
+
+              <ClientVideoPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalVideos={videos.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
               />
             </>
           )}
