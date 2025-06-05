@@ -90,9 +90,7 @@ export const ClientDashboard = () => {
       {advertisements.length > 0 && <div className="w-full overflow-hidden">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="h-5 w-5 text-yellow-500" />
-            <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-[#ffb000]">
-              Destaques para Você
-            </h2>
+            <h2 className="text-xl font-medium">Serviços em destaque:</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
             {advertisements.map(ad => <AdvertisementBanner key={ad.id} advertisement={ad} />)}
