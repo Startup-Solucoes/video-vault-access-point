@@ -3,6 +3,17 @@ import React from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
 import { User, Users, ArrowUpDown, Trash2, UserPlus } from 'lucide-react';
 
 interface ClientVideoHeaderProps {
@@ -82,15 +93,38 @@ export const ClientVideoHeader = ({
                     <UserPlus className="h-4 w-4" />
                     Atribuir a Clientes
                   </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={onBulkDelete}
-                    className="flex items-center gap-2"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Remover Selecionados
-                  </Button>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Remover Selecionados
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Remover vídeos do cliente?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja remover <strong>{selectedVideos.length} vídeo{selectedVideos.length !== 1 ? 's' : ''}</strong> do cliente <strong>{clientName}</strong>?
+                          <br /><br />
+                          Esta ação irá apenas remover o acesso do cliente a estes vídeos. Os vídeos não serão deletados permanentemente e continuarão disponíveis para outros clientes.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={onBulkDelete}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Sim, remover do cliente
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </>
               )}
               
