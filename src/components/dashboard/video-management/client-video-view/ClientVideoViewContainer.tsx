@@ -4,9 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
 import { useClientVideos } from '@/hooks/useClientVideos';
+import { useClientSelector } from '@/hooks/useClientSelector';
 import { EditVideoForm } from '@/components/forms/EditVideoForm';
 import { ClientUsersManager } from '@/components/dashboard/client-management/ClientUsersManager';
 import { VideoReorderList } from '../VideoReorderList';
+import { ClientSelectionModal } from '@/components/forms/client-selector/ClientSelectionModal';
 import { ClientVideoHeader } from './ClientVideoHeader';
 import { ClientVideoTable } from './ClientVideoTable';
 import { ClientVideoCards } from './ClientVideoCards';
@@ -14,6 +16,7 @@ import { ClientVideoEmptyState } from './ClientVideoEmptyState';
 import { ClientVideoPagination } from './ClientVideoPagination';
 import { useClientVideoSelection } from './ClientVideoSelectionManager';
 import { useClientVideoActions } from './ClientVideoActions';
+import { useClientVideoAssignment } from './ClientVideoAssignment';
 
 interface ClientVideoViewContainerProps {
   clientId: string;
@@ -35,6 +38,16 @@ export const ClientVideoViewContainer = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
 
+  // Client assignment state and hooks
+  const [showClientSelector, setShowClientSelector] = useState(false);
+  const {
+    clients,
+    filteredClients,
+    isLoading: clientsLoading,
+    searchValue,
+    setSearchValue
+  } = useClientSelector();
+
   const {
     selectedVideos,
     paginatedVideos,
@@ -51,6 +64,22 @@ export const ClientVideoViewContainer = ({
     selectedVideos,
     onRefreshVideos: refreshVideos,
     onClearSelection: clearSelection
+  });
+
+  const {
+    selectedClients,
+    setSelectedClients,
+    isAssigning,
+    handleClientToggle,
+    handleBulkClientChange,
+    handleAssignToClients
+  } = useClientVideoAssignment({
+    selectedVideos,
+    onSuccess: () => {
+      clearSelection();
+      setShowClientSelector(false);
+      refreshVideos();
+    }
   });
 
   // Reset da página quando mudamos o número de itens por página
@@ -87,6 +116,26 @@ export const ClientVideoViewContainer = ({
   const handleReorderComplete = () => {
     refreshVideos();
     setShowReorderMode(false);
+  };
+
+  const handleModalClose = (open: boolean) => {
+    setShowClientSelector(open);
+    if (!open) {
+      // Limpar busca quando fechar o modal sem confirmar
+      setSearchValue('');
+      setSelectedClients([]);
+    }
+  };
+
+  const handleConfirmSelection = () => {
+    console.log('=== CONFIRMANDO SELEÇÃO ===');
+    console.log('Clientes selecionados no modal:', selectedClients);
+    
+    // Fechar o modal
+    setShowClientSelector(false);
+    
+    // Executar a atribuição imediatamente
+    handleAssignToClients();
   };
 
   if (isLoading) {
@@ -169,6 +218,7 @@ export const ClientVideoViewContainer = ({
         onToggleUsersManager={() => setShowUsersManager(!showUsersManager)}
         onShowReorderMode={() => setShowReorderMode(true)}
         onBulkDelete={handleBulkDelete}
+        onAssignToClients={() => setShowClientSelector(true)}
         allVideosSelected={allVisibleVideosSelected}
       />
 
@@ -227,6 +277,22 @@ export const ClientVideoViewContainer = ({
           )}
         </CardContent>
       </Card>
+
+      {/* Client Selection Modal */}
+      <ClientSelectionModal
+        open={showClientSelector}
+        onOpenChange={handleModalClose}
+        clients={clients}
+        selectedClients={selectedClients}
+        onClientToggle={handleClientToggle}
+        onBulkClientChange={handleBulkClientChange}
+        isLoading={clientsLoading}
+        searchValue={searchValue}
+        onSearchValueChange={setSearchValue}
+        filteredClients={filteredClients}
+        onConfirmSelection={handleConfirmSelection}
+        isAssigning={isAssigning}
+      />
 
       {editingVideoId && (
         <EditVideoForm
