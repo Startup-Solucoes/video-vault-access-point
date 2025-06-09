@@ -1,9 +1,8 @@
 
 import React, { useRef, useState } from 'react';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Upload, X, Image } from 'lucide-react';
+import { Upload, X, Info } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface ThumbnailUploadProps {
@@ -18,6 +17,14 @@ export const ThumbnailUpload: React.FC<ThumbnailUploadProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -82,8 +89,24 @@ export const ThumbnailUpload: React.FC<ThumbnailUploadProps> = ({
     <div className="space-y-4">
       <Label>Thumbnail</Label>
       
+      {/* Observações sobre a imagem */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div className="flex items-start gap-2">
+          <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-blue-800">
+            <p className="font-medium mb-1">Observações importantes:</p>
+            <ul className="space-y-1 text-xs">
+              <li>• Tamanho recomendado: 1280x720 pixels (16:9)</li>
+              <li>• Formatos aceitos: JPG, PNG, GIF</li>
+              <li>• Tamanho máximo: 5MB</li>
+              <li>• Use imagens de alta qualidade para melhor visualização</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       {/* Upload de arquivo */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -119,43 +142,22 @@ export const ThumbnailUpload: React.FC<ThumbnailUploadProps> = ({
         />
         
         {uploadedFile && (
-          <p className="text-sm text-gray-600">
-            Arquivo selecionado: {uploadedFile.name}
-          </p>
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <p className="text-sm font-medium text-gray-700 mb-1">
+              Arquivo selecionado: {uploadedFile.name}
+            </p>
+            <p className="text-xs text-gray-600">
+              Tamanho: {formatFileSize(uploadedFile.size)}
+            </p>
+          </div>
         )}
-      </div>
-
-      {/* OU separador */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1 border-t border-gray-300"></div>
-        <span className="text-sm text-gray-500 px-2">OU</span>
-        <div className="flex-1 border-t border-gray-300"></div>
-      </div>
-
-      {/* URL da thumbnail */}
-      <div className="space-y-2">
-        <Label htmlFor="thumbnail_url">URL da Thumbnail</Label>
-        <Input
-          id="thumbnail_url"
-          value={uploadedFile ? '' : value}
-          onChange={(e) => {
-            if (!uploadedFile) {
-              onChange(e.target.value);
-            }
-          }}
-          placeholder="https://..."
-          disabled={!!uploadedFile}
-        />
-        <p className="text-xs text-gray-500">
-          Insira uma URL de imagem ou faça upload de um arquivo
-        </p>
       </div>
 
       {/* Preview da thumbnail */}
       {value && (
         <div className="space-y-2">
           <Label>Preview</Label>
-          <div className="relative w-32 h-20 border border-gray-300 rounded overflow-hidden bg-gray-100">
+          <div className="relative w-40 h-24 border border-gray-300 rounded-lg overflow-hidden bg-gray-100">
             <img
               src={value}
               alt="Preview da thumbnail"
