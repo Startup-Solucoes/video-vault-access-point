@@ -3,6 +3,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { ThumbnailUpload } from './ThumbnailUpload';
 import { VideoFormData } from './VideoFormTypes';
 
 interface VideoFormFieldsProps {
@@ -57,18 +58,13 @@ export const VideoFormFields: React.FC<VideoFormFieldsProps> = ({
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="thumbnail_url">URL da Thumbnail (opcional)</Label>
-        <Input
-          id="thumbnail_url"
-          value={formData.thumbnail_url}
-          onChange={(e) => {
-            console.log('URL da thumbnail alterada:', e.target.value);
-            onFieldChange('thumbnail_url', e.target.value);
-          }}
-          placeholder="https://..."
-        />
-      </div>
+      <ThumbnailUpload
+        value={formData.thumbnail_url}
+        onChange={(value) => {
+          console.log('Thumbnail alterada:', value);
+          onFieldChange('thumbnail_url', value);
+        }}
+      />
     </>
   );
 };
