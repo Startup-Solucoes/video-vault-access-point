@@ -274,6 +274,7 @@ export const useAllVideosState = () => {
     handlePageChange,
     handleModalClose,
     handleConfirmSelection,
-    setSearchValue
+    setSearchValue,
+    setShowClientSelector
   };
 };

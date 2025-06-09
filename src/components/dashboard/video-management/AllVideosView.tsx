@@ -40,7 +40,8 @@ export const AllVideosView = () => {
     handlePageChange,
     handleModalClose,
     handleConfirmSelection,
-    setSearchValue
+    setSearchValue,
+    setShowClientSelector
   } = useAllVideosState();
 
   if (isLoading) {
