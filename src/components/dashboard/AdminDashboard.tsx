@@ -2,6 +2,7 @@ import React, { Suspense, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Plus, Image, Megaphone } from 'lucide-react';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import { VideoHistory } from './VideoHistory';
@@ -131,6 +132,7 @@ export const AdminDashboard = () => {
                   <CardTitle className="flex items-center gap-3">
                     <Image className="h-6 w-6 text-blue-600" />
                     Gerador de Thumbnails
+                    <Badge variant="secondary" className="ml-auto">Em Breve</Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -139,9 +141,6 @@ export const AdminDashboard = () => {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500">Suporta: ScreenPal, YouTube e Vimeo</span>
-                    <Button variant="outline" size="sm">
-                      Acessar
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
