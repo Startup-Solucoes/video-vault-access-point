@@ -1,7 +1,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { useClientData } from '@/hooks/useClientData';
-import { useVideoPermissions } from '@/hooks/useVideoPermissions';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { ClientCard } from './ClientCard';
 import { SearchBar } from './SearchBar';
 import { Video, Search } from 'lucide-react';
@@ -12,14 +13,42 @@ interface VideoListProps {
 
 export const VideoList = ({ onClientSelect }: VideoListProps) => {
   const { clients, isLoading } = useClientData();
-  const { videoPermissions, isLoadingPermissions } = useVideoPermissions();
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Buscar contagem de vídeos por cliente diretamente da tabela video_permissions
+  const { data: videoCountsByClient = {}, isLoading: isLoadingVideoCounts } = useQuery({
+    queryKey: ['video-counts-by-client'],
+    queryFn: async () => {
+      console.log('📊 VideoList - Buscando contagem de vídeos por cliente...');
+      
+      const { data, error } = await supabase
+        .from('video_permissions')
+        .select('client_id')
+        .order('client_id');
+
+      if (error) {
+        console.error('❌ Erro ao buscar contagem de vídeos:', error);
+        throw error;
+      }
+
+      // Contar vídeos por cliente
+      const counts: Record<string, number> = {};
+      data?.forEach(permission => {
+        counts[permission.client_id] = (counts[permission.client_id] || 0) + 1;
+      });
+
+      console.log('✅ VideoList - Contagem de vídeos por cliente:', counts);
+      return counts;
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    gcTime: 5 * 60 * 1000 // 5 minutos
+  });
+
   console.log('📋 VideoList - Todos os clientes:', clients.length);
-  console.log('📋 VideoList - Permissões de vídeo:', videoPermissions.length);
+  console.log('📋 VideoList - Contagens carregadas:', Object.keys(videoCountsByClient).length);
 
   const getClientVideoCount = (clientId: string) => {
-    const count = videoPermissions.filter(permission => permission.client_id === clientId).length;
+    const count = videoCountsByClient[clientId] || 0;
     console.log(`📊 VideoList - Cliente ${clientId}: ${count} vídeos`);
     return count;
   };
@@ -62,9 +91,9 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
       client.full_name.toLowerCase().includes(searchLower) ||
       client.email.toLowerCase().includes(searchLower)
     );
-  }, [clients, videoPermissions, searchTerm]);
+  }, [clients, videoCountsByClient, searchTerm]);
 
-  if (isLoading || isLoadingPermissions) {
+  if (isLoading || isLoadingVideoCounts) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="flex items-center space-x-2">
