@@ -13,14 +13,36 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
   const { clients, isLoading } = useClientData();
   const { videoPermissions, isLoadingPermissions } = useVideoPermissions();
 
+  console.log('📋 VideoList - Todos os clientes:', clients.length);
+  console.log('📋 VideoList - Clientes não deletados:', clients.filter(c => !c.is_deleted).length);
+  console.log('📋 VideoList - Permissões de vídeo:', videoPermissions.length);
+
   const getClientVideoCount = (clientId: string) => {
-    return videoPermissions.filter(permission => permission.client_id === clientId).length;
+    const count = videoPermissions.filter(permission => permission.client_id === clientId).length;
+    console.log(`📊 VideoList - Cliente ${clientId}: ${count} vídeos`);
+    return count;
   };
 
-  const clientsWithVideos = clients.filter(client => {
+  // Filtrar clientes não deletados
+  const activeClients = clients.filter(client => !client.is_deleted);
+  console.log('✅ VideoList - Clientes ativos:', activeClients.length);
+
+  const clientsWithVideos = activeClients.filter(client => {
     const videoCount = getClientVideoCount(client.id);
     return videoCount > 0;
   });
+
+  console.log('🎬 VideoList - Clientes com vídeos:', clientsWithVideos.length);
+
+  // Vamos também verificar se há clientes "perdidos"
+  const uniqueClientIds = [...new Set(videoPermissions.map(p => p.client_id))];
+  const clientsNotInActiveList = uniqueClientIds.filter(id => 
+    !activeClients.some(client => client.id === id)
+  );
+
+  if (clientsNotInActiveList.length > 0) {
+    console.warn('⚠️ VideoList - Clientes com vídeos mas não na lista ativa:', clientsNotInActiveList);
+  }
 
   if (isLoading || isLoadingPermissions) {
     return (
@@ -43,6 +65,14 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
         <p className="text-gray-500">
           Adicione permissões de vídeos para seus clientes para começar
         </p>
+        {clientsNotInActiveList.length > 0 && (
+          <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-800 text-sm">
+              <strong>Atenção:</strong> Encontramos {clientsNotInActiveList.length} cliente(s) com vídeos que podem estar marcados como deletados. 
+              Verifique o console para mais detalhes.
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -54,6 +84,17 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
           Clientes com Vídeos ({clientsWithVideos.length})
         </h3>
       </div>
+      
+      {/* Alerta para clientes "perdidos" */}
+      {clientsNotInActiveList.length > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h4 className="font-medium text-yellow-800 mb-2">Clientes com vídeos não visíveis detectados</h4>
+          <p className="text-yellow-700 text-sm">
+            Encontramos {clientsNotInActiveList.length} cliente(s) que têm vídeos atribuídos mas não aparecem na listagem. 
+            Isso pode indicar que foram marcados como deletados. IDs: {clientsNotInActiveList.join(', ')}
+          </p>
+        </div>
+      )}
       
       {/* Grid responsivo de cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

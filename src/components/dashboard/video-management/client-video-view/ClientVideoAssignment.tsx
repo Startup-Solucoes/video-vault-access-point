@@ -28,7 +28,7 @@ export const useClientVideoAssignment = ({
   };
 
   const handleAssignToClients = async () => {
-    console.log('=== INICIANDO ATRIBUIÇÃO ===');
+    console.log('=== ASSIGNMENT - INICIANDO ATRIBUIÇÃO ===');
     console.log('Vídeos selecionados:', selectedVideos);
     console.log('Clientes selecionados:', selectedClients);
     
@@ -63,7 +63,7 @@ export const useClientVideoAssignment = ({
       // Verificar permissões já existentes para evitar duplicatas
       const { data: existingPermissions, error: checkError } = await supabase
         .from('video_permissions')
-        .select('video_id, client_id')
+        .select('video_id, client_id, id')
         .in('video_id', selectedVideos)
         .in('client_id', selectedClients);
 
@@ -72,7 +72,7 @@ export const useClientVideoAssignment = ({
         throw checkError;
       }
 
-      console.log('Permissões existentes:', existingPermissions);
+      console.log('ASSIGNMENT - Permissões existentes encontradas:', existingPermissions);
 
       // Obter próximo display_order para cada cliente
       const clientOrderPromises = selectedClients.map(async (clientId) => {
@@ -94,6 +94,8 @@ export const useClientVideoAssignment = ({
         clientOrders.map(co => [co.clientId, co.nextOrder])
       );
 
+      console.log('ASSIGNMENT - Próximas ordens por cliente:', orderMap);
+
       // Criar lista de novas permissões (evitando duplicatas)
       const newPermissions = [];
       for (const videoId of selectedVideos) {
@@ -108,11 +110,13 @@ export const useClientVideoAssignment = ({
               granted_by: user.id,
               display_order: orderMap[clientId]++
             });
+          } else {
+            console.log(`ASSIGNMENT - Ignorando duplicata: vídeo ${videoId} já atribuído ao cliente ${clientId}`);
           }
         }
       }
 
-      console.log('Novas permissões a serem inseridas:', newPermissions);
+      console.log('ASSIGNMENT - Novas permissões a serem inseridas:', newPermissions);
 
       if (newPermissions.length === 0) {
         toast({
@@ -132,7 +136,19 @@ export const useClientVideoAssignment = ({
         throw error;
       }
 
-      console.log('✅ Permissões inseridas com sucesso');
+      console.log('✅ ASSIGNMENT - Permissões inseridas com sucesso');
+
+      // Verificar contagens após inserção
+      for (const clientId of selectedClients) {
+        const { data: clientPermissions, error: countError } = await supabase
+          .from('video_permissions')
+          .select('id')
+          .eq('client_id', clientId);
+
+        if (!countError) {
+          console.log(`📊 ASSIGNMENT - Total de vídeos para cliente ${clientId}:`, clientPermissions?.length || 0);
+        }
+      }
 
       toast({
         title: "Sucesso",

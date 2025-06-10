@@ -21,9 +21,27 @@ export const useClientVideoActions = ({
   const handleBulkDelete = async () => {
     if (selectedVideos.length === 0) return;
     
-    console.log('🗑️ Iniciando exclusão em lote:', { selectedVideos, clientId });
+    console.log('🗑️ BULK DELETE - Iniciando:', { 
+      clientId, 
+      selectedVideos: selectedVideos.length,
+      videoIds: selectedVideos 
+    });
 
     try {
+      // Verificar permissões antes de deletar
+      const { data: existingPermissions, error: checkError } = await supabase
+        .from('video_permissions')
+        .select('id, video_id, client_id')
+        .eq('client_id', clientId)
+        .in('video_id', selectedVideos);
+
+      if (checkError) {
+        console.error('❌ Erro ao verificar permissões:', checkError);
+        throw checkError;
+      }
+
+      console.log('🔍 Permissões encontradas antes da exclusão:', existingPermissions);
+
       const { error } = await supabase
         .from('video_permissions')
         .delete()
@@ -41,6 +59,16 @@ export const useClientVideoActions = ({
       }
 
       console.log('✅ Permissões deletadas com sucesso');
+      
+      // Verificar contagem após exclusão
+      const { data: remainingPermissions, error: countError } = await supabase
+        .from('video_permissions')
+        .select('id')
+        .eq('client_id', clientId);
+
+      if (!countError) {
+        console.log('📊 Vídeos restantes para o cliente:', remainingPermissions?.length || 0);
+      }
       
       toast({
         title: "Sucesso",
@@ -61,7 +89,7 @@ export const useClientVideoActions = ({
   };
 
   const handleDeleteVideo = async (videoId: string, videoTitle: string) => {
-    console.log('🗑️ Iniciando exclusão do vídeo:', { videoId, videoTitle, clientId });
+    console.log('🗑️ DELETE VIDEO - Iniciando:', { videoId, videoTitle, clientId });
 
     try {
       const { data: permission, error: permissionError } = await supabase
@@ -99,6 +127,16 @@ export const useClientVideoActions = ({
       }
 
       console.log('✅ Permissão deletada com sucesso');
+      
+      // Verificar contagem após exclusão
+      const { data: remainingPermissions, error: countError } = await supabase
+        .from('video_permissions')
+        .select('id')
+        .eq('client_id', clientId);
+
+      if (!countError) {
+        console.log('📊 Vídeos restantes para o cliente:', remainingPermissions?.length || 0);
+      }
       
       toast({
         title: "Sucesso",

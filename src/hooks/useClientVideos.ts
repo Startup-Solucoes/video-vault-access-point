@@ -48,10 +48,22 @@ export const useClientVideos = (clientId: string) => {
       }
     }
 
-    console.log('🎬 Buscando vídeos do cliente:', clientId);
+    console.log('🎬 Buscando vídeos do cliente:', clientId, forceRefresh ? '(FORCE REFRESH)' : '');
     setIsLoading(true);
 
     try {
+      // Primeiro, vamos verificar quantas permissões existem para este cliente
+      const { data: permissionCount, error: countError } = await supabase
+        .from('video_permissions')
+        .select('id')
+        .eq('client_id', clientId);
+
+      if (countError) {
+        console.error('❌ Erro ao contar permissões:', countError);
+      } else {
+        console.log(`📊 HOOK - Total de permissões para cliente ${clientId}:`, permissionCount?.length || 0);
+      }
+
       const { data, error } = await supabase
         .from('video_permissions')
         .select(`
@@ -79,8 +91,16 @@ export const useClientVideos = (clientId: string) => {
         throw error;
       }
 
+      console.log('🔍 HOOK - Dados brutos retornados:', data?.length || 0, 'registros');
+
       const formattedVideos: ClientVideoData[] = (data || [])
-        .filter(permission => permission.videos)
+        .filter(permission => {
+          if (!permission.videos) {
+            console.warn('⚠️ HOOK - Permissão sem vídeo encontrada:', permission.id);
+            return false;
+          }
+          return true;
+        })
         .map(permission => ({
           id: permission.videos.id,
           title: permission.videos.title,
@@ -97,7 +117,8 @@ export const useClientVideos = (clientId: string) => {
           display_order: permission.display_order || 0
         }));
 
-      console.log('✅ Vídeos do cliente encontrados:', formattedVideos.length);
+      console.log('✅ HOOK - Vídeos formatados encontrados:', formattedVideos.length);
+      console.log('🎯 HOOK - IDs dos vídeos:', formattedVideos.map(v => v.id));
       
       set(cacheKey, formattedVideos);
       setVideos(formattedVideos);
@@ -114,6 +135,7 @@ export const useClientVideos = (clientId: string) => {
   }, [clientId]);
 
   const refreshVideos = () => {
+    console.log('🔄 HOOK - Refresh solicitado para cliente:', clientId);
     if (clientId) {
       invalidatePattern(`client_videos_${clientId}`);
     }
