@@ -22,45 +22,28 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
     return count;
   };
 
-  // Criar uma lista completa de clientes que têm vídeos
-  const getClientsWithVideos = () => {
-    // Primeiro, pegar todos os IDs únicos de clientes que têm permissões de vídeo
-    const clientIdsWithVideos = [...new Set(videoPermissions.map(p => p.client_id))];
-    console.log('🎯 IDs de clientes com vídeos nas permissões:', clientIdsWithVideos);
+  // Mostrar TODOS os clientes (incluindo os sem vídeos)
+  const getAllClientsWithVideoCount = () => {
+    // Filtrar apenas clientes não deletados
+    const activeClients = clients.filter(client => !client.is_deleted);
+    
+    console.log('✅ Clientes ativos encontrados:', activeClients.length);
+    
+    // Mapear todos os clientes com suas respectivas contagens de vídeo
+    const clientsWithVideos = activeClients.map(client => {
+      const videoCount = getClientVideoCount(client.id);
+      return { client, videoCount };
+    });
 
-    // Mapear para objetos de cliente, usando dados da lista de clientes ou dados das permissões
-    const clientsWithVideos = clientIdsWithVideos.map(clientId => {
-      // Tentar encontrar o cliente na lista principal
-      let client = clients.find(c => c.id === clientId);
-      
-      if (!client) {
-        // Se não encontrar na lista principal, tentar pegar dos dados das permissões
-        const permission = videoPermissions.find(p => p.client_id === clientId && p.client);
-        if (permission?.client) {
-          console.log('⚠️ Cliente encontrado nas permissões mas não na lista principal:', permission.client);
-          client = {
-            id: permission.client.id,
-            full_name: permission.client.full_name,
-            email: permission.client.email,
-            logo_url: undefined,
-            role: 'client',
-            created_at: '',
-            updated_at: '',
-            is_deleted: false
-          };
-        }
+    // Ordenar por quantidade de vídeos (maior para menor) e depois por nome
+    clientsWithVideos.sort((a, b) => {
+      if (a.videoCount !== b.videoCount) {
+        return b.videoCount - a.videoCount; // Maior quantidade primeiro
       }
+      return a.client.full_name.localeCompare(b.client.full_name); // Alfabético
+    });
 
-      if (client) {
-        const videoCount = getClientVideoCount(clientId);
-        return { client, videoCount };
-      }
-      
-      console.warn('❌ Cliente não encontrado:', clientId);
-      return null;
-    }).filter(Boolean);
-
-    console.log('✅ Clientes com vídeos finalizados:', clientsWithVideos.length);
+    console.log('✅ Todos os clientes com contagem:', clientsWithVideos.length);
     return clientsWithVideos;
   };
 
@@ -75,33 +58,42 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
     );
   }
 
-  const clientsWithVideos = getClientsWithVideos();
+  const allClientsWithVideoCount = getAllClientsWithVideoCount();
 
-  if (clientsWithVideos.length === 0) {
+  if (allClientsWithVideoCount.length === 0) {
     return (
       <div className="text-center py-12">
         <Video className="h-16 w-16 mx-auto mb-4 text-gray-300" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Nenhum cliente com vídeos
+          Nenhum cliente encontrado
         </h3>
         <p className="text-gray-500">
-          Adicione permissões de vídeos para seus clientes para começar
+          Cadastre clientes para começar a gerenciar vídeos
         </p>
       </div>
     );
   }
 
+  // Separar clientes com e sem vídeos para estatísticas
+  const clientsWithVideos = allClientsWithVideoCount.filter(({ videoCount }) => videoCount > 0);
+  const clientsWithoutVideos = allClientsWithVideoCount.filter(({ videoCount }) => videoCount === 0);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-gray-900">
-          Clientes com Vídeos ({clientsWithVideos.length})
-        </h3>
+        <div>
+          <h3 className="text-lg font-medium text-gray-900">
+            Todos os Clientes ({allClientsWithVideoCount.length})
+          </h3>
+          <p className="text-sm text-gray-500 mt-1">
+            {clientsWithVideos.length} com vídeos • {clientsWithoutVideos.length} sem vídeos
+          </p>
+        </div>
       </div>
       
       {/* Grid responsivo de cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {clientsWithVideos.map(({ client, videoCount }) => (
+        {allClientsWithVideoCount.map(({ client, videoCount }) => (
           <ClientCard
             key={client.id}
             client={client}
