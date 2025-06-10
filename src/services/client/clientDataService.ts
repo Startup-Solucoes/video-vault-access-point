@@ -4,10 +4,10 @@ import { Client } from '@/types/client';
 import { getUserAuthInfo } from '@/services/emailNotificationService';
 
 export const fetchClientsFromDB = async (): Promise<Client[]> => {
-  console.log('clientDataService: Buscando clientes (OTIMIZADO)...');
+  console.log('clientDataService: Buscando TODOS os clientes (incluindo deletados para debug)...');
   
   try {
-    // Query otimizada - incluindo logo_url que estava faltando
+    // Query otimizada - REMOVENDO o filtro de is_deleted para pegar todos
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select(`
@@ -20,8 +20,7 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
         updated_at,
         is_deleted
       `)
-      .order('created_at', { ascending: false })
-      .limit(100);
+      .order('created_at', { ascending: false });
 
     if (profilesError) {
       throw profilesError;
@@ -31,6 +30,12 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       console.log('clientDataService: Nenhum perfil encontrado');
       return [];
     }
+
+    console.log('clientDataService: Perfis encontrados:', {
+      total: profiles.length,
+      deletados: profiles.filter(p => p.is_deleted).length,
+      ativos: profiles.filter(p => !p.is_deleted).length
+    });
 
     // Buscar informações de auth em lote quando necessário
     const clientsWithAuthInfo = await Promise.allSettled(
@@ -74,7 +79,12 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       .filter((result): result is PromiseFulfilledResult<Client> => result.status === 'fulfilled')
       .map(result => result.value);
 
-    console.log('clientDataService: Clientes otimizados encontrados:', successfulClients.length);
+    console.log('clientDataService: Clientes processados:', {
+      total: successfulClients.length,
+      deletados: successfulClients.filter(c => c.is_deleted).length,
+      ativos: successfulClients.filter(c => !c.is_deleted).length
+    });
+
     return successfulClients;
 
   } catch (error) {

@@ -14,7 +14,6 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
   const { videoPermissions, isLoadingPermissions } = useVideoPermissions();
 
   console.log('📋 VideoList - Todos os clientes:', clients.length);
-  console.log('📋 VideoList - Clientes não deletados:', clients.filter(c => !c.is_deleted).length);
   console.log('📋 VideoList - Permissões de vídeo:', videoPermissions.length);
 
   const getClientVideoCount = (clientId: string) => {
@@ -23,26 +22,47 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
     return count;
   };
 
-  // Filtrar clientes não deletados
-  const activeClients = clients.filter(client => !client.is_deleted);
-  console.log('✅ VideoList - Clientes ativos:', activeClients.length);
+  // Criar uma lista completa de clientes que têm vídeos
+  const getClientsWithVideos = () => {
+    // Primeiro, pegar todos os IDs únicos de clientes que têm permissões de vídeo
+    const clientIdsWithVideos = [...new Set(videoPermissions.map(p => p.client_id))];
+    console.log('🎯 IDs de clientes com vídeos nas permissões:', clientIdsWithVideos);
 
-  const clientsWithVideos = activeClients.filter(client => {
-    const videoCount = getClientVideoCount(client.id);
-    return videoCount > 0;
-  });
+    // Mapear para objetos de cliente, usando dados da lista de clientes ou dados das permissões
+    const clientsWithVideos = clientIdsWithVideos.map(clientId => {
+      // Tentar encontrar o cliente na lista principal
+      let client = clients.find(c => c.id === clientId);
+      
+      if (!client) {
+        // Se não encontrar na lista principal, tentar pegar dos dados das permissões
+        const permission = videoPermissions.find(p => p.client_id === clientId && p.client);
+        if (permission?.client) {
+          console.log('⚠️ Cliente encontrado nas permissões mas não na lista principal:', permission.client);
+          client = {
+            id: permission.client.id,
+            full_name: permission.client.full_name,
+            email: permission.client.email,
+            logo_url: undefined,
+            role: 'client',
+            created_at: '',
+            updated_at: '',
+            is_deleted: false
+          };
+        }
+      }
 
-  console.log('🎬 VideoList - Clientes com vídeos:', clientsWithVideos.length);
+      if (client) {
+        const videoCount = getClientVideoCount(clientId);
+        return { client, videoCount };
+      }
+      
+      console.warn('❌ Cliente não encontrado:', clientId);
+      return null;
+    }).filter(Boolean);
 
-  // Vamos também verificar se há clientes "perdidos"
-  const uniqueClientIds = [...new Set(videoPermissions.map(p => p.client_id))];
-  const clientsNotInActiveList = uniqueClientIds.filter(id => 
-    !activeClients.some(client => client.id === id)
-  );
-
-  if (clientsNotInActiveList.length > 0) {
-    console.warn('⚠️ VideoList - Clientes com vídeos mas não na lista ativa:', clientsNotInActiveList);
-  }
+    console.log('✅ Clientes com vídeos finalizados:', clientsWithVideos.length);
+    return clientsWithVideos;
+  };
 
   if (isLoading || isLoadingPermissions) {
     return (
@@ -55,6 +75,8 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
     );
   }
 
+  const clientsWithVideos = getClientsWithVideos();
+
   if (clientsWithVideos.length === 0) {
     return (
       <div className="text-center py-12">
@@ -65,14 +87,6 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
         <p className="text-gray-500">
           Adicione permissões de vídeos para seus clientes para começar
         </p>
-        {clientsNotInActiveList.length > 0 && (
-          <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-yellow-800 text-sm">
-              <strong>Atenção:</strong> Encontramos {clientsNotInActiveList.length} cliente(s) com vídeos que podem estar marcados como deletados. 
-              Verifique o console para mais detalhes.
-            </p>
-          </div>
-        )}
       </div>
     );
   }
@@ -85,30 +99,16 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
         </h3>
       </div>
       
-      {/* Alerta para clientes "perdidos" */}
-      {clientsNotInActiveList.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h4 className="font-medium text-yellow-800 mb-2">Clientes com vídeos não visíveis detectados</h4>
-          <p className="text-yellow-700 text-sm">
-            Encontramos {clientsNotInActiveList.length} cliente(s) que têm vídeos atribuídos mas não aparecem na listagem. 
-            Isso pode indicar que foram marcados como deletados. IDs: {clientsNotInActiveList.join(', ')}
-          </p>
-        </div>
-      )}
-      
       {/* Grid responsivo de cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {clientsWithVideos.map((client) => {
-          const videoCount = getClientVideoCount(client.id);
-          return (
-            <ClientCard
-              key={client.id}
-              client={client}
-              videoCount={videoCount}
-              onClientSelect={onClientSelect}
-            />
-          );
-        })}
+        {clientsWithVideos.map(({ client, videoCount }) => (
+          <ClientCard
+            key={client.id}
+            client={client}
+            videoCount={videoCount}
+            onClientSelect={onClientSelect}
+          />
+        ))}
       </div>
     </div>
   );

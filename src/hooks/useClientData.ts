@@ -14,7 +14,7 @@ const CLIENTS_QUERY_KEY = ['clients'];
 export const useClientData = () => {
   const queryClient = useQueryClient();
 
-  // Query para buscar clientes - CONFIGURAÇÕES OTIMIZADAS
+  // Query para buscar clientes - INCLUINDO DELETADOS para análise completa
   const {
     data: clients = [],
     isLoading,
@@ -125,6 +125,11 @@ export const useClientData = () => {
   const deleteClient = (clientId: string, clientName: string) => {
     deleteClientMutation.mutate({ clientId, clientName });
   };
+
+  // Log para debug
+  console.log('useClientData: Total de clientes carregados:', clients.length);
+  console.log('useClientData: Clientes deletados:', clients.filter(c => c.is_deleted).length);
+  console.log('useClientData: Clientes ativos:', clients.filter(c => !c.is_deleted).length);
 
   return {
     clients,
