@@ -15,10 +15,7 @@ export const useClientManagement = () => {
   const {
     filteredClients,
     searchTerm,
-    setSearchTerm,
-    activeTab,
-    setActiveTab,
-    getTabCounts
+    setSearchTerm
   } = useClientFilters(clients);
 
   return {
@@ -27,12 +24,9 @@ export const useClientManagement = () => {
     searchTerm,
     setSearchTerm,
     isLoading,
-    activeTab,
-    setActiveTab,
     refreshClients,
     updateClient,
     approveClient,
-    deleteClient,
-    getTabCounts
+    deleteClient
   };
 };
