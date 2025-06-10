@@ -1,10 +1,9 @@
-
 import React, { useState, useMemo } from 'react';
 import { useClientData } from '@/hooks/useClientData';
 import { useVideoPermissions } from '@/hooks/useVideoPermissions';
 import { ClientCard } from './ClientCard';
 import { SearchBar } from './SearchBar';
-import { Video } from 'lucide-react';
+import { Video, Search } from 'lucide-react';
 
 interface VideoListProps {
   onClientSelect: (clientId: string, clientName: string, clientLogoUrl?: string) => void;
