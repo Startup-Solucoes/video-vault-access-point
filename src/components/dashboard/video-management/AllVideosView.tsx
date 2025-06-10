@@ -30,6 +30,7 @@ export const AllVideosView = () => {
     currentPage,
     itemsPerPage,
     searchValue,
+    videoSearchValue,
     
     // Handlers
     handleVideoSelect,
@@ -41,6 +42,7 @@ export const AllVideosView = () => {
     handleModalClose,
     handleConfirmSelection,
     setSearchValue,
+    setVideoSearchValue,
     setShowClientSelector
   } = useAllVideosState();
 
@@ -56,6 +58,8 @@ export const AllVideosView = () => {
           currentVideos={currentPageVideos}
           selectedVideos={selectedVideos}
           itemsPerPage={itemsPerPage}
+          searchValue={videoSearchValue}
+          onSearchChange={setVideoSearchValue}
           onItemsPerPageChange={handleItemsPerPageChange}
           onSelectAllVisible={handleSelectAllVisible}
           onAssignToClients={() => setShowClientSelector(true)}

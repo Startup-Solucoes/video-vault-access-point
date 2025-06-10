@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,8 +22,8 @@ export const useAllVideosState = () => {
     clients,
     filteredClients,
     isLoading: clientsLoading,
-    searchValue,
-    setSearchValue
+    searchValue: clientSearchValue,
+    setSearchValue: setClientSearchValue
   } = useClientSelector();
   
   const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
@@ -33,6 +32,7 @@ export const useAllVideosState = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isAssigning, setIsAssigning] = useState(false);
+  const [videoSearchValue, setVideoSearchValue] = useState('');
 
   const { data: allVideos = [], isLoading } = useQuery({
     queryKey: ['all-videos'],
@@ -47,12 +47,26 @@ export const useAllVideosState = () => {
     }
   });
 
-  // Calcular paginação
-  const totalItems = allVideos.length;
+  // Filtrar vídeos baseado no termo de busca
+  const filteredVideos = React.useMemo(() => {
+    if (!videoSearchValue.trim()) {
+      return allVideos;
+    }
+
+    const searchLower = videoSearchValue.toLowerCase().trim();
+    return allVideos.filter(video =>
+      video.title.toLowerCase().includes(searchLower) ||
+      video.description?.toLowerCase().includes(searchLower) ||
+      video.category?.toLowerCase().includes(searchLower)
+    );
+  }, [allVideos, videoSearchValue]);
+
+  // Calcular paginação baseado nos vídeos filtrados
+  const totalItems = filteredVideos.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentPageVideos = allVideos.slice(startIndex, endIndex);
+  const currentPageVideos = filteredVideos.slice(startIndex, endIndex);
 
   const handleVideoSelect = (videoId: string, checked: boolean) => {
     if (checked) {
@@ -228,7 +242,7 @@ export const useAllVideosState = () => {
   const handleModalClose = (open: boolean) => {
     setShowClientSelector(open);
     if (!open) {
-      setSearchValue('');
+      setClientSearchValue('');
     }
   };
 
@@ -242,7 +256,7 @@ export const useAllVideosState = () => {
 
   return {
     // Data
-    allVideos,
+    allVideos: filteredVideos,
     currentPageVideos,
     totalItems,
     totalPages,
@@ -262,7 +276,8 @@ export const useAllVideosState = () => {
     showClientSelector,
     currentPage,
     itemsPerPage,
-    searchValue,
+    searchValue: clientSearchValue,
+    videoSearchValue,
     
     // Handlers
     handleVideoSelect,
@@ -274,7 +289,8 @@ export const useAllVideosState = () => {
     handlePageChange,
     handleModalClose,
     handleConfirmSelection,
-    setSearchValue,
+    setSearchValue: setClientSearchValue,
+    setVideoSearchValue,
     setShowClientSelector
   };
 };

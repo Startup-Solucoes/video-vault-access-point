@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useClientData } from '@/hooks/useClientData';
 import { useVideoPermissions } from '@/hooks/useVideoPermissions';
 import { ClientCard } from './ClientCard';
+import { SearchBar } from './SearchBar';
 import { Video } from 'lucide-react';
 
 interface VideoListProps {
@@ -12,6 +13,7 @@ interface VideoListProps {
 export const VideoList = ({ onClientSelect }: VideoListProps) => {
   const { clients, isLoading } = useClientData();
   const { videoPermissions, isLoadingPermissions } = useVideoPermissions();
+  const [searchTerm, setSearchTerm] = useState('');
 
   console.log('📋 VideoList - Todos os clientes:', clients.length);
   console.log('📋 VideoList - Permissões de vídeo:', videoPermissions.length);
@@ -47,6 +49,21 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
     return clientsWithVideos;
   };
 
+  // Filtrar clientes com base no termo de busca
+  const filteredClients = useMemo(() => {
+    const allClients = getAllClientsWithVideoCount();
+    
+    if (!searchTerm.trim()) {
+      return allClients;
+    }
+
+    const searchLower = searchTerm.toLowerCase().trim();
+    return allClients.filter(({ client }) =>
+      client.full_name.toLowerCase().includes(searchLower) ||
+      client.email.toLowerCase().includes(searchLower)
+    );
+  }, [clients, videoPermissions, searchTerm]);
+
   if (isLoading || isLoadingPermissions) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -75,33 +92,53 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
   }
 
   // Separar clientes com e sem vídeos para estatísticas
-  const clientsWithVideos = allClientsWithVideoCount.filter(({ videoCount }) => videoCount > 0);
-  const clientsWithoutVideos = allClientsWithVideoCount.filter(({ videoCount }) => videoCount === 0);
+  const clientsWithVideos = filteredClients.filter(({ videoCount }) => videoCount > 0);
+  const clientsWithoutVideos = filteredClients.filter(({ videoCount }) => videoCount === 0);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-medium text-gray-900">
-            Todos os Clientes ({allClientsWithVideoCount.length})
+            Todos os Clientes ({filteredClients.length})
           </h3>
           <p className="text-sm text-gray-500 mt-1">
             {clientsWithVideos.length} com vídeos • {clientsWithoutVideos.length} sem vídeos
           </p>
         </div>
       </div>
-      
-      {/* Grid responsivo de cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {allClientsWithVideoCount.map(({ client, videoCount }) => (
-          <ClientCard
-            key={client.id}
-            client={client}
-            videoCount={videoCount}
-            onClientSelect={onClientSelect}
-          />
-        ))}
-      </div>
+
+      {/* Barra de Busca */}
+      <SearchBar
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        placeholder="Buscar cliente por nome ou email..."
+        className="max-w-md"
+      />
+
+      {filteredClients.length === 0 && searchTerm ? (
+        <div className="text-center py-8">
+          <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Nenhum cliente encontrado
+          </h3>
+          <p className="text-gray-500">
+            Tente ajustar o termo de busca
+          </p>
+        </div>
+      ) : (
+        /* Grid responsivo de cards */
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {filteredClients.map(({ client, videoCount }) => (
+            <ClientCard
+              key={client.id}
+              client={client}
+              videoCount={videoCount}
+              onClientSelect={onClientSelect}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
