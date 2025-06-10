@@ -13,25 +13,29 @@ export const useClientFilters = (clients: Client[]) => {
     
     let filtered = clients;
 
-    // Filtro por aba ativa
+    // Filtro por aba ativa - ATUALIZADO para mostrar apenas admins na aba 'clients'
     switch (activeTab) {
       case 'all':
-        filtered = clients.filter(client => !client.is_deleted);
+        // Mostrar apenas admins na aba "todos" também, já que clientes estão na seção de vídeos
+        filtered = clients.filter(client => client.role === 'admin' && !client.is_deleted);
         break;
       case 'admins':
         filtered = clients.filter(client => client.role === 'admin' && !client.is_deleted);
         break;
       case 'clients':
-        filtered = clients.filter(client => client.role === 'client' && !client.is_deleted);
+        // Mudança: aba 'clients' agora mostra apenas admins
+        filtered = clients.filter(client => client.role === 'admin' && !client.is_deleted);
         break;
       case 'unverified':
-        filtered = clients.filter(client => !client.email_confirmed_at && !client.is_deleted);
+        // Admins não verificados
+        filtered = clients.filter(client => !client.email_confirmed_at && client.role === 'admin' && !client.is_deleted);
         break;
       case 'deleted':
-        filtered = clients.filter(client => client.is_deleted === true);
+        // Admins deletados
+        filtered = clients.filter(client => client.is_deleted === true && client.role === 'admin');
         break;
       default:
-        filtered = clients.filter(client => !client.is_deleted);
+        filtered = clients.filter(client => client.role === 'admin' && !client.is_deleted);
     }
 
     // Filtro de busca por texto
@@ -48,15 +52,16 @@ export const useClientFilters = (clients: Client[]) => {
   }, [clients, activeTab, searchTerm]);
 
   const getTabCounts = (): ClientCounts => {
+    // Contar apenas admins, já que clientes estão na seção de vídeos
     const counts = {
-      all: clients.filter(client => !client.is_deleted).length,
+      all: clients.filter(client => client.role === 'admin' && !client.is_deleted).length,
       admins: clients.filter(client => client.role === 'admin' && !client.is_deleted).length,
-      clients: clients.filter(client => client.role === 'client' && !client.is_deleted).length,
-      unverified: clients.filter(client => !client.email_confirmed_at && !client.is_deleted).length,
-      deleted: clients.filter(client => client.is_deleted === true).length
+      clients: clients.filter(client => client.role === 'admin' && !client.is_deleted).length, // Agora mostra admins
+      unverified: clients.filter(client => !client.email_confirmed_at && client.role === 'admin' && !client.is_deleted).length,
+      deleted: clients.filter(client => client.is_deleted === true && client.role === 'admin').length
     };
     
-    console.log('useClientFilters: Contagens das abas:', counts);
+    console.log('useClientFilters: Contagens das abas (apenas admins):', counts);
     return counts;
   };
 

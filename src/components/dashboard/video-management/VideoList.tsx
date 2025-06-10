@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useClientData } from '@/hooks/useClientData';
 import { useVideoPermissions } from '@/hooks/useVideoPermissions';
@@ -23,12 +24,12 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
     return count;
   };
 
-  // Mostrar TODOS os clientes (incluindo os sem vídeos)
-  const getAllClientsWithVideoCount = () => {
-    // Filtrar apenas clientes não deletados
-    const activeClients = clients.filter(client => !client.is_deleted);
+  // Mostrar APENAS clientes (role = 'client') - não incluir admins
+  const getClientsWithVideoCount = () => {
+    // Filtrar apenas clientes não deletados e com role 'client'
+    const activeClients = clients.filter(client => !client.is_deleted && client.role === 'client');
     
-    console.log('✅ Clientes ativos encontrados:', activeClients.length);
+    console.log('✅ Clientes (role=client) encontrados:', activeClients.length);
     
     // Mapear todos os clientes com suas respectivas contagens de vídeo
     const clientsWithVideos = activeClients.map(client => {
@@ -44,13 +45,13 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
       return a.client.full_name.localeCompare(b.client.full_name); // Alfabético
     });
 
-    console.log('✅ Todos os clientes com contagem:', clientsWithVideos.length);
+    console.log('✅ Clientes (role=client) com contagem:', clientsWithVideos.length);
     return clientsWithVideos;
   };
 
   // Filtrar clientes com base no termo de busca
   const filteredClients = useMemo(() => {
-    const allClients = getAllClientsWithVideoCount();
+    const allClients = getClientsWithVideoCount();
     
     if (!searchTerm.trim()) {
       return allClients;
@@ -74,7 +75,7 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
     );
   }
 
-  const allClientsWithVideoCount = getAllClientsWithVideoCount();
+  const allClientsWithVideoCount = getClientsWithVideoCount();
 
   if (allClientsWithVideoCount.length === 0) {
     return (
@@ -99,7 +100,7 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-medium text-gray-900">
-            Todos os Clientes ({filteredClients.length})
+            Clientes ({filteredClients.length})
           </h3>
           <p className="text-sm text-gray-500 mt-1">
             {clientsWithVideos.length} com vídeos • {clientsWithoutVideos.length} sem vídeos
