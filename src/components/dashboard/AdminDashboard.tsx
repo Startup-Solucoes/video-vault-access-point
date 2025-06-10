@@ -1,4 +1,3 @@
-
 import React, { Suspense, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,38 +13,32 @@ import { VideoForm } from '@/components/forms/VideoForm';
 import { ClientForm } from '@/components/forms/ClientForm';
 
 // Componente de Loading para Suspense
-const ComponentLoader = () => (
-  <div className="flex items-center justify-center py-8">
+const ComponentLoader = () => <div className="flex items-center justify-center py-8">
     <div className="flex items-center space-x-2">
       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
       <span className="text-gray-600">Carregando componente...</span>
     </div>
-  </div>
-);
-
+  </div>;
 export const AdminDashboard = () => {
-  const { stats, isLoading } = useAdminStats();
+  const {
+    stats,
+    isLoading
+  } = useAdminStats();
   const [activeTab, setActiveTab] = useState('overview');
   const [showVideoForm, setShowVideoForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
-
   const refreshCurrentTab = () => {
     console.log('AdminDashboard: Refresh solicitado para tab:', activeTab);
     // Força re-render do componente ativo
     setActiveTab(prev => prev);
   };
-
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
+    return <div className="flex items-center justify-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* Header com estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -99,7 +92,7 @@ export const AdminDashboard = () => {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="videos">Vídeos</TabsTrigger>
-          <TabsTrigger value="clients">Clientes</TabsTrigger>
+          <TabsTrigger value="clients">Admins</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
           <TabsTrigger value="tools">Ferramentas</TabsTrigger>
         </TabsList>
@@ -132,8 +125,7 @@ export const AdminDashboard = () => {
         </TabsContent>
 
         <TabsContent value="tools">
-          {!selectedTool ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {!selectedTool ? <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedTool('thumbnails')}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
@@ -173,14 +165,9 @@ export const AdminDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          ) : (
-            <div className="space-y-4">
+            </div> : <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setSelectedTool(null)}
-                >
+                <Button variant="outline" onClick={() => setSelectedTool(null)}>
                   ← Voltar às Ferramentas
                 </Button>
                 <h2 className="text-xl font-semibold">
@@ -189,32 +176,16 @@ export const AdminDashboard = () => {
               </div>
               
               {selectedTool === 'thumbnails' && <ThumbnailGenerator />}
-              {selectedTool === 'advertisements' && (
-                <Suspense fallback={<ComponentLoader />}>
+              {selectedTool === 'advertisements' && <Suspense fallback={<ComponentLoader />}>
                   <AdvertisementManagement />
-                </Suspense>
-              )}
-            </div>
-          )}
+                </Suspense>}
+            </div>}
         </TabsContent>
       </Tabs>
 
       {/* Formulários modais */}
-      {showVideoForm && (
-        <VideoForm
-          open={showVideoForm}
-          onOpenChange={setShowVideoForm}
-          onVideoCreated={refreshCurrentTab}
-        />
-      )}
+      {showVideoForm && <VideoForm open={showVideoForm} onOpenChange={setShowVideoForm} onVideoCreated={refreshCurrentTab} />}
 
-      {showClientForm && (
-        <ClientForm
-          open={showClientForm}
-          onOpenChange={setShowClientForm}
-          onClientCreated={refreshCurrentTab}
-        />
-      )}
-    </div>
-  );
+      {showClientForm && <ClientForm open={showClientForm} onOpenChange={setShowClientForm} onClientCreated={refreshCurrentTab} />}
+    </div>;
 };
