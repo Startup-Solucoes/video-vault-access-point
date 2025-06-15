@@ -37,8 +37,8 @@ export const ClientDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
-      {/* Header principal com largura total - fora do container */}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header principal */}
       <ClientDashboardHeader 
         profile={profile}
         videoCount={videos.length}
@@ -48,8 +48,8 @@ export const ClientDashboard = () => {
       {/* Anúncios em destaque - carrossel */}
       <AdvertisementCarousel advertisements={advertisements} />
 
-      {/* Área principal - full width */}
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+      {/* Área principal */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Barra de filtros modernizada */}
         <VideoSearchAndFilters
           searchTerm={searchTerm}
@@ -67,7 +67,7 @@ export const ClientDashboard = () => {
           clearAllFilters={clearAllFilters}
         />
 
-        {/* Grid de vídeos - full width com grid otimizado */}
+        {/* Grid de vídeos */}
         <div className="w-full">
           <VideoGrid 
             videos={filteredVideos} 
