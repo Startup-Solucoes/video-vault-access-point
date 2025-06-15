@@ -2,9 +2,10 @@
 import React, { Suspense, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Video, Users, BarChart3, Upload } from 'lucide-react';
+import { Video, Users, BarChart3, Upload, Layout, LayoutGrid } from 'lucide-react';
 import { AdminDashboard } from './AdminDashboard';
 import { ClientDashboard } from './ClientDashboard';
+import { WordPressDashboard } from './WordPressDashboard';
 
 // Importações diretas dos componentes
 import VideoManagement from './VideoManagement';
@@ -21,13 +22,11 @@ const ComponentLoader = () => <div className="flex items-center justify-center p
   </div>;
 
 export const Dashboard = () => {
-  const {
-    profile,
-    signOut
-  } = useAuth();
+  const { profile, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
   const [isClientFormOpen, setIsClientFormOpen] = useState(false);
+  const [useWordPressLayout, setUseWordPressLayout] = useState(false);
   const isAdmin = profile?.role === 'admin';
   
   const handleTabChange = (tab: string) => {
@@ -44,6 +43,11 @@ export const Dashboard = () => {
     console.log('✅ Cliente criado com sucesso');
     setIsClientFormOpen(false);
   };
+  
+  // Se o layout WordPress estiver ativo, usar o novo dashboard
+  if (useWordPressLayout) {
+    return <WordPressDashboard />;
+  }
   
   const renderContent = () => {
     console.log('🎨 Renderizando conteúdo para aba:', activeTab);
@@ -78,6 +82,17 @@ export const Dashboard = () => {
             </div>
             
             <div className="flex items-center space-x-4">
+              {/* Botão para alternar layout */}
+              <Button
+                onClick={() => setUseWordPressLayout(!useWordPressLayout)}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                {useWordPressLayout ? <Layout className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+                {useWordPressLayout ? 'Layout Compacto' : 'Layout WordPress'}
+              </Button>
+
               {isAdmin && <div className="flex space-x-2">
                   <Button onClick={() => setIsVideoFormOpen(true)} size="sm" className="bg-blue-600 hover:bg-blue-700">
                     <Upload className="h-4 w-4 mr-2" />
