@@ -57,11 +57,11 @@ export const ClientDashboard = () => {
     }
   };
 
-  return <div className="min-h-screen w-full flex bg-transparent">
+  return <div className="min-h-screen w-full flex bg-transparent overflow-x-hidden">
       <ClientSidebar profile={profile} videoCount={videos.length} currentView={currentView} onViewChange={setCurrentView} onSignOut={signOut} />
       
-      <div className="flex-1 min-h-screen">
-        <main className="p-6 w-full bg-white/70 backdrop-blur-sm min-h-screen">
+      <div className="flex-1 min-h-screen overflow-x-hidden">
+        <main className="p-6 w-full bg-white/70 backdrop-blur-sm min-h-screen overflow-x-hidden">
           {renderMainContent()}
         </main>
       </div>

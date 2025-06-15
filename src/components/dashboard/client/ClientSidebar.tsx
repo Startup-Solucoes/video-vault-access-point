@@ -43,7 +43,7 @@ export const ClientSidebar = ({
   }];
 
   return (
-    <div className="w-80 border-r-2 border-gray-300 bg-white flex flex-col h-screen shadow-lg">
+    <div className="w-80 min-w-80 max-w-80 border-r-2 border-gray-300 bg-white flex flex-col h-screen shadow-lg flex-shrink-0">
       {/* Header - Fixed */}
       <div className="flex-shrink-0 border-b-2 border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-6">
         <div className="flex items-center space-x-4">
