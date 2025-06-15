@@ -1,9 +1,11 @@
+
 import React, { Suspense, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Video, Users, BarChart3, Upload } from 'lucide-react';
 import { AdminDashboard } from './AdminDashboard';
 import { ClientDashboard } from './ClientDashboard';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Importações diretas dos componentes
 import VideoManagement from './VideoManagement';
@@ -28,6 +30,7 @@ export const Dashboard = () => {
   const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
   const [isClientFormOpen, setIsClientFormOpen] = useState(false);
   const isAdmin = profile?.role === 'admin';
+  const isMobile = useIsMobile();
 
   const handleTabChange = (tab: string) => {
     console.log('🏷️ Mudando aba para:', tab);
@@ -64,20 +67,21 @@ export const Dashboard = () => {
       </div>;
   }
 
-  return <div className="min-h-screen w-full bg-transparent">
-      {/* Header */}
-      
-
+  return (
+    <div className={`min-h-screen w-full bg-transparent ${isMobile ? 'pt-16' : ''}`}>
       {/* Main Content */}
-      <main className="w-full">
+      <main className={`w-full ${isMobile ? 'px-4' : ''}`}>
         {renderContent()}
       </main>
 
       {/* Modals */}
-      {isAdmin && <>
+      {isAdmin && (
+        <>
           <VideoForm open={isVideoFormOpen} onOpenChange={setIsVideoFormOpen} onVideoCreated={handleVideoCreated} />
           
           <ClientForm open={isClientFormOpen} onOpenChange={setIsClientFormOpen} onClientCreated={handleClientCreated} />
-        </>}
-    </div>;
+        </>
+      )}
+    </div>
+  );
 };
