@@ -14,6 +14,7 @@ import { ClientVideo } from '@/types/clientVideo';
 import { Sparkles, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 export const ClientDashboard = () => {
   const { profile } = useAuth();
@@ -87,7 +88,7 @@ export const ClientDashboard = () => {
         </div>
       </div>
 
-      {/* Anúncios em destaque - full width com layout melhorado */}
+      {/* Anúncios em destaque - carrossel */}
       {advertisements.length > 0 && (
         <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-yellow-200">
           <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
@@ -96,10 +97,29 @@ export const ClientDashboard = () => {
               <h2 className="text-2xl font-bold text-gray-900">Serviços em destaque</h2>
               <div className="h-px bg-gradient-to-r from-yellow-400 to-transparent flex-1 ml-4"></div>
             </div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {advertisements.map(ad => (
-                <AdvertisementBanner key={ad.id} advertisement={ad} />
-              ))}
+            
+            <div className="relative">
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full"
+              >
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {advertisements.map((ad) => (
+                    <CarouselItem key={ad.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                      <AdvertisementBanner advertisement={ad} />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                {advertisements.length > 4 && (
+                  <>
+                    <CarouselPrevious className="absolute -left-12 top-1/2 -translate-y-1/2" />
+                    <CarouselNext className="absolute -right-12 top-1/2 -translate-y-1/2" />
+                  </>
+                )}
+              </Carousel>
             </div>
           </div>
         </div>
