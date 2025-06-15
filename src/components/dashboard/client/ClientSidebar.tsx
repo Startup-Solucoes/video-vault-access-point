@@ -49,7 +49,7 @@ export const ClientSidebar = ({
   return (
     <div className="w-80 border-r border-gray-200 bg-white flex flex-col h-full">
       {/* Header */}
-      <div className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+      <div className="border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100 p-6">
         <div className="flex items-center space-x-4">
           {profile.logo_url ? (
             <div className="relative">
@@ -61,7 +61,7 @@ export const ClientSidebar = ({
               <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-white"></div>
             </div>
           ) : (
-            <div className="relative h-12 w-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+            <div className="relative h-12 w-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-xl flex items-center justify-center shadow-md">
               <User className="h-6 w-6 text-white" />
               <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-white"></div>
             </div>
@@ -70,7 +70,7 @@ export const ClientSidebar = ({
             <h2 className="text-lg font-bold text-gray-900 truncate">
               {profile.full_name}
             </h2>
-            <p className="text-sm text-blue-600 font-medium">
+            <p className="text-sm text-gray-600 font-medium">
               Portal do Cliente
             </p>
           </div>
@@ -90,7 +90,7 @@ export const ClientSidebar = ({
                 onClick={() => onViewChange(item.view)}
                 className={`group relative p-3 rounded-xl transition-all duration-200 w-full text-left ${
                   currentView === item.view 
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
+                    ? 'bg-gray-700 text-white shadow-lg shadow-gray-700/25' 
                     : 'hover:bg-gray-50 hover:shadow-sm'
                 }`}
               >
@@ -99,12 +99,12 @@ export const ClientSidebar = ({
                     <div className={`p-2 rounded-lg ${
                       currentView === item.view 
                         ? 'bg-white/20' 
-                        : 'bg-gray-100 group-hover:bg-blue-100'
+                        : 'bg-gray-100 group-hover:bg-gray-200'
                     }`}>
                       <item.icon className={`h-5 w-5 ${
                         currentView === item.view 
                           ? 'text-white' 
-                          : 'text-gray-600 group-hover:text-blue-600'
+                          : 'text-gray-600 group-hover:text-gray-700'
                       }`} />
                     </div>
                     <div className="flex-1 text-left">
@@ -115,7 +115,7 @@ export const ClientSidebar = ({
                       </div>
                       <div className={`text-sm ${
                         currentView === item.view 
-                          ? 'text-blue-100' 
+                          ? 'text-gray-200' 
                           : 'text-gray-500 group-hover:text-gray-600'
                       }`}>
                         {item.description}
@@ -129,7 +129,7 @@ export const ClientSidebar = ({
                         className={`text-xs ${
                           currentView === item.view 
                             ? 'bg-white/20 text-white border-white/30' 
-                            : 'bg-blue-50 text-blue-700 border-blue-200'
+                            : 'bg-gray-50 text-gray-700 border-gray-200'
                         }`}
                       >
                         {item.badge}

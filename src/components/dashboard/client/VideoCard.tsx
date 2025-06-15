@@ -29,7 +29,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
     <>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer w-full max-w-full overflow-hidden" onClick={handleWatchVideo}>
         <CardContent className="p-0">
-          <div className="aspect-video bg-gradient-to-br from-blue-100 to-blue-200 rounded-t-lg flex items-center justify-center relative overflow-hidden">
+          <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg flex items-center justify-center relative overflow-hidden">
             {thumbnailUrl ? (
               <div className="relative w-full h-full">
                 <img 
@@ -42,7 +42,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
                     target.style.display = 'none';
                     const parent = target.parentElement;
                     if (parent) {
-                      parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="h-12 w-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div>';
+                      parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="h-12 w-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div>';
                     }
                   }}
                 />
@@ -50,18 +50,18 @@ export const VideoCard = ({ video }: VideoCardProps) => {
                 {/* Overlay de play */}
                 <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                   <div className="bg-white bg-opacity-90 rounded-full p-3">
-                    <Play className="h-8 w-8 text-blue-600 fill-current" />
+                    <Play className="h-8 w-8 text-gray-700 fill-current" />
                   </div>
                 </div>
               </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center relative">
-                <Video className="h-12 w-12 text-blue-500" />
+                <Video className="h-12 w-12 text-gray-600" />
                 
                 {/* Overlay de play para vídeos sem thumbnail */}
                 <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                   <div className="bg-white bg-opacity-90 rounded-full p-3">
-                    <Play className="h-8 w-8 text-blue-600 fill-current" />
+                    <Play className="h-8 w-8 text-gray-700 fill-current" />
                   </div>
                 </div>
               </div>
@@ -110,7 +110,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
                   e.stopPropagation();
                   handleWatchVideo();
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm"
+                className="bg-gray-700 hover:bg-gray-800 text-xs sm:text-sm"
               >
                 <Play className="h-3 w-3 mr-1" />
                 Assistir

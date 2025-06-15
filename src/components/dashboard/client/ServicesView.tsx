@@ -32,7 +32,7 @@ export const ServicesView = ({ advertisements }: ServicesViewProps) => {
       icon: Video,
       features: ["Qualidade 4K", "Streaming rápido", "Sem anúncios"],
       status: "active",
-      color: "blue"
+      color: "gray"
     },
     {
       id: 2,
@@ -82,14 +82,14 @@ export const ServicesView = ({ advertisements }: ServicesViewProps) => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl p-6 shadow-lg">
+      <div className="bg-gradient-to-r from-gray-700 to-gray-900 text-white rounded-xl p-6 shadow-lg">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-white/20 rounded-lg">
             <Star className="h-6 w-6" />
           </div>
           <div>
             <h1 className="text-2xl font-bold">Serviços e Ofertas</h1>
-            <p className="text-purple-100">
+            <p className="text-gray-200">
               Explore nossos serviços premium e ofertas especiais
             </p>
           </div>
@@ -111,9 +111,9 @@ export const ServicesView = ({ advertisements }: ServicesViewProps) => {
       {/* Serviços principais */}
       <div>
         <div className="flex items-center gap-3 mb-6">
-          <Star className="h-6 w-6 text-blue-600" />
+          <Star className="h-6 w-6 text-gray-700" />
           <h2 className="text-2xl font-bold text-gray-900">Serviços Principais</h2>
-          <div className="h-px bg-gradient-to-r from-blue-400 to-transparent flex-1 ml-4"></div>
+          <div className="h-px bg-gradient-to-r from-gray-400 to-transparent flex-1 ml-4"></div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -151,7 +151,7 @@ export const ServicesView = ({ advertisements }: ServicesViewProps) => {
                     </div>
                     
                     <Button 
-                      className="w-full mt-4 group/btn" 
+                      className="w-full mt-4 group/btn bg-gray-700 hover:bg-gray-800" 
                       variant={service.status === 'active' ? 'default' : 'outline'}
                       disabled={service.status === 'premium'}
                     >
@@ -167,36 +167,36 @@ export const ServicesView = ({ advertisements }: ServicesViewProps) => {
       </div>
 
       {/* Seção de recursos adicionais */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+      <Card className="bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-900">
+          <CardTitle className="flex items-center gap-2 text-gray-900">
             <Zap className="h-5 w-5" />
             Recursos Adicionais
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-blue-100">
-              <Shield className="h-8 w-8 text-blue-600" />
+            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+              <Shield className="h-8 w-8 text-gray-700" />
               <div>
-                <h4 className="font-medium text-blue-900">Segurança</h4>
-                <p className="text-sm text-blue-700">Conteúdo protegido</p>
+                <h4 className="font-medium text-gray-900">Segurança</h4>
+                <p className="text-sm text-gray-700">Conteúdo protegido</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-blue-100">
-              <Clock className="h-8 w-8 text-blue-600" />
+            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+              <Clock className="h-8 w-8 text-gray-700" />
               <div>
-                <h4 className="font-medium text-blue-900">Disponibilidade</h4>
-                <p className="text-sm text-blue-700">Acesso 24/7</p>
+                <h4 className="font-medium text-gray-900">Disponibilidade</h4>
+                <p className="text-sm text-gray-700">Acesso 24/7</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-blue-100">
-              <Video className="h-8 w-8 text-blue-600" />
+            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+              <Video className="h-8 w-8 text-gray-700" />
               <div>
-                <h4 className="font-medium text-blue-900">Qualidade</h4>
-                <p className="text-sm text-blue-700">HD & 4K</p>
+                <h4 className="font-medium text-gray-900">Qualidade</h4>
+                <p className="text-sm text-gray-700">HD & 4K</p>
               </div>
             </div>
           </div>
