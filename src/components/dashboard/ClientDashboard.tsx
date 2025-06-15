@@ -37,8 +37,8 @@ export const ClientDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header principal com largura total */}
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+      {/* Header principal com largura total - fora do container */}
       <ClientDashboardHeader 
         profile={profile}
         videoCount={videos.length}

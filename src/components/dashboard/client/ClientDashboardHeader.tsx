@@ -15,8 +15,8 @@ interface ClientDashboardHeaderProps {
 
 export const ClientDashboardHeader = ({ profile, videoCount, onSignOut }: ClientDashboardHeaderProps) => {
   return (
-    <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg w-full">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+    <header className="bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+      <div className="max-w-none w-full px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between space-y-6 lg:space-y-0">
           {/* Informações principais do cliente */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
@@ -82,6 +82,6 @@ export const ClientDashboardHeader = ({ profile, videoCount, onSignOut }: Client
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 };
