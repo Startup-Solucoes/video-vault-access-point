@@ -109,8 +109,8 @@ export const ClientSidebar = ({
         </div>
       </div>
 
-      {/* Footer - Fixed at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gray-50 p-6 shadow-lg">
+      {/* Footer - Fixed to viewport bottom */}
+      <div className="fixed bottom-0 left-0 w-80 bg-gray-50 p-6 shadow-lg z-10">
         <div className="space-y-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">Status</span>
