@@ -87,15 +87,16 @@ export const ClientDashboard = () => {
         </div>
       </div>
 
-      {/* Anúncios em destaque - full width */}
+      {/* Anúncios em destaque - full width com layout melhorado */}
       {advertisements.length > 0 && (
         <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-yellow-200">
-          <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="h-5 w-5 text-yellow-600" />
-              <h2 className="text-xl font-semibold text-gray-900">Serviços em destaque</h2>
+          <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex items-center gap-3 mb-6">
+              <Sparkles className="h-6 w-6 text-yellow-600" />
+              <h2 className="text-2xl font-bold text-gray-900">Serviços em destaque</h2>
+              <div className="h-px bg-gradient-to-r from-yellow-400 to-transparent flex-1 ml-4"></div>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {advertisements.map(ad => (
                 <AdvertisementBanner key={ad.id} advertisement={ad} />
               ))}
