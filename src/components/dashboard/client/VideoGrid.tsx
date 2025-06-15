@@ -16,7 +16,7 @@ export const VideoGrid = ({ videos, isLoading, searchTerm, selectedCategory }: V
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex items-center space-x-2">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
           <span className="text-gray-600">Carregando vídeos...</span>
         </div>
       </div>
@@ -57,8 +57,8 @@ export const VideoGrid = ({ videos, isLoading, searchTerm, selectedCategory }: V
 
   return (
     <div className="w-full">
-      {/* Grid responsivo otimizado para full-width */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6">
+      {/* Grid otimizado: 2 colunas no mobile, 4 em telas maiores */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         {videos.map((video) => (
           <VideoCard key={video.id} video={video} />
         ))}

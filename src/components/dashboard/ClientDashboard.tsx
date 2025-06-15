@@ -3,20 +3,20 @@ import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useClientVideos } from '@/hooks/useClientVideos';
 import { useClientAdvertisements } from '@/hooks/useClientAdvertisements';
-import { ClientHeader } from './client/ClientHeader';
 import { CategoryFilter } from './client/CategoryFilter';
 import { VideoGrid } from './client/VideoGrid';
 import { PlatformFilter } from './client/PlatformFilter';
 import { AdvertisementBanner } from './client/AdvertisementBanner';
 import { format } from 'date-fns';
 import { ClientVideo } from '@/types/clientVideo';
-import { Sparkles, Search, Filter, X } from 'lucide-react';
+import { Sparkles, Search, Filter, X, LogOut, User, Video, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 export const ClientDashboard = () => {
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
   const { videos: rawVideos, isLoading } = useClientVideos(profile?.id || '');
   const { advertisements } = useClientAdvertisements(profile?.id || '');
   const [searchTerm, setSearchTerm] = useState('');
@@ -74,17 +74,80 @@ export const ClientDashboard = () => {
   if (!profile) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Full-width Header moderno */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      {/* Header Moderno Unificado */}
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg">
         <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
-          <ClientHeader profile={profile} videoCount={videos.length} />
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between space-y-6 lg:space-y-0">
+            {/* Informações principais do cliente */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
+              {/* Logo/Avatar */}
+              {profile.logo_url ? (
+                <img 
+                  src={profile.logo_url} 
+                  alt={`Logo ${profile.full_name}`}
+                  className="h-16 w-16 sm:h-20 sm:w-20 object-contain rounded-xl border-2 border-gray-600 bg-white p-2 shadow-lg flex-shrink-0"
+                />
+              ) : (
+                <div className="h-16 w-16 sm:h-20 sm:w-20 bg-gradient-to-br from-gray-600 to-gray-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <User className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+                </div>
+              )}
+
+              {/* Informações do cliente */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
+                    Portal do Cliente
+                  </h1>
+                  <div className="h-px bg-gradient-to-r from-gray-400 to-transparent flex-1 ml-4 hidden lg:block"></div>
+                </div>
+                
+                <div className="space-y-1">
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-200">
+                    {profile.full_name}
+                  </h2>
+                  <p className="text-gray-300 text-sm sm:text-base">{profile.email}</p>
+                </div>
+                
+                {/* Badges informativos */}
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="flex items-center space-x-1 bg-gray-700 text-gray-200 border-gray-600">
+                    <Video className="h-3 w-3" />
+                    <span>{videos.length} vídeo{videos.length !== 1 ? 's' : ''}</span>
+                  </Badge>
+                  
+                  <Badge variant="outline" className="flex items-center space-x-1 border-gray-600 text-gray-200">
+                    <Calendar className="h-3 w-3" />
+                    <span>Cliente ativo</span>
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* Informações adicionais e botão de sair */}
+            <div className="flex items-center space-x-4">
+              <div className="text-right hidden lg:block">
+                <p className="text-sm text-gray-400">Último acesso</p>
+                <p className="text-sm font-medium text-gray-200">Hoje</p>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                onClick={signOut} 
+                className="bg-transparent border-gray-600 text-gray-200 hover:bg-gray-700 hover:border-gray-500"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -133,8 +196,8 @@ export const ClientDashboard = () => {
             {/* Header da busca */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 rounded-lg">
-                  <Search className="h-5 w-5 text-blue-600" />
+                <div className="p-2 bg-gray-100 rounded-lg">
+                  <Search className="h-5 w-5 text-gray-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Buscar Vídeos</h3>
@@ -155,7 +218,7 @@ export const ClientDashboard = () => {
                 placeholder="Digite para buscar vídeos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 focus:bg-white transition-all duration-200 text-gray-900 placeholder:text-gray-500"
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-50 focus:bg-white transition-all duration-200 text-gray-900 placeholder:text-gray-500"
               />
               {searchTerm && (
                 <button
@@ -173,7 +236,7 @@ export const ClientDashboard = () => {
               <Button
                 variant="outline"
                 onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden w-full justify-center"
+                className="lg:hidden w-full justify-center border-gray-300 text-gray-700 hover:bg-gray-100"
               >
                 <Filter className="h-4 w-4 mr-2" />
                 {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
@@ -219,9 +282,9 @@ export const ClientDashboard = () => {
               <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
                 <span className="text-xs font-medium text-gray-600">Filtros ativos:</span>
                 {searchTerm && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-md">
                     Busca: "{searchTerm}"
-                    <button onClick={() => setSearchTerm('')} className="hover:bg-blue-200 rounded-full p-0.5">
+                    <button onClick={() => setSearchTerm('')} className="hover:bg-gray-200 rounded-full p-0.5">
                       <X className="h-3 w-3" />
                     </button>
                   </span>
@@ -247,7 +310,7 @@ export const ClientDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Grid de vídeos - full width com mais colunas */}
+        {/* Grid de vídeos - full width com grid otimizado */}
         <div className="w-full">
           <VideoGrid 
             videos={filteredVideos} 
