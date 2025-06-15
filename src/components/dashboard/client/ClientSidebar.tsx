@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Home, Video, Star, User, LogOut, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -44,7 +45,7 @@ export const ClientSidebar = ({
   ];
 
   return (
-    <div className="w-80 min-w-80 max-w-80 bg-white flex flex-col h-screen shadow-xl flex-shrink-0 relative">
+    <div className="w-80 min-w-80 max-w-80 bg-white flex flex-col h-screen flex-shrink-0 relative">
       {/* Header - Fixed */}
       <div className="flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100 p-6 shadow-sm">
         <div className="flex items-center space-x-4">
