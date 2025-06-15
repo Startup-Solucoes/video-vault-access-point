@@ -59,8 +59,8 @@ export const useClientDashboard = () => {
     setSelectedPlatform('');
   };
 
-  // Check if there are active filters
-  const hasActiveFilters = searchTerm || selectedCategory || selectedPlatform;
+  // Check if there are active filters - ensure this returns a boolean
+  const hasActiveFilters = Boolean(searchTerm || selectedCategory || selectedPlatform);
 
   return {
     profile,
