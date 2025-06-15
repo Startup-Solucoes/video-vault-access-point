@@ -1,4 +1,3 @@
-
 import React, { Suspense, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -70,7 +69,7 @@ export const Dashboard = () => {
       
 
       {/* Main Content */}
-      <main className="w-full py-6 px-4 sm:px-6 lg:px-8">
+      <main className="w-full">
         {renderContent()}
       </main>
 
