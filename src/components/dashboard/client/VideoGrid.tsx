@@ -57,8 +57,8 @@ export const VideoGrid = ({ videos, isLoading, searchTerm, selectedCategory }: V
 
   return (
     <div className="w-full">
-      {/* Grid otimizado: 2 colunas no mobile, 4 em telas maiores */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+      {/* Grid otimizado: 1 coluna no mobile, 2 em tablet, 3 no desktop */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {videos.map((video) => (
           <VideoCard key={video.id} video={video} />
         ))}
