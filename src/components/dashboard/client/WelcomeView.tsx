@@ -5,13 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Video, Star, Calendar, TrendingUp, Play, ArrowRight, User, Activity } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { ClientVideo } from '@/types/clientVideo';
+
 type Profile = Database['public']['Tables']['profiles']['Row'];
+
 interface WelcomeViewProps {
   profile: Profile;
   videos: ClientVideo[];
   onNavigateToVideos: () => void;
   onNavigateToServices: () => void;
 }
+
 export const WelcomeView = ({
   profile,
   videos,
@@ -21,7 +24,9 @@ export const WelcomeView = ({
   const recentVideos = videos.slice(0, 3);
   const totalVideos = videos.length;
   const categories = [...new Set(videos.map(v => v.category).filter(Boolean))].length;
-  return <div className="space-y-8 max-w-7xl mx-auto">
+
+  return (
+    <div className="space-y-8 max-w-7xl mx-auto">
       {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white rounded-2xl p-8 shadow-2xl overflow-hidden">
         <div className="absolute inset-0 bg-zinc-900"></div>
@@ -101,7 +106,7 @@ export const WelcomeView = ({
 
         <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-purple-50 to-purple-100 cursor-pointer" onClick={onNavigateToServices}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-700">Acesso Premium</CardTitle>
+            <CardTitle className="text-sm font-medium text-purple-700">Acesso a dashboard videos</CardTitle>
             <div className="p-2 bg-purple-500 rounded-lg group-hover:scale-110 transition-transform">
               <Star className="h-5 w-5 text-white" />
             </div>
@@ -227,5 +232,6 @@ export const WelcomeView = ({
           </CardContent>
         </Card>
       </div>
-    </div>;
+    </div>
+  );
 };
