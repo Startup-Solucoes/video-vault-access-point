@@ -124,7 +124,7 @@ export const WelcomeView = ({
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500 rounded-lg">
+                <div className="p-2 rounded-lg bg-zinc-900">
                   <Play className="h-5 w-5 text-white" />
                 </div>
                 <div>
