@@ -43,8 +43,8 @@ export const ClientSidebar = ({
 
   return (
     <div className="w-80 border-r-2 border-gray-300 bg-white flex flex-col h-full shadow-lg">
-      {/* Header */}
-      <div className="border-b-2 border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg">
+      {/* Header - Fixed */}
+      <div className="flex-shrink-0 border-b-2 border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg">
         <div className="flex items-center space-x-4">
           {profile.logo_url ? <div className="relative">
               <img src={profile.logo_url} alt={`Logo ${profile.full_name}`} className="h-12 w-12 object-contain rounded-xl border-2 border-white bg-white p-1 shadow-md" />
@@ -64,8 +64,8 @@ export const ClientSidebar = ({
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 px-4 py-6">
+      {/* Content - Scrollable */}
+      <div className="flex-1 overflow-y-auto px-4 py-6">
         <div>
           <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">
             Navegação
@@ -108,8 +108,8 @@ export const ClientSidebar = ({
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="border-t-2 border-gray-200 bg-gray-50 p-4">
+      {/* Footer - Fixed at bottom */}
+      <div className="flex-shrink-0 border-t-2 border-gray-200 bg-gray-50 p-4">
         <div className="space-y-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">Status</span>
