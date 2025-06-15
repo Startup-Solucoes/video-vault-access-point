@@ -13,10 +13,17 @@ import {
   Headphones, 
   Clock,
   Check,
-  ArrowRight
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
+import { AdvertisementCarousel } from './AdvertisementCarousel';
+import { Advertisement } from '@/types/advertisement';
 
-export const ServicesView = () => {
+interface ServicesViewProps {
+  advertisements: Advertisement[];
+}
+
+export const ServicesView = ({ advertisements }: ServicesViewProps) => {
   const services = [
     {
       id: 1,
@@ -73,7 +80,7 @@ export const ServicesView = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl p-6 shadow-lg">
         <div className="flex items-center gap-3 mb-4">
@@ -81,62 +88,82 @@ export const ServicesView = () => {
             <Star className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Serviços em Destaque</h1>
+            <h1 className="text-2xl font-bold">Serviços e Ofertas</h1>
             <p className="text-purple-100">
-              Aproveite ao máximo sua experiência com nossos serviços premium
+              Explore nossos serviços premium e ofertas especiais
             </p>
           </div>
         </div>
       </div>
 
-      {/* Serviços destacados */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {services.map((service) => {
-          const IconComponent = service.icon;
-          return (
-            <Card key={service.id} className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-gray-200">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-3 rounded-xl bg-${service.color}-100`}>
-                      <IconComponent className={`h-6 w-6 text-${service.color}-600`} />
-                    </div>
-                    <div>
-                      <CardTitle className="group-hover:text-gray-900 transition-colors">
-                        {service.title}
-                      </CardTitle>
-                      <Badge className={`mt-1 ${getStatusColor(service.status)}`}>
-                        {getStatusText(service.status)}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-gray-600 mt-2">{service.description}</p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    {service.features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm">
-                        <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
-                        <span className="text-gray-700">{feature}</span>
+      {/* Serviços em destaque - carrossel de anúncios */}
+      {advertisements && advertisements.length > 0 && (
+        <div>
+          <div className="flex items-center gap-3 mb-6">
+            <Sparkles className="h-6 w-6 text-yellow-600" />
+            <h2 className="text-2xl font-bold text-gray-900">Ofertas Especiais</h2>
+            <div className="h-px bg-gradient-to-r from-yellow-400 to-transparent flex-1 ml-4"></div>
+          </div>
+          <AdvertisementCarousel advertisements={advertisements} />
+        </div>
+      )}
+
+      {/* Serviços principais */}
+      <div>
+        <div className="flex items-center gap-3 mb-6">
+          <Star className="h-6 w-6 text-blue-600" />
+          <h2 className="text-2xl font-bold text-gray-900">Serviços Principais</h2>
+          <div className="h-px bg-gradient-to-r from-blue-400 to-transparent flex-1 ml-4"></div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {services.map((service) => {
+            const IconComponent = service.icon;
+            return (
+              <Card key={service.id} className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-gray-200">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-3 rounded-xl bg-${service.color}-100`}>
+                        <IconComponent className={`h-6 w-6 text-${service.color}-600`} />
                       </div>
-                    ))}
+                      <div>
+                        <CardTitle className="group-hover:text-gray-900 transition-colors">
+                          {service.title}
+                        </CardTitle>
+                        <Badge className={`mt-1 ${getStatusColor(service.status)}`}>
+                          {getStatusText(service.status)}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <Button 
-                    className="w-full mt-4 group/btn" 
-                    variant={service.status === 'active' ? 'default' : 'outline'}
-                    disabled={service.status === 'premium'}
-                  >
-                    {service.status === 'active' ? 'Acessar Serviço' : 'Upgrade Necessário'}
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                  <p className="text-gray-600 mt-2">{service.description}</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      {service.features.map((feature, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm">
+                          <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          <span className="text-gray-700">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <Button 
+                      className="w-full mt-4 group/btn" 
+                      variant={service.status === 'active' ? 'default' : 'outline'}
+                      disabled={service.status === 'premium'}
+                    >
+                      {service.status === 'active' ? 'Acessar Serviço' : 'Upgrade Necessário'}
+                      <ArrowRight className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
 
       {/* Seção de recursos adicionais */}

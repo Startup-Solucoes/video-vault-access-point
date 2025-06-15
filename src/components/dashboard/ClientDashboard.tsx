@@ -5,7 +5,6 @@ import { useClientDashboard } from '@/hooks/useClientDashboard';
 import { ClientSidebar } from './client/ClientSidebar';
 import { WelcomeView } from './client/WelcomeView';
 import { ServicesView } from './client/ServicesView';
-import { AdvertisementCarousel } from './client/AdvertisementCarousel';
 import { VideoSearchAndFilters } from './client/VideoSearchAndFilters';
 import { VideoGrid } from './client/VideoGrid';
 
@@ -55,9 +54,6 @@ export const ClientDashboard = () => {
       case 'videos':
         return (
           <div className="space-y-6">
-            {/* Anúncios em destaque - carrossel */}
-            <AdvertisementCarousel advertisements={advertisements} />
-
             {/* Barra de filtros modernizada */}
             <VideoSearchAndFilters
               searchTerm={searchTerm}
@@ -86,7 +82,7 @@ export const ClientDashboard = () => {
         );
       
       case 'services':
-        return <ServicesView />;
+        return <ServicesView advertisements={advertisements} />;
       
       default:
         return null;
