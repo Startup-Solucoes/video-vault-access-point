@@ -41,11 +41,11 @@ export const WelcomeView = ({
               descubra novos recursos e aproveite a experiência premium.
             </p>
             <div className="flex gap-4 pt-4">
-              <Button onClick={onNavigateToVideos} className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all">
+              <Button onClick={onNavigateToVideos} className="bg-white hover:bg-blue-50 font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all text-zinc-900">
                 <Play className="h-5 w-5 mr-2" />
                 Explorar Vídeos
               </Button>
-              <Button onClick={onNavigateToServices} variant="outline" className="border-white/30 text-white hover:bg-white/10 font-semibold px-6 py-3 rounded-xl">
+              <Button onClick={onNavigateToServices} variant="outline" className="border-white/30 text-white font-semibold px-6 py-3 rounded-xl bg-yellow-500 hover:bg-yellow-400">
                 <Star className="h-5 w-5 mr-2" />
                 Ver Serviços
               </Button>
