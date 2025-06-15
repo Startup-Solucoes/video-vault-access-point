@@ -5,13 +5,12 @@ import { useClientVideos } from '@/hooks/useClientVideos';
 import { useClientAdvertisements } from '@/hooks/useClientAdvertisements';
 import { ClientHeader } from './client/ClientHeader';
 import { CategoryFilter } from './client/CategoryFilter';
-import { VideoFilters } from './client/VideoFilters';
 import { VideoGrid } from './client/VideoGrid';
 import { PlatformFilter } from './client/PlatformFilter';
 import { AdvertisementBanner } from './client/AdvertisementBanner';
 import { format } from 'date-fns';
 import { ClientVideo } from '@/types/clientVideo';
-import { Sparkles, Search, Filter } from 'lucide-react';
+import { Sparkles, Search, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -23,7 +22,6 @@ export const ClientDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedPlatform, setSelectedPlatform] = useState<string>('');
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [showFilters, setShowFilters] = useState(false);
 
   // Convert ClientVideoData to ClientVideo format
@@ -35,7 +33,7 @@ export const ClientDashboard = () => {
     }));
   }, [rawVideos]);
 
-  // Filtrar vídeos baseado na busca, categoria, plataforma e data
+  // Filtrar vídeos baseado na busca, categoria e plataforma
   const filteredVideos = useMemo(() => {
     let filtered = videos;
 
@@ -54,22 +52,24 @@ export const ClientDashboard = () => {
       filtered = filtered.filter(video => video.platform === selectedPlatform);
     }
 
-    if (selectedDate) {
-      const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-      filtered = filtered.filter(video => {
-        const videoDate = format(new Date(video.created_at), 'yyyy-MM-dd');
-        return videoDate === selectedDateStr;
-      });
-    }
-
     return filtered;
-  }, [videos, searchTerm, selectedCategory, selectedPlatform, selectedDate]);
+  }, [videos, searchTerm, selectedCategory, selectedPlatform]);
 
   // Obter categorias disponíveis dos vídeos do cliente
   const availableCategories = useMemo(() => {
     const videoCategories = videos.map(video => video.category).filter(category => category !== null && category !== undefined) as string[];
     return [...new Set(videoCategories)].sort();
   }, [videos]);
+
+  // Limpar todos os filtros
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory('');
+    setSelectedPlatform('');
+  };
+
+  // Verificar se há filtros ativos
+  const hasActiveFilters = searchTerm || selectedCategory || selectedPlatform;
 
   if (!profile) {
     return (
@@ -127,46 +127,62 @@ export const ClientDashboard = () => {
 
       {/* Área principal - full width */}
       <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
-        {/* Barra de filtros moderna */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-              {/* Lado esquerdo - busca e filtros */}
-              <div className="flex flex-col sm:flex-row gap-4 flex-1 w-full lg:w-auto">
-                {/* Campo de busca */}
-                <div className="relative flex-1 min-w-0 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Buscar vídeos..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+        {/* Barra de filtros modernizada */}
+        <Card className="mb-6 shadow-sm border-0 bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-6">
+            {/* Header da busca */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <Search className="h-5 w-5 text-blue-600" />
                 </div>
-
-                {/* Toggle filtros mobile */}
-                <Button
-                  variant="outline"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="lg:hidden"
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtros
-                </Button>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Buscar Vídeos</h3>
+                  <p className="text-sm text-gray-600">Encontre seus vídeos por título, categoria ou plataforma</p>
+                </div>
               </div>
-
-              {/* Lado direito - contador */}
-              <div className="text-sm text-gray-600 whitespace-nowrap">
+              
+              <div className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
                 {filteredVideos.length} de {videos.length} vídeos
               </div>
             </div>
 
+            {/* Campo de busca principal */}
+            <div className="relative mb-4">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Digite para buscar vídeos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 focus:bg-white transition-all duration-200 text-gray-900 placeholder:text-gray-500"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full transition-colors"
+                >
+                  <X className="h-4 w-4 text-gray-400" />
+                </button>
+              )}
+            </div>
+
             {/* Filtros - sempre visível no desktop, toggle no mobile */}
-            <div className={`mt-4 ${showFilters || 'hidden lg:block'}`}>
-              <div className="flex flex-col lg:flex-row gap-4">
-                {/* Filtro de categorias horizontal */}
-                <div className="flex-1">
+            <div className="flex flex-col lg:flex-row gap-4 items-start">
+              {/* Toggle filtros mobile */}
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="lg:hidden w-full justify-center"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+              </Button>
+
+              {/* Filtros */}
+              <div className={`${showFilters || 'hidden lg:flex'} flex flex-col sm:flex-row lg:flex-row gap-4 flex-1 w-full`}>
+                {/* Filtro de categorias */}
+                <div className="flex-1 min-w-0">
                   <CategoryFilter
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
@@ -175,31 +191,59 @@ export const ClientDashboard = () => {
                   />
                 </div>
 
-                {/* Filtros adicionais */}
-                <div className="flex flex-col sm:flex-row gap-4 lg:w-auto">
-                  <div className="min-w-48">
-                    <PlatformFilter
-                      selectedPlatform={selectedPlatform}
-                      onPlatformChange={setSelectedPlatform}
-                      videos={videos}
-                    />
-                  </div>
-                  
-                  <div className="min-w-48">
-                    <VideoFilters
-                      searchTerm=""
-                      setSearchTerm={() => {}}
-                      selectedCategory={selectedCategory}
-                      setSelectedCategory={setSelectedCategory}
-                      availableCategories={availableCategories}
-                      videos={videos}
-                      selectedDate={selectedDate}
-                      setSelectedDate={setSelectedDate}
-                    />
-                  </div>
+                {/* Filtro de plataforma */}
+                <div className="flex-1 min-w-0 max-w-xs">
+                  <PlatformFilter
+                    selectedPlatform={selectedPlatform}
+                    onPlatformChange={setSelectedPlatform}
+                    videos={videos}
+                  />
                 </div>
+
+                {/* Botão limpar filtros */}
+                {hasActiveFilters && (
+                  <Button 
+                    variant="outline"
+                    onClick={clearAllFilters}
+                    className="whitespace-nowrap bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:border-red-300"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Limpar filtros
+                  </Button>
+                )}
               </div>
             </div>
+
+            {/* Tags de filtros ativos */}
+            {hasActiveFilters && (
+              <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
+                <span className="text-xs font-medium text-gray-600">Filtros ativos:</span>
+                {searchTerm && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
+                    Busca: "{searchTerm}"
+                    <button onClick={() => setSearchTerm('')} className="hover:bg-blue-200 rounded-full p-0.5">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {selectedCategory && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md">
+                    Categoria: {selectedCategory}
+                    <button onClick={() => setSelectedCategory('')} className="hover:bg-green-200 rounded-full p-0.5">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {selectedPlatform && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-md">
+                    Plataforma: {selectedPlatform}
+                    <button onClick={() => setSelectedPlatform('')} className="hover:bg-purple-200 rounded-full p-0.5">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
