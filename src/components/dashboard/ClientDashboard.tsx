@@ -1,14 +1,19 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useClientDashboard } from '@/hooks/useClientDashboard';
-import { ClientDashboardHeader } from './client/ClientDashboardHeader';
+import { ClientSidebar } from './client/ClientSidebar';
+import { WelcomeView } from './client/WelcomeView';
+import { ServicesView } from './client/ServicesView';
 import { AdvertisementCarousel } from './client/AdvertisementCarousel';
 import { VideoSearchAndFilters } from './client/VideoSearchAndFilters';
 import { VideoGrid } from './client/VideoGrid';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 
 export const ClientDashboard = () => {
   const { signOut } = useAuth();
+  const [currentView, setCurrentView] = useState<'welcome' | 'videos' | 'services'>('welcome');
+  
   const {
     profile,
     videos,
@@ -36,47 +41,89 @@ export const ClientDashboard = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header principal */}
-      <ClientDashboardHeader 
-        profile={profile}
-        videoCount={videos.length}
-        onSignOut={signOut}
-      />
-
-      {/* Anúncios em destaque - carrossel */}
-      <AdvertisementCarousel advertisements={advertisements} />
-
-      {/* Área principal */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Barra de filtros modernizada */}
-        <VideoSearchAndFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          selectedPlatform={selectedPlatform}
-          setSelectedPlatform={setSelectedPlatform}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          availableCategories={availableCategories}
-          videos={videos}
-          filteredVideos={filteredVideos}
-          hasActiveFilters={hasActiveFilters}
-          clearAllFilters={clearAllFilters}
-        />
-
-        {/* Grid de vídeos */}
-        <div className="w-full">
-          <VideoGrid 
-            videos={filteredVideos} 
-            isLoading={isLoading} 
-            searchTerm={searchTerm} 
-            selectedCategory={selectedCategory} 
+  const renderMainContent = () => {
+    switch (currentView) {
+      case 'welcome':
+        return (
+          <WelcomeView
+            profile={profile}
+            videos={videos}
+            onNavigateToVideos={() => setCurrentView('videos')}
+            onNavigateToServices={() => setCurrentView('services')}
           />
-        </div>
+        );
+      
+      case 'videos':
+        return (
+          <div className="space-y-6">
+            {/* Anúncios em destaque - carrossel */}
+            <AdvertisementCarousel advertisements={advertisements} />
+
+            {/* Barra de filtros modernizada */}
+            <VideoSearchAndFilters
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              selectedPlatform={selectedPlatform}
+              setSelectedPlatform={setSelectedPlatform}
+              showFilters={showFilters}
+              setShowFilters={setShowFilters}
+              availableCategories={availableCategories}
+              videos={videos}
+              filteredVideos={filteredVideos}
+              hasActiveFilters={hasActiveFilters}
+              clearAllFilters={clearAllFilters}
+            />
+
+            {/* Grid de vídeos */}
+            <VideoGrid 
+              videos={filteredVideos} 
+              isLoading={isLoading} 
+              searchTerm={searchTerm} 
+              selectedCategory={selectedCategory} 
+            />
+          </div>
+        );
+      
+      case 'services':
+        return <ServicesView />;
+      
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gray-50">
+        <ClientSidebar
+          profile={profile}
+          videoCount={videos.length}
+          currentView={currentView}
+          onViewChange={setCurrentView}
+          onSignOut={signOut}
+        />
+        
+        <SidebarInset className="flex-1">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-white px-4">
+            <SidebarTrigger className="-ml-1" />
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>Portal do Cliente</span>
+              <span>•</span>
+              <span className="capitalize">
+                {currentView === 'welcome' && 'Início'}
+                {currentView === 'videos' && 'Meus Vídeos'}
+                {currentView === 'services' && 'Serviços'}
+              </span>
+            </div>
+          </header>
+          
+          <main className="flex-1 p-6">
+            {renderMainContent()}
+          </main>
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
