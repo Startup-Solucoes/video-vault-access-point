@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useClientDashboard } from '@/hooks/useClientDashboard';
@@ -7,7 +6,6 @@ import { WelcomeView } from './client/WelcomeView';
 import { ServicesView } from './client/ServicesView';
 import { VideoSearchAndFilters } from './client/VideoSearchAndFilters';
 import { VideoGrid } from './client/VideoGrid';
-
 export const ClientDashboard = () => {
   const {
     signOut
@@ -31,13 +29,11 @@ export const ClientDashboard = () => {
     clearAllFilters,
     hasActiveFilters
   } = useClientDashboard();
-
   if (!profile) {
     return <div className="flex items-center justify-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
       </div>;
   }
-
   const renderMainContent = () => {
     switch (currentView) {
       case 'welcome':
@@ -56,12 +52,11 @@ export const ClientDashboard = () => {
         return null;
     }
   };
-
   return <div className="min-h-screen w-full flex bg-transparent overflow-x-hidden">
       <ClientSidebar profile={profile} videoCount={videos.length} currentView={currentView} onViewChange={setCurrentView} onSignOut={signOut} />
       
       <div className="flex-1 min-h-screen overflow-x-hidden">
-        <main className="p-6 w-full bg-white/70 backdrop-blur-sm min-h-screen overflow-x-hidden">
+        <main className="p-6 w-full bg-white/70 backdrop-blur-sm min-h-screen overflow-x-hidden rounded-md">
           {renderMainContent()}
         </main>
       </div>
