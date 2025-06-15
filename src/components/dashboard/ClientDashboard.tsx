@@ -8,7 +8,6 @@ import { ServicesView } from './client/ServicesView';
 import { AdvertisementCarousel } from './client/AdvertisementCarousel';
 import { VideoSearchAndFilters } from './client/VideoSearchAndFilters';
 import { VideoGrid } from './client/VideoGrid';
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 
 export const ClientDashboard = () => {
   const { signOut } = useAuth();
@@ -95,35 +94,20 @@ export const ClientDashboard = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-50">
-        <ClientSidebar
-          profile={profile}
-          videoCount={videos.length}
-          currentView={currentView}
-          onViewChange={setCurrentView}
-          onSignOut={signOut}
-        />
-        
-        <SidebarInset className="flex-1">
-          <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-white px-6 shadow-sm">
-            <SidebarTrigger className="-ml-1" />
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span className="font-medium">Portal do Cliente</span>
-              <span className="text-gray-400">•</span>
-              <span className="capitalize text-gray-500">
-                {currentView === 'welcome' && 'Início'}
-                {currentView === 'videos' && 'Meus Vídeos'}
-                {currentView === 'services' && 'Serviços'}
-              </span>
-            </div>
-          </header>
-          
-          <main className="flex-1 p-6 w-full">
-            {renderMainContent()}
-          </main>
-        </SidebarInset>
+    <div className="min-h-screen flex w-full bg-gray-50">
+      <ClientSidebar
+        profile={profile}
+        videoCount={videos.length}
+        currentView={currentView}
+        onViewChange={setCurrentView}
+        onSignOut={signOut}
+      />
+      
+      <div className="flex-1">
+        <main className="p-6 w-full">
+          {renderMainContent()}
+        </main>
       </div>
-    </SidebarProvider>
+    </div>
   );
 };

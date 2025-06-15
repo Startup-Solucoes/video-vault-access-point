@@ -1,18 +1,6 @@
 
 import React from 'react';
 import { Home, Video, Star, User, LogOut, ChevronRight } from 'lucide-react';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Database } from '@/integrations/supabase/types';
@@ -59,8 +47,9 @@ export const ClientSidebar = ({
   ];
 
   return (
-    <Sidebar className="border-r border-gray-200 bg-white">
-      <SidebarHeader className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+    <div className="w-80 border-r border-gray-200 bg-white flex flex-col h-full">
+      {/* Header */}
+      <div className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
         <div className="flex items-center space-x-4">
           {profile.logo_url ? (
             <div className="relative">
@@ -86,88 +75,81 @@ export const ClientSidebar = ({
             </p>
           </div>
         </div>
-      </SidebarHeader>
+      </div>
 
-      <SidebarContent className="px-4 py-6">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">
+      {/* Content */}
+      <div className="flex-1 px-4 py-6">
+        <div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">
             Navegação
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.view}>
-                  <SidebarMenuButton 
-                    asChild
-                    isActive={currentView === item.view}
-                    className={`group relative p-3 rounded-xl transition-all duration-200 ${
+          </div>
+          <div className="space-y-2">
+            {menuItems.map((item) => (
+              <button
+                key={item.view}
+                onClick={() => onViewChange(item.view)}
+                className={`group relative p-3 rounded-xl transition-all duration-200 w-full text-left ${
+                  currentView === item.view 
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
+                    : 'hover:bg-gray-50 hover:shadow-sm'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className={`p-2 rounded-lg ${
                       currentView === item.view 
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                        : 'hover:bg-gray-50 hover:shadow-sm'
-                    }`}
-                  >
-                    <button 
-                      onClick={() => onViewChange(item.view)}
-                      className="w-full"
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center space-x-3">
-                          <div className={`p-2 rounded-lg ${
-                            currentView === item.view 
-                              ? 'bg-white/20' 
-                              : 'bg-gray-100 group-hover:bg-blue-100'
-                          }`}>
-                            <item.icon className={`h-5 w-5 ${
-                              currentView === item.view 
-                                ? 'text-white' 
-                                : 'text-gray-600 group-hover:text-blue-600'
-                            }`} />
-                          </div>
-                          <div className="flex-1 text-left">
-                            <div className={`font-semibold ${
-                              currentView === item.view ? 'text-white' : 'text-gray-900'
-                            }`}>
-                              {item.title}
-                            </div>
-                            <div className={`text-sm ${
-                              currentView === item.view 
-                                ? 'text-blue-100' 
-                                : 'text-gray-500 group-hover:text-gray-600'
-                            }`}>
-                              {item.description}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {item.badge !== null && (
-                            <Badge 
-                              variant={currentView === item.view ? "secondary" : "outline"}
-                              className={`text-xs ${
-                                currentView === item.view 
-                                  ? 'bg-white/20 text-white border-white/30' 
-                                  : 'bg-blue-50 text-blue-700 border-blue-200'
-                              }`}
-                            >
-                              {item.badge}
-                            </Badge>
-                          )}
-                          <ChevronRight className={`h-4 w-4 transition-transform ${
-                            currentView === item.view 
-                              ? 'text-white rotate-90' 
-                              : 'text-gray-400 group-hover:text-gray-600'
-                          }`} />
-                        </div>
+                        ? 'bg-white/20' 
+                        : 'bg-gray-100 group-hover:bg-blue-100'
+                    }`}>
+                      <item.icon className={`h-5 w-5 ${
+                        currentView === item.view 
+                          ? 'text-white' 
+                          : 'text-gray-600 group-hover:text-blue-600'
+                      }`} />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className={`font-semibold ${
+                        currentView === item.view ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        {item.title}
                       </div>
-                    </button>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+                      <div className={`text-sm ${
+                        currentView === item.view 
+                          ? 'text-blue-100' 
+                          : 'text-gray-500 group-hover:text-gray-600'
+                      }`}>
+                        {item.description}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {item.badge !== null && (
+                      <Badge 
+                        variant={currentView === item.view ? "secondary" : "outline"}
+                        className={`text-xs ${
+                          currentView === item.view 
+                            ? 'bg-white/20 text-white border-white/30' 
+                            : 'bg-blue-50 text-blue-700 border-blue-200'
+                        }`}
+                      >
+                        {item.badge}
+                      </Badge>
+                    )}
+                    <ChevronRight className={`h-4 w-4 transition-transform ${
+                      currentView === item.view 
+                        ? 'text-white rotate-90' 
+                        : 'text-gray-400 group-hover:text-gray-600'
+                    }`} />
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
-      <SidebarFooter className="border-t border-gray-100 bg-gray-50 p-4">
+      {/* Footer */}
+      <div className="border-t border-gray-100 bg-gray-50 p-4">
         <div className="space-y-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">Status</span>
@@ -189,7 +171,7 @@ export const ClientSidebar = ({
             {profile.email}
           </div>
         </div>
-      </SidebarFooter>
-    </Sidebar>
+      </div>
+    </div>
   );
 };
