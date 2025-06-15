@@ -1,3 +1,4 @@
+
 import React, { Suspense, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ const ComponentLoader = () => <div className="flex items-center justify-center p
       <span className="text-gray-600">Carregando...</span>
     </div>
   </div>;
+
 export const Dashboard = () => {
   const {
     profile,
@@ -27,18 +29,22 @@ export const Dashboard = () => {
   const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
   const [isClientFormOpen, setIsClientFormOpen] = useState(false);
   const isAdmin = profile?.role === 'admin';
+
   const handleTabChange = (tab: string) => {
     console.log('🏷️ Mudando aba para:', tab);
     setActiveTab(tab);
   };
+
   const handleVideoCreated = () => {
     console.log('✅ Vídeo criado com sucesso');
     setIsVideoFormOpen(false);
   };
+
   const handleClientCreated = () => {
     console.log('✅ Cliente criado com sucesso');
     setIsClientFormOpen(false);
   };
+
   const renderContent = () => {
     console.log('🎨 Renderizando conteúdo para aba:', activeTab);
     switch (activeTab) {
@@ -52,17 +58,19 @@ export const Dashboard = () => {
         return isAdmin ? <AdminDashboard /> : <ClientDashboard />;
     }
   };
+
   if (!profile) {
-    return <div className="flex items-center justify-center min-h-screen">
+    return <div className="flex items-center justify-center min-h-screen bg-transparent">
         <ComponentLoader />
       </div>;
   }
-  return <div className="min-h-screen bg-white">
+
+  return <div className="min-h-screen w-full bg-transparent">
       {/* Header */}
       
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <main className="w-full py-6 px-4 sm:px-6 lg:px-8">
         {renderContent()}
       </main>
 
