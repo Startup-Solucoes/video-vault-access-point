@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Home, Video, Star, User, LogOut, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,25 +21,27 @@ export const ClientSidebar = ({
   onViewChange,
   onSignOut
 }: ClientSidebarProps) => {
-  const menuItems = [{
-    title: "Início",
-    icon: Home,
-    view: 'welcome' as const,
-    description: "Painel de boas-vindas",
-    badge: null
-  }, {
-    title: "Meus Vídeos",
-    icon: Video,
-    view: 'videos' as const,
-    description: "Biblioteca completa",
-    badge: videoCount
-  }, {
-    title: "Serviços",
-    icon: Star,
-    view: 'services' as const,
-    description: "Recursos premium",
-    badge: null
-  }];
+  const menuItems = [
+    {
+      title: "Início",
+      icon: Home,
+      view: 'welcome' as const,
+      description: "Painel de boas-vindas",
+      badge: null
+    }, {
+      title: "Meus Vídeos",
+      icon: Video,
+      view: 'videos' as const,
+      description: "Biblioteca completa",
+      badge: videoCount
+    }, {
+      title: "Serviços",
+      icon: Star,
+      view: 'services' as const,
+      description: "Recursos premium",
+      badge: null
+    }
+  ];
 
   return (
     <div className="w-80 min-w-80 max-w-80 bg-white flex flex-col h-screen shadow-xl flex-shrink-0 relative">
@@ -110,7 +111,7 @@ export const ClientSidebar = ({
       </div>
 
       {/* Footer - Fixed to viewport bottom */}
-      <div className="fixed bottom-0 left-0 w-80 bg-gray-50 p-6 shadow-lg z-10">
+      <div className="fixed bottom-0 left-0 w-80 bg-gray-50 p-6 z-10">
         <div className="space-y-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">Status</span>
