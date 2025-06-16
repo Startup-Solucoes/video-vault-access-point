@@ -119,7 +119,7 @@ export const AdminSidebar = ({ currentView, onViewChange, stats }: AdminSidebarP
                 onClick={() => handleViewChange(item.view)}
                 className={`group relative p-3 md:p-4 rounded-xl md:rounded-2xl transition-all duration-300 w-full text-left shadow-sm hover:shadow-md ${
                   currentView === item.view 
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25 scale-[1.02]' 
+                    ? 'bg-gray-700 text-white shadow-lg shadow-gray-700/25 scale-[1.02]' 
                     : 'hover:bg-gray-50 bg-white'
                 }`}
               >
@@ -132,7 +132,7 @@ export const AdminSidebar = ({ currentView, onViewChange, stats }: AdminSidebarP
                       <div className={`font-semibold text-sm md:text-base truncate ${currentView === item.view ? 'text-white' : 'text-gray-900'}`}>
                         {item.title}
                       </div>
-                      <div className={`text-xs md:text-sm truncate ${currentView === item.view ? 'text-blue-100' : 'text-gray-500 group-hover:text-gray-600'}`}>
+                      <div className={`text-xs md:text-sm truncate ${currentView === item.view ? 'text-gray-100' : 'text-gray-500 group-hover:text-gray-600'}`}>
                         {item.description}
                       </div>
                     </div>
