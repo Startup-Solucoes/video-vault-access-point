@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -7,9 +7,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useVideoViewing } from '@/hooks/useVideoViewing';
 
 interface VideoModalProps {
   open: boolean;
@@ -55,8 +56,35 @@ const getScreenPalEmbedUrl = (url: string): string => {
 };
 
 export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: VideoModalProps) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const embedUrl = getScreenPalEmbedUrl(video.video_url);
   
+  const { watchDuration, viewRecorded, isValidView } = useVideoViewing({
+    videoId: video.id,
+    isPlaying
+  });
+
+  // Detectar quando o iframe carrega (assumir que o vídeo começou)
+  useEffect(() => {
+    if (open) {
+      // Simular início da reprodução após um pequeno delay
+      const timer = setTimeout(() => {
+        setIsPlaying(true);
+      }, 2000); // 2 segundos após abrir o modal
+
+      return () => clearTimeout(timer);
+    } else {
+      setIsPlaying(false);
+    }
+  }, [open]);
+
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl w-[95vw] h-[85vh] sm:h-[80vh] p-0 max-h-screen overflow-hidden">
@@ -83,6 +111,17 @@ export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: Vide
                     <Clock className="h-3 w-3 mr-1 flex-shrink-0" />
                     <span>às {format(new Date(video.created_at), 'HH:mm', { locale: ptBR })}</span>
                   </div>
+                  {watchDuration > 0 && (
+                    <div className="flex items-center">
+                      <Eye className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span>Assistido: {formatDuration(watchDuration)}</span>
+                      {isValidView && (
+                        <Badge variant="secondary" className="ml-2 text-xs bg-green-100 text-green-700">
+                          Visualização contabilizada
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -97,6 +136,7 @@ export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: Vide
           <div className="flex-1 px-4 sm:px-6 pb-4 sm:pb-6 overflow-hidden">
             <div className="w-full h-full bg-black rounded-lg overflow-hidden">
               <iframe
+                ref={iframeRef}
                 src={embedUrl}
                 title={video.title}
                 className="w-full h-full"

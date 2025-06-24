@@ -191,6 +191,47 @@ export type Database = {
           },
         ]
       }
+      video_views: {
+        Row: {
+          created_at: string
+          id: string
+          is_valid_view: boolean
+          updated_at: string
+          user_id: string
+          video_id: string
+          viewed_at: string
+          watch_duration: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_valid_view?: boolean
+          updated_at?: string
+          user_id: string
+          video_id: string
+          viewed_at?: string
+          watch_duration?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_valid_view?: boolean
+          updated_at?: string
+          user_id?: string
+          video_id?: string
+          viewed_at?: string
+          watch_duration?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_views_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       videos: {
         Row: {
           category: string | null
@@ -204,6 +245,7 @@ export type Database = {
           title: string
           updated_at: string
           video_url: string
+          view_count: number | null
         }
         Insert: {
           category?: string | null
@@ -217,6 +259,7 @@ export type Database = {
           title: string
           updated_at?: string
           video_url: string
+          view_count?: number | null
         }
         Update: {
           category?: string | null
@@ -230,6 +273,7 @@ export type Database = {
           title?: string
           updated_at?: string
           video_url?: string
+          view_count?: number | null
         }
         Relationships: []
       }

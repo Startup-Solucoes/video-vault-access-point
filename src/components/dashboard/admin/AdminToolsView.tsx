@@ -1,21 +1,10 @@
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Video, Settings } from 'lucide-react';
+import { Eye, ImageIcon, Settings, BarChart3 } from 'lucide-react';
 import { ThumbnailGenerator } from '../ThumbnailGenerator';
-import { AdvertisementManagement } from '../advertisement-management/AdvertisementManagement';
-
-// Componente de Loading para Suspense
-const ComponentLoader = () => (
-  <div className="flex items-center justify-center py-12">
-    <div className="flex flex-col items-center space-y-4">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <span className="text-gray-600 text-sm">Carregando componente...</span>
-    </div>
-  </div>
-);
+import { VideoViewsManager } from './VideoViewsManager';
 
 interface AdminToolsViewProps {
   selectedTool: string | null;
@@ -23,83 +12,104 @@ interface AdminToolsViewProps {
 }
 
 export const AdminToolsView = ({ selectedTool, onToolSelect }: AdminToolsViewProps) => {
-  if (!selectedTool) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card 
-          className="cursor-pointer hover:shadow-lg transition-all duration-200 border border-gray-100 hover:border-blue-200 group"
-          onClick={() => onToolSelect('thumbnails')}
-        >
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 group-hover:text-blue-600 transition-colors">
-              <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
-                <Video className="h-5 w-5 text-blue-600" />
-              </div>
-              Gerador de Thumbnails
-              <Badge variant="outline" className="ml-auto border-orange-200 text-orange-700">
-                Em Breve
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 mb-4 text-sm leading-relaxed">
-              Gere thumbnails automaticamente para vídeos que não possuem imagem de capa
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">Suporta: ScreenPal, YouTube e Vimeo</span>
-            </div>
-          </CardContent>
-        </Card>
+  const tools = [
+    {
+      id: 'thumbnail-generator',
+      title: 'Gerador de Thumbnails',
+      description: 'Gere thumbnails automáticas para vídeos do YouTube',
+      icon: ImageIcon,
+      component: ThumbnailGenerator
+    },
+    {
+      id: 'video-views',
+      title: 'Visualizações de Vídeos',
+      description: 'Monitore e analise as visualizações dos vídeos',
+      icon: Eye,
+      component: VideoViewsManager
+    }
+  ];
 
-        <Card 
-          className="cursor-pointer hover:shadow-lg transition-all duration-200 border border-gray-100 hover:border-green-200 group"
-          onClick={() => onToolSelect('advertisements')}
-        >
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 group-hover:text-green-600 transition-colors">
-              <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
-                <Settings className="h-5 w-5 text-green-600" />
-              </div>
-              Gerenciar Anúncios
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 mb-4 text-sm leading-relaxed">
-              Crie, edite e gerencie anúncios que serão exibidos para os clientes
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">Controle total de permissões</span>
-              <Button variant="outline" size="sm" className="border-green-200 text-green-600 hover:bg-green-50">
-                Acessar
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+  const renderToolContent = () => {
+    const tool = tools.find(t => t.id === selectedTool);
+    if (!tool) return null;
+
+    const ToolComponent = tool.component;
+    return <ToolComponent />;
+  };
+
+  if (selectedTool) {
+    const tool = tools.find(t => t.id === selectedTool);
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="outline"
+            onClick={() => onToolSelect(null)}
+          >
+            ← Voltar às Ferramentas
+          </Button>
+          <h2 className="text-2xl font-bold">{tool?.title}</h2>
+        </div>
+        {renderToolContent()}
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
-          onClick={() => onToolSelect(null)}
-          className="border-gray-200 hover:bg-gray-50"
-        >
-          ← Voltar às Ferramentas
-        </Button>
-        <h2 className="text-xl font-semibold text-gray-900">
-          {selectedTool === 'thumbnails' ? 'Gerador de Thumbnails' : 'Gerenciar Anúncios'}
-        </h2>
+      <div className="flex items-center space-x-3">
+        <Settings className="h-8 w-8 text-blue-600" />
+        <h1 className="text-3xl font-bold text-gray-900">Ferramentas Administrativas</h1>
       </div>
-      
-      {selectedTool === 'thumbnails' && <ThumbnailGenerator />}
-      {selectedTool === 'advertisements' && (
-        <Suspense fallback={<ComponentLoader />}>
-          <AdvertisementManagement />
-        </Suspense>
-      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {tools.map((tool) => (
+          <Card key={tool.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <tool.icon className="h-6 w-6 text-blue-600" />
+                </div>
+                <CardTitle className="text-lg">{tool.title}</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">{tool.description}</p>
+              <Button 
+                onClick={() => onToolSelect(tool.id)}
+                className="w-full"
+              >
+                Abrir Ferramenta
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+        <CardHeader>
+          <div className="flex items-center space-x-3">
+            <BarChart3 className="h-6 w-6 text-blue-600" />
+            <CardTitle className="text-xl text-blue-900">Estatísticas em Tempo Real</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-blue-700 mb-4">
+            As ferramentas de análise permitem monitorar o engajamento dos usuários em tempo real,
+            incluindo visualizações de vídeos, tempo de assistência e muito mais.
+          </p>
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <div className="text-2xl font-bold text-blue-600">Real-time</div>
+              <div className="text-sm text-gray-600">Monitoramento</div>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <div className="text-2xl font-bold text-purple-600">Analytics</div>
+              <div className="text-sm text-gray-600">Detalhados</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
