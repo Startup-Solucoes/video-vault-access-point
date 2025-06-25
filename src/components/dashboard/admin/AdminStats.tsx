@@ -16,7 +16,7 @@ interface AdminStatsProps {
 
 export const AdminStats = ({ stats }: AdminStatsProps) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
       <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium opacity-90">Total de Clientes</CardTitle>
@@ -69,17 +69,6 @@ export const AdminStats = ({ stats }: AdminStatsProps) => {
         <CardContent>
           <div className="text-3xl font-bold">{stats?.totalViews || 0}</div>
           <p className="text-xs opacity-80 mt-1">Visualizações válidas</p>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gradient-to-r from-pink-500 to-pink-600 text-white border-0 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium opacity-90">Views Este Mês</CardTitle>
-          <Eye className="h-5 w-5 opacity-80" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">{stats?.viewsThisMonth || 0}</div>
-          <p className="text-xs opacity-80 mt-1">Visualizações recentes</p>
         </CardContent>
       </Card>
     </div>
