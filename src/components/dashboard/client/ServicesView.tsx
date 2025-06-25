@@ -19,6 +19,13 @@ interface ServicesViewProps {
 }
 
 export const ServicesView = ({ advertisements }: ServicesViewProps) => {
+  const handleWhatsAppContact = () => {
+    const phoneNumber = '554188371053';
+    const message = encodeURIComponent('Olá! Gostaria de saber mais sobre seus serviços personalizados.');
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -196,7 +203,11 @@ export const ServicesView = ({ advertisements }: ServicesViewProps) => {
             <p className="text-gray-300 mb-4">
               Entre em contato conosco para serviços personalizados e orçamentos sob medida.
             </p>
-            <Button variant="secondary" className="bg-white text-gray-900 hover:bg-gray-100">
+            <Button 
+              variant="secondary" 
+              className="bg-white text-gray-900 hover:bg-gray-100"
+              onClick={handleWhatsAppContact}
+            >
               Entrar em Contato
             </Button>
           </div>
