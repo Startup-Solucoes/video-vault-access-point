@@ -38,35 +38,18 @@ export const useAdminStats = () => {
         .select('*', { count: 'exact', head: true })
         .gte('created_at', currentMonth.toISOString());
 
-      // Buscar estatísticas de visualizações
-      const { count: totalViews } = await supabase
-        .from('video_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_valid_view', true);
-
-      // Buscar visualizações deste mês
-      const { count: viewsThisMonth } = await supabase
-        .from('video_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_valid_view', true)
-        .gte('viewed_at', currentMonth.toISOString());
-
       console.log('✅ Estatísticas carregadas:', {
         totalClients,
         activeClients,
         totalVideos,
-        videosThisMonth,
-        totalViews,
-        viewsThisMonth
+        videosThisMonth
       });
 
       return {
         totalClients: totalClients || 0,
         activeClients,
         totalVideos: totalVideos || 0,
-        videosThisMonth: videosThisMonth || 0,
-        totalViews: totalViews || 0,
-        viewsThisMonth: viewsThisMonth || 0
+        videosThisMonth: videosThisMonth || 0
       };
     },
   });

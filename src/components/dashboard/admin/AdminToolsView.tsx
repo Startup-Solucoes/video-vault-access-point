@@ -2,9 +2,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, ImageIcon, Settings, BarChart3 } from 'lucide-react';
+import { Eye, ImageIcon, Settings, Megaphone } from 'lucide-react';
 import { ThumbnailGenerator } from '../ThumbnailGenerator';
 import { VideoViewsManager } from './VideoViewsManager';
+import { AdvertisementManagement } from '../advertisement-management/AdvertisementManagement';
 
 interface AdminToolsViewProps {
   selectedTool: string | null;
@@ -26,6 +27,13 @@ export const AdminToolsView = ({ selectedTool, onToolSelect }: AdminToolsViewPro
       description: 'Monitore e analise as visualizações dos vídeos',
       icon: Eye,
       component: VideoViewsManager
+    },
+    {
+      id: 'advertisements',
+      title: 'Gerenciamento de Anúncios',
+      description: 'Crie e gerencie anúncios para exibir aos clientes',
+      icon: Megaphone,
+      component: AdvertisementManagement
     }
   ];
 
@@ -85,31 +93,6 @@ export const AdminToolsView = ({ selectedTool, onToolSelect }: AdminToolsViewPro
           </Card>
         ))}
       </div>
-
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-        <CardHeader>
-          <div className="flex items-center space-x-3">
-            <BarChart3 className="h-6 w-6 text-blue-600" />
-            <CardTitle className="text-xl text-blue-900">Estatísticas em Tempo Real</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-blue-700 mb-4">
-            As ferramentas de análise permitem monitorar o engajamento dos usuários em tempo real,
-            incluindo visualizações de vídeos, tempo de assistência e muito mais.
-          </p>
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <div className="text-2xl font-bold text-blue-600">Real-time</div>
-              <div className="text-sm text-gray-600">Monitoramento</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <div className="text-2xl font-bold text-purple-600">Analytics</div>
-              <div className="text-sm text-gray-600">Detalhados</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
