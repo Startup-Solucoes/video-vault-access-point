@@ -2,9 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, ImageIcon, Settings, Megaphone } from 'lucide-react';
-import { ThumbnailGenerator } from '../ThumbnailGenerator';
-import { VideoViewsManager } from './VideoViewsManager';
+import { Settings, Megaphone } from 'lucide-react';
 import { AdvertisementManagement } from '../advertisement-management/AdvertisementManagement';
 
 interface AdminToolsViewProps {
@@ -14,20 +12,6 @@ interface AdminToolsViewProps {
 
 export const AdminToolsView = ({ selectedTool, onToolSelect }: AdminToolsViewProps) => {
   const tools = [
-    {
-      id: 'thumbnail-generator',
-      title: 'Gerador de Thumbnails',
-      description: 'Gere thumbnails automáticas para vídeos do YouTube',
-      icon: ImageIcon,
-      component: ThumbnailGenerator
-    },
-    {
-      id: 'video-views',
-      title: 'Visualizações de Vídeos',
-      description: 'Monitore e analise as visualizações dos vídeos',
-      icon: Eye,
-      component: VideoViewsManager
-    },
     {
       id: 'advertisements',
       title: 'Gerenciamento de Anúncios',
