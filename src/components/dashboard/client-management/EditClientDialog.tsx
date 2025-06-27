@@ -90,7 +90,11 @@ export const EditClientDialog = ({
 
           {/* Client users management */}
           {client && (
-            <ClientUsersManager clientId={client.id} />
+            <ClientUsersManager 
+              clientId={client.id} 
+              clientEmail={client.email}
+              clientName={client.full_name}
+            />
           )}
 
           <div className="flex justify-end space-x-2 pt-4">

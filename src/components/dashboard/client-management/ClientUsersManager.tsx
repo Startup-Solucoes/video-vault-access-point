@@ -4,25 +4,21 @@ import { Label } from '@/components/ui/label';
 import { useClientUsers } from '@/hooks/useClientUsers';
 import { getUserAuthInfo } from '@/services/emailNotificationService';
 import { UserAddForm } from './user-management/UserAddForm';
-import { UsersList } from './user-management/UsersList';
+import { AllUsersList } from './user-management/AllUsersList';
 import { InfoBanner } from './user-management/InfoBanner';
 
 interface ClientUsersManagerProps {
   clientId: string;
+  clientEmail: string;
+  clientName: string;
 }
 
-export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
+export const ClientUsersManager = ({ clientId, clientEmail, clientName }: ClientUsersManagerProps) => {
   const [userAuthInfo, setUserAuthInfo] = useState<Record<string, any>>({});
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const { clientUsers, isLoading, addUser, removeUser } = useClientUsers(clientId);
 
   console.log('🔍 ClientUsersManager - clientUsers:', clientUsers);
-  console.log('🔍 ClientUsersManager - cada usuário:', clientUsers.map(u => ({
-    id: u.id,
-    email: u.user_email,
-    senha: u.generated_password,
-    temSenha: !!u.generated_password
-  })));
 
   const togglePasswordVisibility = (userId: string) => {
     setVisiblePasswords(prev => ({
@@ -56,12 +52,14 @@ export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
 
   return (
     <div className="space-y-4">
-      <Label className="text-sm font-medium">Usuários Associados</Label>
+      <Label className="text-sm font-medium">Gerenciamento de Usuários</Label>
       
       <UserAddForm onAddUser={addUser} isLoading={isLoading} />
 
       <div className="space-y-3">
-        <UsersList
+        <AllUsersList
+          clientEmail={clientEmail}
+          clientName={clientName}
           clientUsers={clientUsers}
           userAuthInfo={userAuthInfo}
           visiblePasswords={visiblePasswords}
