@@ -6,6 +6,7 @@ import { getUserAuthInfo } from '@/services/emailNotificationService';
 import { UserAddForm } from './user-management/UserAddForm';
 import { AllUsersList } from './user-management/AllUsersList';
 import { InfoBanner } from './user-management/InfoBanner';
+import { toast } from '@/hooks/use-toast';
 
 interface ClientUsersManagerProps {
   clientId: string;
@@ -25,6 +26,16 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
       ...prev,
       [userId]: !prev[userId]
     }));
+  };
+
+  const handleUpdateMainClientPassword = (newPassword: string) => {
+    // Por enquanto, apenas mostra uma mensagem informativa
+    // Em uma implementação real, seria necessário uma função específica para alterar a senha do cliente principal
+    toast({
+      title: "Funcionalidade em desenvolvimento",
+      description: "A alteração de senha do cliente principal será implementada em breve",
+      variant: "destructive"
+    });
   };
 
   // Buscar informações de autenticação dos usuários
@@ -67,6 +78,7 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
           onTogglePasswordVisibility={togglePasswordVisibility}
           onRemoveUser={removeUser}
           onUpdatePassword={updatePassword}
+          onUpdateMainClientPassword={handleUpdateMainClientPassword}
         />
       </div>
 

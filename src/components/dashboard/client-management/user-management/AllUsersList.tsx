@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Mail, Crown, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { UserCard } from './UserCard';
+import { MainClientCard } from './MainClientCard';
 import { ClientUser } from '@/services/client/clientUsersService';
 
 interface AllUsersListProps {
@@ -15,6 +16,7 @@ interface AllUsersListProps {
   onTogglePasswordVisibility: (userId: string) => void;
   onRemoveUser: (userId: string) => void;
   onUpdatePassword?: (userId: string, newPassword: string) => void;
+  onUpdateMainClientPassword?: (newPassword: string) => void;
 }
 
 export const AllUsersList = ({ 
@@ -26,7 +28,8 @@ export const AllUsersList = ({
   isLoading,
   onTogglePasswordVisibility,
   onRemoveUser,
-  onUpdatePassword
+  onUpdatePassword,
+  onUpdateMainClientPassword
 }: AllUsersListProps) => {
   const totalUsers = 1 + clientUsers.length; // Cliente principal + usuários adicionais
 
@@ -43,23 +46,12 @@ export const AllUsersList = ({
 
       <div className="space-y-3">
         {/* Cliente Principal */}
-        <div className="border rounded-lg p-4 bg-blue-50 border-blue-200">
-          <div className="flex items-center justify-between mb-2">
-            <Badge variant="default" className="flex items-center gap-2 bg-blue-600">
-              <Crown className="h-3 w-3" />
-              Cliente Principal
-            </Badge>
-          </div>
-          
-          <div className="flex items-center gap-2 mb-2">
-            <Mail className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium">{clientEmail}</span>
-          </div>
-          
-          <div className="text-xs text-blue-700">
-            <strong>{clientName}</strong> - Acesso total ao dashboard
-          </div>
-        </div>
+        <MainClientCard
+          clientEmail={clientEmail}
+          clientName={clientName}
+          onUpdatePassword={onUpdateMainClientPassword}
+          isLoading={isLoading}
+        />
 
         {/* Usuários Adicionais */}
         {clientUsers.length > 0 ? (
