@@ -5,6 +5,20 @@ import { EditVideoFormData } from './EditVideoFormTypes';
 
 export const submitEditVideoData = async (formData: EditVideoFormData, videoId: string, user: any): Promise<boolean> => {
   try {
+    // Buscar as permissões existentes para preservar o display_order
+    const { data: existingPermissions, error: fetchError } = await supabase
+      .from('video_permissions')
+      .select('client_id, display_order')
+      .eq('video_id', videoId);
+
+    if (fetchError) throw fetchError;
+
+    // Criar um mapa para preservar o display_order por cliente
+    const displayOrderMap = new Map();
+    existingPermissions?.forEach(permission => {
+      displayOrderMap.set(permission.client_id, permission.display_order);
+    });
+
     // Atualizar dados do vídeo
     const videoData = {
       title: formData.title.trim(),
@@ -32,12 +46,13 @@ export const submitEditVideoData = async (formData: EditVideoFormData, videoId: 
 
     if (deleteError) throw deleteError;
 
-    // Criar novas permissões
+    // Criar novas permissões preservando o display_order
     if (formData.selectedClients.length > 0) {
       const permissions = formData.selectedClients.map(clientId => ({
         video_id: videoId,
         client_id: clientId,
-        granted_by: user.id
+        granted_by: user.id,
+        display_order: displayOrderMap.get(clientId) || 0 // Preserva o display_order original ou usa 0 para novos clientes
       }));
 
       const { error: permissionError } = await supabase
