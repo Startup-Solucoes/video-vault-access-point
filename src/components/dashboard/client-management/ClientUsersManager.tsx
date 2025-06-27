@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { X, Plus, Mail, Key, Clock, CheckCircle } from 'lucide-react';
+import { X, Plus, Mail, Key, Clock, CheckCircle, Eye, EyeOff, Copy } from 'lucide-react';
 import { useClientUsers } from '@/hooks/useClientUsers';
 import { getUserAuthInfo } from '@/services/emailNotificationService';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from '@/hooks/use-toast';
 
 interface ClientUsersManagerProps {
   clientId: string;
@@ -17,6 +18,7 @@ interface ClientUsersManagerProps {
 export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
   const [newUserEmail, setNewUserEmail] = useState('');
   const [userAuthInfo, setUserAuthInfo] = useState<Record<string, any>>({});
+  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const { clientUsers, isLoading, addUser, removeUser } = useClientUsers(clientId);
 
   const handleAddUser = () => {
@@ -35,6 +37,29 @@ export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleAddUser();
+    }
+  };
+
+  const togglePasswordVisibility = (userId: string) => {
+    setVisiblePasswords(prev => ({
+      ...prev,
+      [userId]: !prev[userId]
+    }));
+  };
+
+  const handleCopyPassword = async (password: string, email: string) => {
+    try {
+      await navigator.clipboard.writeText(password);
+      toast({
+        title: "Senha copiada!",
+        description: `Senha do usuário ${email} copiada para a área de transferência`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível copiar a senha",
+        variant: "destructive"
+      });
     }
   };
 
@@ -121,9 +146,11 @@ export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
           <div className="space-y-3">
             {clientUsers.map((clientUser) => {
               const authInfo = userAuthInfo[clientUser.id];
+              const isPasswordVisible = visiblePasswords[clientUser.id];
+              
               return (
-                <div key={clientUser.id} className="border rounded-lg p-3 bg-gray-50">
-                  <div className="flex items-center justify-between mb-2">
+                <div key={clientUser.id} className="border rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-center justify-between mb-3">
                     <Badge variant="secondary" className="flex items-center gap-2">
                       <Mail className="h-3 w-3" />
                       {clientUser.user_email}
@@ -138,6 +165,43 @@ export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
                       <X className="h-3 w-3" />
                     </Button>
                   </div>
+                  
+                  {/* Password section */}
+                  {clientUser.generated_password && (
+                    <div className="mb-3 p-3 bg-white rounded border">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Key className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium">Senha:</span>
+                          <code className="text-sm bg-gray-100 px-2 py-1 rounded">
+                            {isPasswordVisible ? clientUser.generated_password : '••••••••••'}
+                          </code>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => togglePasswordVisibility(clientUser.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {isPasswordVisible ? (
+                              <EyeOff className="h-3 w-3" />
+                            ) : (
+                              <Eye className="h-3 w-3" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCopyPassword(clientUser.generated_password!, clientUser.user_email)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="flex items-center gap-4 text-xs text-gray-600">
                     <div className="flex items-center gap-1">
@@ -159,8 +223,7 @@ export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
         <div className="space-y-2">
           <p className="text-xs text-blue-800 flex items-center gap-2">
             <Key className="h-4 w-4" />
-            <strong>Criação de usuários:</strong> Quando um usuário for criado, a senha gerada será exibida na notificação. 
-            Certifique-se de copiar e compartilhar com segurança.
+            <strong>Gerenciamento de senhas:</strong> As senhas são armazenadas com segurança e podem ser visualizadas ou copiadas usando os botões ao lado de cada senha.
           </p>
           <p className="text-xs text-green-800 flex items-center gap-2">
             <CheckCircle className="h-4 w-4" />

@@ -35,9 +35,16 @@ export const useClientUsers = (clientId: string | null) => {
     mutationFn: ({ userEmail }: { userEmail: string }) =>
       addClientUser(clientId!, userEmail, user!.id),
     onSuccess: (result: CreateUserResult) => {
-      queryClient.invalidateQueries({ 
-        queryKey,
-        exact: true
+      // Atualizar os dados locais para incluir a senha gerada
+      queryClient.setQueryData(queryKey, (oldData: ClientUser[] = []) => {
+        const newUser: ClientUser = {
+          id: result.user.id,
+          user_email: result.user.email,
+          client_id: clientId!,
+          created_at: new Date().toISOString(),
+          generated_password: result.password // Adicionar a senha gerada
+        };
+        return [newUser, ...oldData];
       });
 
       toast({

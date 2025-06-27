@@ -6,6 +6,7 @@ export interface ClientUser {
   user_email: string;
   client_id: string;
   created_at: string;
+  generated_password?: string; // Senha gerada automaticamente
 }
 
 export interface CreateUserResult {
