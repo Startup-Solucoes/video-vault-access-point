@@ -129,7 +129,11 @@ export const ClientVideoMainView = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ClientUsersManager clientId={clientId} />
+            <ClientUsersManager 
+              clientId={clientId} 
+              clientEmail="placeholder@email.com"
+              clientName={clientName}
+            />
           </CardContent>
         </Card>
       )}
