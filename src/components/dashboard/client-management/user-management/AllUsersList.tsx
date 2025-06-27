@@ -14,6 +14,7 @@ interface AllUsersListProps {
   isLoading: boolean;
   onTogglePasswordVisibility: (userId: string) => void;
   onRemoveUser: (userId: string) => void;
+  onUpdatePassword?: (userId: string, newPassword: string) => void;
 }
 
 export const AllUsersList = ({ 
@@ -24,7 +25,8 @@ export const AllUsersList = ({
   visiblePasswords, 
   isLoading,
   onTogglePasswordVisibility,
-  onRemoveUser 
+  onRemoveUser,
+  onUpdatePassword
 }: AllUsersListProps) => {
   const totalUsers = 1 + clientUsers.length; // Cliente principal + usuários adicionais
 
@@ -77,6 +79,7 @@ export const AllUsersList = ({
                 isLoading={isLoading}
                 onTogglePasswordVisibility={() => onTogglePasswordVisibility(clientUser.id)}
                 onRemoveUser={() => onRemoveUser(clientUser.id)}
+                onUpdatePassword={onUpdatePassword}
               />
             ))}
           </div>

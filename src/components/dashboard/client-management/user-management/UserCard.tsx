@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X, Mail, Clock } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { X, Mail, Clock, Key, Edit2, Save, X as Cancel } from 'lucide-react';
 import { PasswordSection } from './PasswordSection';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -18,6 +19,7 @@ interface UserCardProps {
   isLoading: boolean;
   onTogglePasswordVisibility: () => void;
   onRemoveUser: () => void;
+  onUpdatePassword?: (userId: string, newPassword: string) => void;
 }
 
 export const UserCard = ({ 
@@ -28,8 +30,12 @@ export const UserCard = ({
   isPasswordVisible,
   isLoading,
   onTogglePasswordVisibility,
-  onRemoveUser 
+  onRemoveUser,
+  onUpdatePassword
 }: UserCardProps) => {
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+
   console.log('🔍 Renderizando usuário:', {
     id: userId,
     email: userEmail,
@@ -45,6 +51,19 @@ export const UserCard = ({
     } catch {
       return 'Data inválida';
     }
+  };
+
+  const handleSavePassword = () => {
+    if (newPassword.trim() && onUpdatePassword) {
+      onUpdatePassword(userId, newPassword.trim());
+      setNewPassword('');
+      setIsEditingPassword(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setNewPassword('');
+    setIsEditingPassword(false);
   };
 
   return (
@@ -71,6 +90,65 @@ export const UserCard = ({
         userEmail={userEmail}
         onToggleVisibility={onTogglePasswordVisibility}
       />
+
+      {/* Seção de alteração de senha */}
+      <div className="mb-3 p-3 bg-white rounded border">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Key className="h-4 w-4 text-orange-600" />
+            <span className="text-sm font-medium">Alterar Senha:</span>
+          </div>
+          {!isEditingPassword && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditingPassword(true)}
+              className="h-8 px-2"
+              disabled={isLoading}
+            >
+              <Edit2 className="h-3 w-3 mr-1" />
+              Editar
+            </Button>
+          )}
+        </div>
+
+        {isEditingPassword ? (
+          <div className="space-y-2">
+            <Input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Digite a nova senha"
+              className="text-sm"
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSavePassword}
+                disabled={!newPassword.trim() || isLoading}
+                className="flex items-center gap-1"
+              >
+                <Save className="h-3 w-3" />
+                Salvar
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCancelEdit}
+                className="flex items-center gap-1"
+              >
+                <Cancel className="h-3 w-3" />
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-600">
+            Clique em "Editar" para alterar a senha de acesso
+          </p>
+        )}
+      </div>
       
       <div className="flex items-center gap-4 text-xs text-gray-600">
         <div className="flex items-center gap-1">

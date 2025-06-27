@@ -16,7 +16,7 @@ interface ClientUsersManagerProps {
 export const ClientUsersManager = ({ clientId, clientEmail, clientName }: ClientUsersManagerProps) => {
   const [userAuthInfo, setUserAuthInfo] = useState<Record<string, any>>({});
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
-  const { clientUsers, isLoading, addUser, removeUser } = useClientUsers(clientId);
+  const { clientUsers, isLoading, addUser, removeUser, updatePassword } = useClientUsers(clientId);
 
   console.log('🔍 ClientUsersManager - clientUsers:', clientUsers);
 
@@ -66,6 +66,7 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
           isLoading={isLoading}
           onTogglePasswordVisibility={togglePasswordVisibility}
           onRemoveUser={removeUser}
+          onUpdatePassword={updatePassword}
         />
       </div>
 

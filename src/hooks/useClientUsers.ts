@@ -10,6 +10,7 @@ import {
   ClientUser,
   CreateUserResult
 } from '@/services/client/clientUsersService';
+import { updateClientUserPassword } from '@/services/client/clientPasswordService';
 
 export const useClientUsers = (clientId: string | null) => {
   const queryClient = useQueryClient();
@@ -95,6 +96,25 @@ export const useClientUsers = (clientId: string | null) => {
     }
   });
 
+  const updatePasswordMutation = useMutation({
+    mutationFn: ({ clientUserId, newPassword }: { clientUserId: string; newPassword: string }) =>
+      updateClientUserPassword(clientUserId, newPassword),
+    onSuccess: () => {
+      toast({
+        title: "Sucesso",
+        description: "Senha atualizada com sucesso",
+      });
+    },
+    onError: (error: Error) => {
+      console.error('Erro ao atualizar senha:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao atualizar senha",
+        variant: "destructive"
+      });
+    }
+  });
+
   const addUser = (userEmail: string) => {
     if (!clientId || !user) return;
     console.log('🔍 Adicionando usuário:', userEmail);
@@ -106,11 +126,17 @@ export const useClientUsers = (clientId: string | null) => {
     removeUserMutation.mutate({ clientUserId });
   };
 
+  const updatePassword = (clientUserId: string, newPassword: string) => {
+    console.log('🔍 Atualizando senha do usuário:', clientUserId);
+    updatePasswordMutation.mutate({ clientUserId, newPassword });
+  };
+
   return {
     clientUsers,
-    isLoading: isLoading || addUserMutation.isPending || removeUserMutation.isPending,
+    isLoading: isLoading || addUserMutation.isPending || removeUserMutation.isPending || updatePasswordMutation.isPending,
     error,
     addUser,
-    removeUser
+    removeUser,
+    updatePassword
   };
 };
