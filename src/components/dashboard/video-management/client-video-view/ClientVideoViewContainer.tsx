@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useClientVideos } from '@/hooks/useClientVideos';
 import { useClientSelector } from '@/hooks/useClientSelector';
 import { useClientVideoSelection } from './ClientVideoSelectionManager';
@@ -84,35 +84,35 @@ export const ClientVideoViewContainer = ({
     }
   });
 
-  const handleDeleteVideoWithState = async (videoId: string, videoTitle: string) => {
+  const handleDeleteVideoWithState = useCallback(async (videoId: string, videoTitle: string) => {
     setDeletingVideoId(videoId);
     try {
       await handleDeleteVideo(videoId, videoTitle);
     } finally {
       setDeletingVideoId(null);
     }
-  };
+  }, [handleDeleteVideo, setDeletingVideoId]);
 
-  const handleReorderComplete = () => {
+  const handleReorderComplete = useCallback(() => {
     refreshVideos();
     setShowReorderMode(false);
-  };
+  }, [refreshVideos, setShowReorderMode]);
 
-  const handleModalClose = (open: boolean) => {
+  const handleModalClose = useCallback((open: boolean) => {
     setShowClientSelector(open);
     if (!open) {
       setSearchValue('');
       setSelectedClients([]);
     }
-  };
+  }, [setShowClientSelector, setSearchValue, setSelectedClients]);
 
-  const handleConfirmSelection = () => {
+  const handleConfirmSelection = useCallback(() => {
     console.log('=== CONFIRMANDO SELEÇÃO ===');
     console.log('Clientes selecionados no modal:', selectedClients);
     
     setShowClientSelector(false);
     handleAssignToClients();
-  };
+  }, [selectedClients, setShowClientSelector, handleAssignToClients]);
 
   // Loading state
   if (isLoading) {

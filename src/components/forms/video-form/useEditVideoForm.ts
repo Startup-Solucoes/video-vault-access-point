@@ -51,7 +51,7 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
     }
   }, [videoId, loadVideoDataOnce]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     console.log('📝 Dados do formulário no submit:', formData);
@@ -73,7 +73,7 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [formData, user, videoId, invalidateVideoCache, onClose]);
 
   return {
     formData,
