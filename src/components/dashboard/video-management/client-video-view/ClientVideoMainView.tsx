@@ -1,15 +1,9 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User } from 'lucide-react';
-import { ClientUsersManager } from '@/components/dashboard/client-management/ClientUsersManager';
-import { ClientSelectionModal } from '@/components/forms/client-selector/ClientSelectionModal';
-import { EditVideoForm } from '@/components/forms/EditVideoForm';
 import { ClientVideoHeader } from './ClientVideoHeader';
-import { ClientVideoTable } from './ClientVideoTable';
-import { ClientVideoCards } from './ClientVideoCards';
-import { ClientVideoEmptyState } from './ClientVideoEmptyState';
-import { ClientVideoPagination } from './ClientVideoPagination';
+import { ClientVideoUsersSection } from './ClientVideoUsersSection';
+import { ClientVideoContent } from './ClientVideoContent';
+import { ClientVideoModals } from './ClientVideoModals';
 import { ClientVideoData } from '@/hooks/useClientVideos';
 
 interface ClientVideoMainViewProps {
@@ -120,89 +114,48 @@ export const ClientVideoMainView = ({
       />
 
       {/* Users Manager */}
-      {showUsersManager && (
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <User className="h-5 w-5" />
-              Gerenciar Usuários do Cliente
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ClientUsersManager 
-              clientId={clientId} 
-              clientEmail="placeholder@email.com"
-              clientName={clientName}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Videos List */}
-      <Card className="w-full">
-        <CardContent className="p-6">
-          {videos.length === 0 ? (
-            <ClientVideoEmptyState />
-          ) : (
-            <>
-              <ClientVideoTable
-                videos={paginatedVideos}
-                selectedVideos={selectedVideos}
-                deletingVideoId={deletingVideoId}
-                clientName={clientName}
-                onVideoSelect={onVideoSelect}
-                onSelectAllVisible={onSelectAllVisible}
-                onEditVideo={onEditVideo}
-                onDeleteVideo={onDeleteVideo}
-              />
-              
-              <ClientVideoCards
-                videos={paginatedVideos}
-                selectedVideos={selectedVideos}
-                deletingVideoId={deletingVideoId}
-                clientName={clientName}
-                onVideoSelect={onVideoSelect}
-                onEditVideo={onEditVideo}
-                onDeleteVideo={onDeleteVideo}
-              />
-
-              <ClientVideoPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalVideos={videos.length}
-                itemsPerPage={itemsPerPage}
-                onPageChange={onPageChange}
-                onItemsPerPageChange={onItemsPerPageChange}
-              />
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Client Selection Modal */}
-      <ClientSelectionModal
-        open={showClientSelector}
-        onOpenChange={onModalClose}
-        clients={clients}
-        selectedClients={selectedClients}
-        onClientToggle={onClientToggle}
-        onBulkClientChange={onBulkClientChange}
-        isLoading={clientsLoading}
-        searchValue={searchValue}
-        onSearchValueChange={onSearchValueChange}
-        filteredClients={filteredClients}
-        onConfirmSelection={onConfirmSelection}
-        isAssigning={isAssigning}
+      <ClientVideoUsersSection
+        clientId={clientId}
+        clientName={clientName}
+        showUsersManager={showUsersManager}
       />
 
-      {/* Edit Video Modal */}
-      {editingVideoId && (
-        <EditVideoForm
-          open={isEditModalOpen}
-          onOpenChange={onCloseEditModal}
-          videoId={editingVideoId}
-        />
-      )}
+      {/* Videos Content */}
+      <ClientVideoContent
+        videos={videos}
+        paginatedVideos={paginatedVideos}
+        totalPages={totalPages}
+        selectedVideos={selectedVideos}
+        deletingVideoId={deletingVideoId}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        clientName={clientName}
+        onVideoSelect={onVideoSelect}
+        onSelectAllVisible={onSelectAllVisible}
+        onEditVideo={onEditVideo}
+        onDeleteVideo={onDeleteVideo}
+        onPageChange={onPageChange}
+        onItemsPerPageChange={onItemsPerPageChange}
+      />
+
+      {/* Modals */}
+      <ClientVideoModals
+        showClientSelector={showClientSelector}
+        clients={clients}
+        filteredClients={filteredClients}
+        clientsLoading={clientsLoading}
+        searchValue={searchValue}
+        selectedClients={selectedClients}
+        isAssigning={isAssigning}
+        editingVideoId={editingVideoId}
+        isEditModalOpen={isEditModalOpen}
+        onModalClose={onModalClose}
+        onConfirmSelection={onConfirmSelection}
+        onCloseEditModal={onCloseEditModal}
+        onSearchValueChange={onSearchValueChange}
+        onClientToggle={onClientToggle}
+        onBulkClientChange={onBulkClientChange}
+      />
     </div>
   );
 };
