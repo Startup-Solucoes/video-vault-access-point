@@ -31,10 +31,14 @@ export const useClientUsers = (clientId: string | null) => {
     retry: 2,
   });
 
+  console.log('🔍 useClientUsers - dados recebidos:', clientUsers);
+
   const addUserMutation = useMutation({
     mutationFn: ({ userEmail }: { userEmail: string }) =>
       addClientUser(clientId!, userEmail, user!.id),
     onSuccess: (result: CreateUserResult) => {
+      console.log('✅ Usuário criado, resultado:', result);
+      
       // Atualizar os dados locais para incluir a senha gerada
       queryClient.setQueryData(queryKey, (oldData: ClientUser[] = []) => {
         const newUser: ClientUser = {
@@ -44,6 +48,8 @@ export const useClientUsers = (clientId: string | null) => {
           created_at: new Date().toISOString(),
           generated_password: result.password // Adicionar a senha gerada
         };
+        
+        console.log('🔍 Novo usuário adicionado ao cache:', newUser);
         return [newUser, ...oldData];
       });
 
@@ -91,10 +97,12 @@ export const useClientUsers = (clientId: string | null) => {
 
   const addUser = (userEmail: string) => {
     if (!clientId || !user) return;
+    console.log('🔍 Adicionando usuário:', userEmail);
     addUserMutation.mutate({ userEmail });
   };
 
   const removeUser = (clientUserId: string) => {
+    console.log('🔍 Removendo usuário:', clientUserId);
     removeUserMutation.mutate({ clientUserId });
   };
 

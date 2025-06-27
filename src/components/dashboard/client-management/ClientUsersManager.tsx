@@ -21,6 +21,14 @@ export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const { clientUsers, isLoading, addUser, removeUser } = useClientUsers(clientId);
 
+  console.log('🔍 ClientUsersManager - clientUsers:', clientUsers);
+  console.log('🔍 ClientUsersManager - cada usuário:', clientUsers.map(u => ({
+    id: u.id,
+    email: u.user_email,
+    senha: u.generated_password,
+    temSenha: !!u.generated_password
+  })));
+
   const handleAddUser = () => {
     if (!newUserEmail.trim()) return;
     
@@ -147,6 +155,14 @@ export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
             {clientUsers.map((clientUser) => {
               const authInfo = userAuthInfo[clientUser.id];
               const isPasswordVisible = visiblePasswords[clientUser.id];
+              const hasPassword = !!clientUser.generated_password;
+              
+              console.log('🔍 Renderizando usuário:', {
+                id: clientUser.id,
+                email: clientUser.user_email,
+                temSenha: hasPassword,
+                senha: clientUser.generated_password
+              });
               
               return (
                 <div key={clientUser.id} className="border rounded-lg p-4 bg-gray-50">
@@ -166,8 +182,8 @@ export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
                     </Button>
                   </div>
                   
-                  {/* Password section */}
-                  {clientUser.generated_password && (
+                  {/* Password section - sempre mostrar se tiver senha */}
+                  {hasPassword ? (
                     <div className="mb-3 p-3 bg-white rounded border">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -183,6 +199,7 @@ export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
                             size="sm"
                             onClick={() => togglePasswordVisibility(clientUser.id)}
                             className="h-8 w-8 p-0"
+                            title={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"}
                           >
                             {isPasswordVisible ? (
                               <EyeOff className="h-3 w-3" />
@@ -195,10 +212,18 @@ export const ClientUsersManager = ({ clientId }: ClientUsersManagerProps) => {
                             size="sm"
                             onClick={() => handleCopyPassword(clientUser.generated_password!, clientUser.user_email)}
                             className="h-8 w-8 p-0"
+                            title="Copiar senha"
                           >
                             <Copy className="h-3 w-3" />
                           </Button>
                         </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mb-3 p-3 bg-yellow-50 rounded border border-yellow-200">
+                      <div className="flex items-center gap-2 text-yellow-800">
+                        <Key className="h-4 w-4" />
+                        <span className="text-sm">Senha não disponível para este usuário</span>
                       </div>
                     </div>
                   )}
