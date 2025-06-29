@@ -7,7 +7,6 @@ export interface Client {
   role: string;
   created_at: string;
   updated_at: string;
-  email_confirmed_at?: string;
   last_sign_in_at?: string;
   is_deleted?: boolean;
 }

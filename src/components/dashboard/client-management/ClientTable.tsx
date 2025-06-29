@@ -2,7 +2,6 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ClientStatusBadge } from './ClientStatusBadge';
 import { ClientActions } from './ClientActions';
 import { Client } from '@/types/client';
 
@@ -61,7 +60,6 @@ export const ClientTable = ({
             <TableHead>Nome</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Tipo</TableHead>
-            <TableHead>Status</TableHead>
             <TableHead>Último acesso</TableHead>
             <TableHead>Cadastrado em</TableHead>
             <TableHead>Ações</TableHead>
@@ -85,9 +83,6 @@ export const ClientTable = ({
               <TableCell>{client.email}</TableCell>
               <TableCell>
                 {getRoleBadge(client.role)}
-              </TableCell>
-              <TableCell>
-                <ClientStatusBadge client={client} />
               </TableCell>
               <TableCell>{formatDate(client.last_sign_in_at)}</TableCell>
               <TableCell>{formatDate(client.created_at)}</TableCell>

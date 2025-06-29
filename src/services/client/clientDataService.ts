@@ -1,7 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types/client';
-import { getUserAuthInfo } from '@/services/emailNotificationService';
 
 export const fetchClientsFromDB = async (): Promise<Client[]> => {
   console.log('clientDataService: Buscando TODOS os clientes (incluindo deletados para debug)...');
@@ -37,55 +36,26 @@ export const fetchClientsFromDB = async (): Promise<Client[]> => {
       ativos: profiles.filter(p => !p.is_deleted).length
     });
 
-    // Buscar informações de auth em lote quando necessário
-    const clientsWithAuthInfo = await Promise.allSettled(
-      profiles.map(async (profile) => {
-        try {
-          const authData = await getUserAuthInfo(profile.id);
-
-          const client: Client = {
-            id: profile.id,
-            email: profile.email,
-            full_name: profile.full_name,
-            logo_url: profile.logo_url,
-            role: profile.role,
-            created_at: profile.created_at,
-            updated_at: profile.updated_at,
-            email_confirmed_at: authData?.email_confirmed_at || null,
-            last_sign_in_at: authData?.last_sign_in_at || null,
-            is_deleted: profile.is_deleted || false
-          };
-
-          return client;
-        } catch (error) {
-          console.warn('Erro ao buscar auth para usuário:', profile.id);
-          return {
-            id: profile.id,
-            email: profile.email,
-            full_name: profile.full_name,
-            logo_url: profile.logo_url,
-            role: profile.role,
-            created_at: profile.created_at,
-            updated_at: profile.updated_at,
-            email_confirmed_at: null,
-            last_sign_in_at: null,
-            is_deleted: profile.is_deleted || false
-          } as Client;
-        }
-      })
-    );
-
-    const successfulClients = clientsWithAuthInfo
-      .filter((result): result is PromiseFulfilledResult<Client> => result.status === 'fulfilled')
-      .map(result => result.value);
+    // Processar perfis diretamente sem buscar dados de auth
+    const clients: Client[] = profiles.map((profile) => ({
+      id: profile.id,
+      email: profile.email,
+      full_name: profile.full_name,
+      logo_url: profile.logo_url,
+      role: profile.role,
+      created_at: profile.created_at,
+      updated_at: profile.updated_at,
+      last_sign_in_at: null, // Removido - não precisamos mais desta informação
+      is_deleted: profile.is_deleted || false
+    }));
 
     console.log('clientDataService: Clientes processados:', {
-      total: successfulClients.length,
-      deletados: successfulClients.filter(c => c.is_deleted).length,
-      ativos: successfulClients.filter(c => !c.is_deleted).length
+      total: clients.length,
+      deletados: clients.filter(c => c.is_deleted).length,
+      ativos: clients.filter(c => !c.is_deleted).length
     });
 
-    return successfulClients;
+    return clients;
 
   } catch (error) {
     console.error('clientDataService: Erro ao buscar clientes:', error);
