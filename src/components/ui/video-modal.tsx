@@ -6,8 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Eye } from 'lucide-react';
+import { Calendar, Clock, Eye, Share2, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useVideoViewing } from '@/hooks/useVideoViewing';
@@ -26,37 +27,32 @@ interface VideoModalProps {
   getCategoryColor?: (category: string) => string;
 }
 
-// Função para extrair o embed URL do ScreenPal
 const getScreenPalEmbedUrl = (url: string): string => {
-  // ScreenPal URLs geralmente seguem o padrão: https://screenpal.com/watch/[VIDEO_ID]
   const screenPalMatch = url.match(/screenpal\.com\/watch\/([^/?&#]+)/);
   if (screenPalMatch) {
     return `https://screenpal.com/embed/${screenPalMatch[1]}`;
   }
   
-  // Se já for uma URL de embed, retorna como está
   if (url.includes('/embed/')) {
     return url;
   }
   
-  // YouTube fallback
   const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
   if (youtubeMatch) {
     return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
   }
   
-  // Vimeo fallback
   const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
   if (vimeoMatch) {
     return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
   }
   
-  // Se não conseguir identificar o provedor, retorna a URL original
   return url;
 };
 
 export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: VideoModalProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLinkCopied, setIsLinkCopied] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const embedUrl = getScreenPalEmbedUrl(video.video_url);
   
@@ -65,19 +61,32 @@ export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: Vide
     isPlaying
   });
 
-  // Detectar quando o iframe carrega (assumir que o vídeo começou)
   useEffect(() => {
     if (open) {
-      // Simular início da reprodução após um pequeno delay
       const timer = setTimeout(() => {
         setIsPlaying(true);
-      }, 2000); // 2 segundos após abrir o modal
+      }, 2000);
 
       return () => clearTimeout(timer);
     } else {
       setIsPlaying(false);
     }
   }, [open]);
+
+  const handleShareVideo = async () => {
+    const shareUrl = `${window.location.origin}/?video=${video.id}`;
+    
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setIsLinkCopied(true);
+      
+      setTimeout(() => {
+        setIsLinkCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.error('Erro ao copiar link:', err);
+    }
+  };
 
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -102,7 +111,7 @@ export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: Vide
                   </p>
                 )}
                 
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-gray-500">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-gray-500 mb-3">
                   <div className="flex items-center">
                     <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
                     <span>Publicado em {format(new Date(video.created_at), 'dd/MM/yyyy', { locale: ptBR })}</span>
@@ -122,6 +131,27 @@ export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: Vide
                       )}
                     </div>
                   )}
+                </div>
+
+                <div className="flex items-center gap-2 mb-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleShareVideo}
+                    className="text-xs"
+                  >
+                    {isLinkCopied ? (
+                      <>
+                        <Check className="h-3 w-3 mr-1 text-green-600" />
+                        Link copiado!
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="h-3 w-3 mr-1" />
+                        Compartilhar
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
               
