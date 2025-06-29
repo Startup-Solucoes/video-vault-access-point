@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Video } from 'lucide-react';
+import { Users, Video, Megaphone } from 'lucide-react';
 
 interface AdminStatsProps {
   stats: {
@@ -10,41 +10,53 @@ interface AdminStatsProps {
     totalVideos?: number;
     videosThisMonth?: number;
   };
+  onNavigateToClients?: () => void;
+  onNavigateToVideos?: () => void;
+  onNavigateToAdvertisements?: () => void;
 }
 
-export const AdminStats = ({ stats }: AdminStatsProps) => {
+export const AdminStats = ({ stats, onNavigateToClients, onNavigateToVideos, onNavigateToAdvertisements }: AdminStatsProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-      <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg">
+      <Card 
+        className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+        onClick={onNavigateToClients}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium opacity-90">Total de Clientes</CardTitle>
           <Users className="h-5 w-5 opacity-80" />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold">{stats?.totalClients || 0}</div>
-          <p className="text-xs opacity-80 mt-1">Registrados no sistema</p>
+          <p className="text-xs opacity-80 mt-1">Clique para gerenciar</p>
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg">
+      <Card 
+        className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+        onClick={onNavigateToAdvertisements}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium opacity-90">Clientes Ativos</CardTitle>
-          <Users className="h-5 w-5 opacity-80" />
+          <CardTitle className="text-sm font-medium opacity-90">Gerenciar Anúncios</CardTitle>
+          <Megaphone className="h-5 w-5 opacity-80" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">{stats?.activeClients || 0}</div>
-          <p className="text-xs opacity-80 mt-1">Com acesso a vídeos</p>
+          <div className="text-3xl font-bold">Admin</div>
+          <p className="text-xs opacity-80 mt-1">Clique para gerenciar</p>
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-lg">
+      <Card 
+        className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+        onClick={onNavigateToVideos}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium opacity-90">Total de Vídeos</CardTitle>
           <Video className="h-5 w-5 opacity-80" />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold">{stats?.totalVideos || 0}</div>
-          <p className="text-xs opacity-80 mt-1">Disponíveis na plataforma</p>
+          <p className="text-xs opacity-80 mt-1">Clique para gerenciar</p>
         </CardContent>
       </Card>
 

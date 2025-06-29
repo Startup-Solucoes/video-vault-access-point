@@ -1,21 +1,37 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { AdminStats } from './AdminStats';
 import { AdminQuickActions } from './AdminQuickActions';
+
 interface AdminOverviewProps {
   stats?: any;
   onVideoFormOpen: () => void;
   onClientFormOpen: () => void;
   onTabChange: (tab: string) => void;
 }
+
 export const AdminOverview = ({
   stats,
   onVideoFormOpen,
   onClientFormOpen,
   onTabChange
 }: AdminOverviewProps) => {
-  return <div className="space-y-6">
+  const handleNavigateToClients = () => {
+    onTabChange('videos'); // Navega para gerenciamento de vídeos
+  };
+
+  const handleNavigateToVideos = () => {
+    onTabChange('videos'); // Navega para gerenciamento de vídeos
+  };
+
+  const handleNavigateToAdvertisements = () => {
+    onTabChange('tools'); // Navega para ferramentas (anúncios)
+  };
+
+  return (
+    <div className="space-y-6">
       {/* Header com ações rápidas */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -41,9 +57,15 @@ export const AdminOverview = ({
       </div>
 
       {/* Cards de estatísticas */}
-      <AdminStats stats={stats} />
+      <AdminStats 
+        stats={stats} 
+        onNavigateToClients={handleNavigateToClients}
+        onNavigateToVideos={handleNavigateToVideos}
+        onNavigateToAdvertisements={handleNavigateToAdvertisements}
+      />
 
       {/* Resumo e ações rápidas */}
       <AdminQuickActions stats={stats} onTabChange={onTabChange} />
-    </div>;
+    </div>
+  );
 };
