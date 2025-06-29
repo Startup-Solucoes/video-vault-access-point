@@ -9,7 +9,7 @@ import { ptBR } from 'date-fns/locale';
 import { VideoModal } from '@/components/ui/video-modal';
 import { ClientVideo } from '@/types/clientVideo';
 import { getCategoryColor } from '@/utils/categoryColors';
-import { getPlatformColor, getPlatformIcon } from '@/utils/platformImages';
+import { getPlatformColor, getPlatformIcon, getPlatformName } from '@/utils/platformImages';
 
 interface VideoCardProps {
   video: ClientVideo;
@@ -21,10 +21,18 @@ export const VideoCard = ({ video }: VideoCardProps) => {
 
   const platformColor = getPlatformColor(video.platform || 'outros');
   const PlatformIcon = getPlatformIcon(video.platform || 'outros');
+  const platformName = getPlatformName(video.platform || 'outros');
 
   const handleWatchVideo = () => {
     setIsModalOpen(true);
   };
+
+  console.log('VideoCard debug:', {
+    platform: video.platform,
+    platformColor,
+    platformName,
+    PlatformIcon: PlatformIcon.name
+  });
 
   return (
     <>
@@ -41,7 +49,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
               <div className="mb-2">
                 <PlatformIcon className="h-12 w-12" />
               </div>
-              <span>{video.platform ? video.platform.charAt(0).toUpperCase() + video.platform.slice(1) : 'Vídeo'}</span>
+              <span className="text-sm font-medium">{platformName}</span>
               
               {/* Overlay de play */}
               <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
