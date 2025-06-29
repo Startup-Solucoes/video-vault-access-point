@@ -19,7 +19,7 @@ export const platformConfigs = {
   bagy: {
     color: '#FF6B6B',
     name: 'Bagy',
-    logo: 'https://bagy.com.br/blog/wp-content/uploads/2023/05/logo_3.png'
+    logo: '/lovable-uploads/fe7a27bd-9667-4a19-ad9a-a632cd4792d4.png'
   },
   woocommerce: {
     color: '#96588A',
