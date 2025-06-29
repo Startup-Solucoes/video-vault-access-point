@@ -10,6 +10,7 @@ interface MainClientCardProps {
   clientEmail: string;
   clientName: string;
   onUpdatePassword?: (newPassword: string) => void;
+  onUpdateEmail?: (newEmail: string) => void;
   isLoading?: boolean;
 }
 
@@ -17,10 +18,13 @@ export const MainClientCard = ({
   clientEmail, 
   clientName, 
   onUpdatePassword,
+  onUpdateEmail,
   isLoading = false 
 }: MainClientCardProps) => {
   const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  const [newEmail, setNewEmail] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   console.log('🔍 MainClientCard - Props recebidas:', { 
@@ -33,6 +37,21 @@ export const MainClientCard = ({
     hasEmail: !!clientEmail,
     hasName: !!clientName,
     isPlaceholder: clientEmail === 'placeholder@email.com'
+  });
+
+  // Verificar se temos dados válidos
+  const hasValidEmail = clientEmail && clientEmail.trim() !== '' && clientEmail !== 'placeholder@email.com';
+  const hasValidName = clientName && clientName.trim() !== '';
+  
+  // Dados para exibição
+  const displayEmail = hasValidEmail ? clientEmail : 'Email não configurado';
+  const displayName = hasValidName ? clientName : 'Nome não disponível';
+
+  console.log('🔍 MainClientCard - Dados processados:', {
+    hasValidEmail,
+    hasValidName,
+    displayEmail,
+    displayName
   });
 
   const handleSavePassword = () => {
@@ -48,12 +67,32 @@ export const MainClientCard = ({
     }
   };
 
-  const handleCancelEdit = () => {
+  const handleSaveEmail = () => {
+    console.log('💾 Salvando novo email para cliente:', newEmail);
+    if (newEmail.trim() && onUpdateEmail) {
+      onUpdateEmail(newEmail.trim());
+      setNewEmail('');
+      setIsEditingEmail(false);
+      toast({
+        title: "Email atualizado",
+        description: "O email do cliente principal foi atualizado com sucesso",
+      });
+    }
+  };
+
+  const handleCancelPasswordEdit = () => {
     setNewPassword('');
     setIsEditingPassword(false);
   };
 
+  const handleCancelEmailEdit = () => {
+    setNewEmail('');
+    setIsEditingEmail(false);
+  };
+
   const handleCopyEmail = async () => {
+    if (!hasValidEmail) return;
+    
     try {
       await navigator.clipboard.writeText(clientEmail);
       toast({
@@ -68,21 +107,6 @@ export const MainClientCard = ({
       });
     }
   };
-
-  // Verificar se temos dados válidos
-  const hasValidEmail = clientEmail && clientEmail.trim() !== '' && clientEmail !== 'placeholder@email.com';
-  const hasValidName = clientName && clientName.trim() !== '';
-  
-  // Dados para exibição
-  const displayEmail = hasValidEmail ? clientEmail : 'Email não disponível';
-  const displayName = hasValidName ? clientName : 'Nome não disponível';
-
-  console.log('🔍 MainClientCard - Dados processados:', {
-    hasValidEmail,
-    hasValidName,
-    displayEmail,
-    displayName
-  });
 
   return (
     <div className="space-y-4">
@@ -103,20 +127,68 @@ export const MainClientCard = ({
             <Mail className="h-4 w-4" />
             Email de Acesso
           </label>
-          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border">
-            <span className="text-sm font-medium text-gray-900 flex-1">{displayEmail}</span>
-            {hasValidEmail && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCopyEmail}
-                className="h-8 w-8 p-0"
-                title="Copiar email"
-              >
-                <Copy className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
+          
+          {isEditingEmail ? (
+            <div className="space-y-2">
+              <Input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="Digite o novo email"
+                className="bg-white"
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleSaveEmail}
+                  disabled={!newEmail.trim() || isLoading}
+                  className="flex items-center gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  Salvar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancelEmailEdit}
+                  className="flex items-center gap-2"
+                >
+                  <Cancel className="h-4 w-4" />
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border">
+              <span className="text-sm font-medium text-gray-900 flex-1">{displayEmail}</span>
+              <div className="flex gap-1">
+                {hasValidEmail && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopyEmail}
+                    className="h-8 w-8 p-0"
+                    title="Copiar email"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setNewEmail(hasValidEmail ? clientEmail : '');
+                    setIsEditingEmail(true);
+                  }}
+                  className="h-8 w-8 p-0"
+                  title="Editar email"
+                >
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -161,7 +233,7 @@ export const MainClientCard = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleCancelEdit}
+                onClick={handleCancelPasswordEdit}
                 className="flex items-center gap-2"
               >
                 <Cancel className="h-4 w-4" />

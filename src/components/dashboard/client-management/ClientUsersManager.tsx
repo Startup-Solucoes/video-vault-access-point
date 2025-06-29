@@ -49,11 +49,19 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
   const handleUpdateMainClientPassword = (newPassword: string) => {
     console.log('🔑 Tentativa de atualizar senha do cliente principal:', { clientEmail, newPassword: '***' });
     
-    // Por enquanto, apenas mostra uma mensagem informativa
-    // Em uma implementação real, seria necessário uma função específica para alterar a senha do cliente principal
     toast({
       title: "Funcionalidade em desenvolvimento",
       description: "A alteração de senha do cliente principal será implementada em breve",
+      variant: "destructive"
+    });
+  };
+
+  const handleUpdateMainClientEmail = (newEmail: string) => {
+    console.log('📧 Tentativa de atualizar email do cliente principal:', { oldEmail: clientEmail, newEmail });
+    
+    toast({
+      title: "Funcionalidade em desenvolvimento", 
+      description: "A alteração de email do cliente principal será implementada em breve",
       variant: "destructive"
     });
   };
@@ -125,6 +133,7 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
         onRemoveUser={removeUser}
         onUpdatePassword={updatePassword}
         onUpdateMainClientPassword={handleUpdateMainClientPassword}
+        onUpdateMainClientEmail={handleUpdateMainClientEmail}
       />
 
       <InfoBanner />

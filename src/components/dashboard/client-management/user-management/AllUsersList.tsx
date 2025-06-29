@@ -15,6 +15,7 @@ interface AllUsersListProps {
   onRemoveUser: (userId: string) => void;
   onUpdatePassword?: (userId: string, newPassword: string) => void;
   onUpdateMainClientPassword?: (newPassword: string) => void;
+  onUpdateMainClientEmail?: (newEmail: string) => void;
 }
 
 export const AllUsersList = ({
@@ -27,7 +28,8 @@ export const AllUsersList = ({
   onTogglePasswordVisibility,
   onRemoveUser,
   onUpdatePassword,
-  onUpdateMainClientPassword
+  onUpdateMainClientPassword,
+  onUpdateMainClientEmail
 }: AllUsersListProps) => {
   console.log('🔍 AllUsersList - Dados recebidos:', {
     clientEmail,
@@ -51,6 +53,7 @@ export const AllUsersList = ({
           clientEmail={clientEmail}
           clientName={clientName}
           onUpdatePassword={onUpdateMainClientPassword}
+          onUpdateEmail={onUpdateMainClientEmail}
           isLoading={isLoading}
         />
       </div>

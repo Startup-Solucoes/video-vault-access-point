@@ -28,8 +28,8 @@ export const EditClientDialog = ({
   });
 
   useEffect(() => {
-    if (client) {
-      console.log('🔍 EditClientDialog - Cliente recebido:', {
+    if (client && open) {
+      console.log('🔍 EditClientDialog - Cliente selecionado:', {
         id: client.id,
         full_name: client.full_name,
         email: client.email,
@@ -41,14 +41,8 @@ export const EditClientDialog = ({
         email: client.email || '',
         logo_url: client.logo_url || ''
       });
-      
-      console.log('📝 EditClientDialog - Formulário atualizado:', {
-        full_name: client.full_name || '',
-        email: client.email || '',
-        logo_url: client.logo_url || ''
-      });
     }
-  }, [client]);
+  }, [client, open]);
 
   const handleSave = () => {
     if (client) {
@@ -63,12 +57,19 @@ export const EditClientDialog = ({
     return null;
   }
 
-  console.log('🔍 EditClientDialog - Dados sendo passados para ClientUsersManager:', {
+  // Use os dados do formulário (editForm) que são atualizados conforme o usuário edita
+  // Se o formulário ainda não foi preenchido, use os dados originais do cliente
+  const currentEmail = editForm.email || client.email;
+  const currentName = editForm.full_name || client.full_name;
+
+  console.log('🎯 EditClientDialog - Dados atuais para ClientUsersManager:', {
     clientId: client.id,
-    clientEmail: client.email,
-    clientName: client.full_name,
-    hasValidEmail: client.email && client.email !== 'placeholder@email.com',
-    hasValidName: client.full_name && client.full_name.trim() !== ''
+    currentEmail,
+    currentName,
+    originalClientEmail: client.email,
+    originalClientName: client.full_name,
+    formEmail: editForm.email,
+    formName: editForm.full_name
   });
 
   return (
@@ -115,11 +116,11 @@ export const EditClientDialog = ({
 
           <Separator />
 
-          {/* Client users management - usando os dados REAIS do cliente */}
+          {/* Client users management - usar dados reais do cliente */}
           <ClientUsersManager 
             clientId={client.id} 
-            clientEmail={client.email}
-            clientName={client.full_name}
+            clientEmail={currentEmail}
+            clientName={currentName}
           />
 
           <div className="flex justify-end space-x-2 pt-4">
