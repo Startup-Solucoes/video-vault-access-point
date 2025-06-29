@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { useClientUsers } from '@/hooks/useClientUsers';
 import { getUserAuthInfo } from '@/services/emailNotificationService';
 import { UserAddForm } from './user-management/UserAddForm';
@@ -19,6 +20,7 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const { clientUsers, isLoading, addUser, removeUser, updatePassword } = useClientUsers(clientId);
 
+  console.log('🔍 ClientUsersManager - Dados do cliente:', { clientId, clientEmail, clientName });
   console.log('🔍 ClientUsersManager - clientUsers:', clientUsers);
 
   const togglePasswordVisibility = (userId: string) => {
@@ -62,25 +64,36 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
   }, [clientUsers]);
 
   return (
-    <div className="space-y-4">
-      <Label className="text-sm font-medium">Gerenciamento de Usuários</Label>
-      
-      <UserAddForm onAddUser={addUser} isLoading={isLoading} />
-
-      <div className="space-y-3">
-        <AllUsersList
-          clientEmail={clientEmail}
-          clientName={clientName}
-          clientUsers={clientUsers}
-          userAuthInfo={userAuthInfo}
-          visiblePasswords={visiblePasswords}
-          isLoading={isLoading}
-          onTogglePasswordVisibility={togglePasswordVisibility}
-          onRemoveUser={removeUser}
-          onUpdatePassword={updatePassword}
-          onUpdateMainClientPassword={handleUpdateMainClientPassword}
-        />
+    <div className="space-y-6">
+      {/* Cabeçalho da seção */}
+      <div>
+        <Label className="text-base font-semibold text-gray-900">Gerenciamento de Usuários</Label>
+        <p className="text-sm text-gray-600 mt-1">
+          Gerencie os usuários que têm acesso ao dashboard deste cliente
+        </p>
       </div>
+      
+      <Separator />
+      
+      {/* Formulário para adicionar usuários */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Adicionar Novo Usuário</h3>
+        <UserAddForm onAddUser={addUser} isLoading={isLoading} />
+      </div>
+
+      {/* Lista de todos os usuários */}
+      <AllUsersList
+        clientEmail={clientEmail}
+        clientName={clientName}
+        clientUsers={clientUsers}
+        userAuthInfo={userAuthInfo}
+        visiblePasswords={visiblePasswords}
+        isLoading={isLoading}
+        onTogglePasswordVisibility={togglePasswordVisibility}
+        onRemoveUser={removeUser}
+        onUpdatePassword={updatePassword}
+        onUpdateMainClientPassword={handleUpdateMainClientPassword}
+      />
 
       <InfoBanner />
     </div>

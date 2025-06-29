@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Crown, Key, Eye, EyeOff, Edit2, Save, X as Cancel, Copy } from 'lucide-react';
+import { Mail, Crown, Key, Eye, EyeOff, Edit2, Save, X as Cancel, Copy, User } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface MainClientCardProps {
@@ -59,78 +59,65 @@ export const MainClientCard = ({
   };
 
   return (
-    <div className="border rounded-lg p-4 bg-blue-50 border-blue-200">
-      <div className="flex items-center justify-between mb-3">
-        <Badge variant="default" className="flex items-center gap-2 bg-blue-600">
-          <Crown className="h-3 w-3" />
-          Cliente Principal
-        </Badge>
-      </div>
-      
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Mail className="h-4 w-4 text-blue-600" />
-          <span className="text-sm font-medium">{clientEmail}</span>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleCopyEmail}
-          className="h-8 w-8 p-0"
-          title="Copiar email"
-        >
-          <Copy className="h-3 w-3" />
-        </Button>
-      </div>
-      
-      <div className="text-xs text-blue-700 mb-4">
-        <strong>{clientName}</strong> - Acesso total ao dashboard
-      </div>
-
-      {/* Seção de senha */}
-      <div className="p-3 bg-white rounded border">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Key className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium">Senha de Acesso:</span>
+    <div className="space-y-4">
+      {/* Informações do Cliente */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <User className="h-4 w-4" />
+            Nome do Cliente
+          </label>
+          <div className="p-3 bg-gray-50 rounded-lg border">
+            <span className="text-sm font-medium text-gray-900">{clientName}</span>
           </div>
-          {!isEditingPassword && (
-            <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowPassword(!showPassword)}
-                className="h-8 w-8 p-0"
-                title={showPassword ? "Ocultar senha" : "Mostrar senha"}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-3 w-3" />
-                ) : (
-                  <Eye className="h-3 w-3" />
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsEditingPassword(true)}
-                className="h-8 px-2"
-                disabled={isLoading}
-              >
-                <Edit2 className="h-3 w-3 mr-1" />
-                Alterar
-              </Button>
-            </div>
-          )}
         </div>
+        
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <Mail className="h-4 w-4" />
+            Email de Acesso
+          </label>
+          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border">
+            <span className="text-sm font-medium text-gray-900 flex-1">{clientEmail}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCopyEmail}
+              className="h-8 w-8 p-0"
+              title="Copiar email"
+            >
+              <Copy className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      </div>
 
+      {/* Permissões */}
+      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-center gap-2 mb-2">
+          <Crown className="h-4 w-4 text-blue-600" />
+          <span className="text-sm font-medium text-blue-900">Privilégios de Acesso</span>
+        </div>
+        <p className="text-sm text-blue-800">
+          Este usuário possui acesso total ao dashboard como administrador principal do cliente.
+        </p>
+      </div>
+
+      {/* Seção de Senha */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+          <Key className="h-4 w-4" />
+          Senha de Acesso
+        </label>
+        
         {isEditingPassword ? (
-          <div className="space-y-2">
+          <div className="space-y-3 p-4 bg-gray-50 rounded-lg border">
             <Input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Digite a nova senha"
-              className="text-sm"
+              className="bg-white"
             />
             <div className="flex gap-2">
               <Button
@@ -138,40 +125,63 @@ export const MainClientCard = ({
                 size="sm"
                 onClick={handleSavePassword}
                 disabled={!newPassword.trim() || isLoading}
-                className="flex items-center gap-1"
+                className="flex items-center gap-2"
               >
-                <Save className="h-3 w-3" />
-                Salvar
+                <Save className="h-4 w-4" />
+                Salvar Nova Senha
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleCancelEdit}
-                className="flex items-center gap-1"
+                className="flex items-center gap-2"
               >
-                <Cancel className="h-3 w-3" />
+                <Cancel className="h-4 w-4" />
                 Cancelar
               </Button>
             </div>
           </div>
         ) : (
-          <div className="bg-gray-50 border border-gray-200 rounded p-3">
-            <div className="flex items-center gap-2 text-gray-700">
-              <Key className="h-4 w-4" />
-              {showPassword ? (
-                <span className="text-sm font-mono">
-                  ••••••••••••
+          <div className="p-4 bg-gray-50 rounded-lg border">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">
+                  {showPassword ? "••••••••••••" : "Senha não exibida por segurança"}
                 </span>
-              ) : (
-                <span className="text-sm">
-                  Clique no ícone do olho para visualizar ou use "Alterar" para definir nova senha.
-                </span>
-              )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="h-8 w-8 p-0"
+                  title={showPassword ? "Ocultar indicador" : "Mostrar indicador"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditingPassword(true)}
+                  disabled={isLoading}
+                  className="flex items-center gap-2"
+                >
+                  <Edit2 className="h-4 w-4" />
+                  Alterar Senha
+                </Button>
+              </div>
             </div>
+            
             {showPassword && (
-              <div className="mt-2 text-xs text-orange-600 bg-orange-50 p-2 rounded">
-                ⚠️ Por motivos de segurança, a senha atual não pode ser exibida. 
-                Use "Alterar" para definir uma nova senha de acesso.
+              <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <p className="text-xs text-orange-700">
+                  ⚠️ Por motivos de segurança, a senha atual não pode ser exibida. 
+                  Use "Alterar Senha" para definir uma nova senha de acesso.
+                </p>
               </div>
             )}
           </div>

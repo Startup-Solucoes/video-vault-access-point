@@ -37,27 +37,49 @@ export const AllUsersList = ({
   });
 
   return (
-    <div className="space-y-4">
-      {/* Card do Cliente Principal */}
-      <MainClientCard
-        clientEmail={clientEmail}
-        clientName={clientName}
-        onUpdatePassword={onUpdateMainClientPassword}
-        isLoading={isLoading}
-      />
+    <div className="space-y-6">
+      {/* Seção do Cliente Principal - Layout melhorado */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <span className="text-blue-600 font-semibold text-sm">👑</span>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">Cliente Principal</h3>
+        </div>
+        
+        <MainClientCard
+          clientEmail={clientEmail}
+          clientName={clientName}
+          onUpdatePassword={onUpdateMainClientPassword}
+          isLoading={isLoading}
+        />
+      </div>
 
-      {/* Lista de Usuários Adicionais */}
-      <div>
-        <h4 className="text-sm font-medium text-gray-700 mb-3">
-          Usuários Adicionais ({clientUsers.length})
-        </h4>
+      {/* Seção de Usuários Adicionais - Layout melhorado */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <span className="text-green-600 font-semibold text-sm">👥</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Usuários Adicionais
+            </h3>
+          </div>
+          <div className="bg-gray-100 px-3 py-1 rounded-full">
+            <span className="text-sm font-medium text-gray-600">{clientUsers.length}</span>
+          </div>
+        </div>
         
         {clientUsers.length === 0 ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
-            <div className="text-gray-500 text-sm">
-              <p className="font-medium mb-1">Nenhum usuário adicional cadastrado</p>
-              <p>Use o formulário acima para adicionar novos usuários de acesso para este cliente.</p>
+          <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
+            <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-gray-400 text-xl">👤</span>
             </div>
+            <h4 className="font-medium text-gray-900 mb-1">Nenhum usuário adicional</h4>
+            <p className="text-sm text-gray-600">
+              Use o formulário acima para adicionar novos usuários de acesso para este cliente.
+            </p>
           </div>
         ) : (
           <UsersList
