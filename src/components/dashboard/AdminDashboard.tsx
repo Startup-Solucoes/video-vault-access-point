@@ -26,7 +26,6 @@ export const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showVideoForm, setShowVideoForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
-  const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   const refreshCurrentTab = () => {
@@ -71,7 +70,7 @@ export const AdminDashboard = () => {
       case 'history':
         return <VideoHistory />;
       case 'tools':
-        return <AdminToolsView selectedTool={selectedTool} onToolSelect={setSelectedTool} />;
+        return <AdminToolsView />;
       default:
         return null;
     }
