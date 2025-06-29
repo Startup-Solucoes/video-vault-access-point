@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useClientVideoContainer } from './hooks/useClientVideoContainer';
 import { useClientVideoCallbacks } from './hooks/useClientVideoCallbacks';
 import { ClientVideoLoadingState } from './ClientVideoLoadingState';
 import { ClientVideoReorderMode } from './ClientVideoReorderMode';
 import { ClientVideoMainView } from './ClientVideoMainView';
+import { ClientUserManagementView } from './ClientUserManagementView';
 import { VideoForm } from '@/components/forms/VideoForm';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ClientVideoViewContainerProps {
   clientId: string;
@@ -18,6 +20,9 @@ export const ClientVideoViewContainer = ({
   clientName, 
   clientLogoUrl 
 }: ClientVideoViewContainerProps) => {
+  const { user } = useAuth();
+  const [showUserManagement, setShowUserManagement] = useState(false);
+  
   const containerData = useClientVideoContainer({ clientId });
   
   const callbacks = useClientVideoCallbacks({
@@ -37,12 +42,38 @@ export const ClientVideoViewContainer = ({
     selectedClients: containerData.selectedClients
   });
 
+  // Buscar informações do cliente principal pelo ID
+  const getClientInfo = () => {
+    // Como temos o clientId, precisamos buscar as informações do cliente
+    // Por enquanto vamos usar dados básicos, mas isso pode ser expandido
+    return {
+      email: user?.email || '',
+      name: clientName,
+      logoUrl: clientLogoUrl
+    };
+  };
+
+  const clientInfo = getClientInfo();
+
   // Loading state
   if (containerData.isLoading) {
     return (
       <ClientVideoLoadingState 
         clientName={clientName} 
         clientLogoUrl={clientLogoUrl} 
+      />
+    );
+  }
+
+  // User management view
+  if (showUserManagement) {
+    return (
+      <ClientUserManagementView
+        clientId={clientId}
+        clientName={clientName}
+        clientEmail={clientInfo.email}
+        clientLogoUrl={clientLogoUrl}
+        onBack={() => setShowUserManagement(false)}
       />
     );
   }
@@ -73,7 +104,7 @@ export const ClientVideoViewContainer = ({
         totalPages={containerData.totalPages}
         selectedVideos={containerData.selectedVideos}
         allVisibleVideosSelected={containerData.allVisibleVideosSelected}
-        showUsersManager={containerData.showUsersManager}
+        showUsersManager={false} // Sempre false agora, pois vamos para tela separada
         showClientSelector={containerData.showClientSelector}
         editingVideoId={containerData.editingVideoId}
         isEditModalOpen={containerData.isEditModalOpen}
@@ -87,7 +118,7 @@ export const ClientVideoViewContainer = ({
         selectedClients={containerData.selectedClients}
         isAssigning={containerData.isAssigning}
         onSelectAllVisible={containerData.handleSelectAllVisible}
-        onToggleUsersManager={() => containerData.setShowUsersManager(!containerData.showUsersManager)}
+        onToggleUsersManager={() => setShowUserManagement(true)} // Mudança aqui
         onShowReorderMode={() => containerData.setShowReorderMode(true)}
         onBulkDelete={containerData.handleBulkDelete}
         onAssignToClients={() => containerData.setShowClientSelector(true)}
