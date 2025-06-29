@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Crown, Key, Eye, EyeOff, Edit2, Save, X as Cancel } from 'lucide-react';
+import { Mail, Crown, Key, Eye, EyeOff, Edit2, Save, X as Cancel, Copy } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface MainClientCardProps {
@@ -22,7 +22,7 @@ export const MainClientCard = ({
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [currentPassword] = useState('••••••••••'); // Placeholder - senha real não é exibida por segurança
+  const [currentPassword] = useState(''); // A senha real do cliente principal não é armazenada/exibida por segurança
 
   const handleSavePassword = () => {
     if (newPassword.trim() && onUpdatePassword) {
@@ -41,6 +41,22 @@ export const MainClientCard = ({
     setIsEditingPassword(false);
   };
 
+  const handleCopyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(clientEmail);
+      toast({
+        title: "Email copiado!",
+        description: `Email ${clientEmail} copiado para a área de transferência`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível copiar o email",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="border rounded-lg p-4 bg-blue-50 border-blue-200">
       <div className="flex items-center justify-between mb-3">
@@ -50,9 +66,20 @@ export const MainClientCard = ({
         </Badge>
       </div>
       
-      <div className="flex items-center gap-2 mb-3">
-        <Mail className="h-4 w-4 text-blue-600" />
-        <span className="text-sm font-medium">{clientEmail}</span>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Mail className="h-4 w-4 text-blue-600" />
+          <span className="text-sm font-medium">{clientEmail}</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleCopyEmail}
+          className="h-8 w-8 p-0"
+          title="Copiar email"
+        >
+          <Copy className="h-3 w-3" />
+        </Button>
       </div>
       
       <div className="text-xs text-blue-700 mb-4">
@@ -127,10 +154,20 @@ export const MainClientCard = ({
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-2">
-            <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-              {showPassword ? "Senha não disponível por segurança" : currentPassword}
-            </code>
+          <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+            <div className="flex items-center gap-2 text-yellow-800">
+              <Key className="h-4 w-4" />
+              {showPassword ? (
+                <span className="text-sm">
+                  Por segurança, a senha do cliente principal não é exibida. 
+                  Use a opção "Alterar" para definir uma nova senha.
+                </span>
+              ) : (
+                <span className="text-sm">
+                  Clique no ícone do olho para tentar visualizar ou use "Alterar" para definir nova senha.
+                </span>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -1,9 +1,7 @@
 
 import React from 'react';
-import { User } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { UserCard } from './UserCard';
 import { MainClientCard } from './MainClientCard';
+import { UsersList } from './UsersList';
 import { ClientUser } from '@/services/client/clientUsersService';
 
 interface AllUsersListProps {
@@ -19,67 +17,58 @@ interface AllUsersListProps {
   onUpdateMainClientPassword?: (newPassword: string) => void;
 }
 
-export const AllUsersList = ({ 
+export const AllUsersList = ({
   clientEmail,
   clientName,
-  clientUsers, 
-  userAuthInfo, 
-  visiblePasswords, 
+  clientUsers,
+  userAuthInfo,
+  visiblePasswords,
   isLoading,
   onTogglePasswordVisibility,
   onRemoveUser,
   onUpdatePassword,
   onUpdateMainClientPassword
 }: AllUsersListProps) => {
-  const totalUsers = 1 + clientUsers.length; // Cliente principal + usuários adicionais
+  console.log('🔍 AllUsersList - Dados recebidos:', {
+    clientEmail,
+    clientName,
+    totalUsers: clientUsers.length,
+    users: clientUsers.map(u => ({ id: u.id, email: u.user_email }))
+  });
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-900">
-          Todos os Emails com Acesso ({totalUsers})
-        </h3>
-        <Badge variant="outline" className="text-xs">
-          {totalUsers} usuário{totalUsers > 1 ? 's' : ''}
-        </Badge>
-      </div>
+      {/* Card do Cliente Principal */}
+      <MainClientCard
+        clientEmail={clientEmail}
+        clientName={clientName}
+        onUpdatePassword={onUpdateMainClientPassword}
+        isLoading={isLoading}
+      />
 
-      <div className="space-y-3">
-        {/* Cliente Principal */}
-        <MainClientCard
-          clientEmail={clientEmail}
-          clientName={clientName}
-          onUpdatePassword={onUpdateMainClientPassword}
-          isLoading={isLoading}
-        />
-
-        {/* Usuários Adicionais */}
-        {clientUsers.length > 0 ? (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <User className="h-4 w-4" />
-              <span>Usuários Adicionais:</span>
+      {/* Lista de Usuários Adicionais */}
+      <div>
+        <h4 className="text-sm font-medium text-gray-700 mb-3">
+          Usuários Adicionais ({clientUsers.length})
+        </h4>
+        
+        {clientUsers.length === 0 ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+            <div className="text-gray-500 text-sm">
+              <p className="font-medium mb-1">Nenhum usuário adicional cadastrado</p>
+              <p>Use o formulário acima para adicionar novos usuários de acesso para este cliente.</p>
             </div>
-            {clientUsers.map((clientUser) => (
-              <UserCard
-                key={clientUser.id}
-                userId={clientUser.id}
-                userEmail={clientUser.user_email}
-                generatedPassword={clientUser.generated_password}
-                authInfo={userAuthInfo[clientUser.id]}
-                isPasswordVisible={visiblePasswords[clientUser.id]}
-                isLoading={isLoading}
-                onTogglePasswordVisibility={() => onTogglePasswordVisibility(clientUser.id)}
-                onRemoveUser={() => onRemoveUser(clientUser.id)}
-                onUpdatePassword={onUpdatePassword}
-              />
-            ))}
           </div>
         ) : (
-          <div className="text-sm text-gray-500 p-4 text-center border rounded-lg bg-gray-50">
-            <User className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-            Nenhum usuário adicional cadastrado
-          </div>
+          <UsersList
+            clientUsers={clientUsers}
+            userAuthInfo={userAuthInfo}
+            visiblePasswords={visiblePasswords}
+            isLoading={isLoading}
+            onTogglePasswordVisibility={onTogglePasswordVisibility}
+            onRemoveUser={onRemoveUser}
+            onUpdatePassword={onUpdatePassword}
+          />
         )}
       </div>
     </div>
