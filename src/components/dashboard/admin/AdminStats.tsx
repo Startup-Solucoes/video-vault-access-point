@@ -8,6 +8,7 @@ interface AdminStatsProps {
     activeClients?: number;
     totalVideos?: number;
     videosThisMonth?: number;
+    activeAdvertisements?: number;
   };
   onNavigateToClients?: () => void;
   onNavigateToVideos?: () => void;
@@ -55,11 +56,11 @@ export const AdminStats = ({
 
       <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]" onClick={onNavigateToAdvertisements}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium opacity-90">Gerenciar Anúncios</CardTitle>
+          <CardTitle className="text-sm font-medium opacity-90">Anúncios Ativos</CardTitle>
           <Megaphone className="h-5 w-5 opacity-80" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">Anúncios</div>
+          <div className="text-3xl font-bold">{stats?.activeAdvertisements || 0}</div>
           <p className="text-xs opacity-80 mt-1">Clique para gerenciar</p>
         </CardContent>
       </Card>

@@ -38,18 +38,26 @@ export const useAdminStats = () => {
         .select('*', { count: 'exact', head: true })
         .gte('created_at', currentMonth.toISOString());
 
+      // Buscar anúncios ativos
+      const { count: activeAdvertisements } = await supabase
+        .from('advertisements')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true);
+
       console.log('✅ Estatísticas carregadas:', {
         totalClients,
         activeClients,
         totalVideos,
-        videosThisMonth
+        videosThisMonth,
+        activeAdvertisements
       });
 
       return {
         totalClients: totalClients || 0,
         activeClients,
         totalVideos: totalVideos || 0,
-        videosThisMonth: videosThisMonth || 0
+        videosThisMonth: videosThisMonth || 0,
+        activeAdvertisements: activeAdvertisements || 0
       };
     },
   });
