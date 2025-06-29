@@ -1,5 +1,5 @@
 
-import { Youtube, Play, Video, Twitch, Facebook, Instagram, Globe, Monitor, Zap, ShoppingCart, Package, Briefcase, Wordpress } from 'lucide-react';
+import { ShoppingCart, Zap, Package, Globe, Briefcase } from 'lucide-react';
 
 // Mapeamento correto das plataformas com os ícones do modal
 export const platformConfigs = {
@@ -26,7 +26,7 @@ export const platformConfigs = {
   woocommerce: {
     color: '#96588A',
     name: 'Woocommerce',
-    icon: Wordpress
+    icon: Package
   },
   'olist-tiny': {
     color: '#4285F4',
@@ -36,7 +36,7 @@ export const platformConfigs = {
   wordpress: {
     color: '#21759B',
     name: 'Wordpress',
-    icon: Wordpress
+    icon: Globe
   },
   outros: {
     color: '#6B7280',
