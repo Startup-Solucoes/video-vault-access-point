@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, Loader2 } from 'lucide-react';
 import { Client } from './ClientSelectorTypes';
 
@@ -81,29 +82,31 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Selecionar Clientes</DialogTitle>
           <DialogDescription>
             Escolha quais clientes terão acesso aos vídeos selecionados. Você pode selecionar múltiplos clientes.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4">
-          {/* Campo de busca */}
-          <div className="flex items-center space-x-2 border rounded-md px-3 py-2">
-            <Search className="h-4 w-4 text-gray-500" />
-            <Input
-              placeholder="Buscar por nome ou e-mail..."
-              value={searchValue}
-              onChange={(e) => onSearchValueChange(e.target.value)}
-              className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
-            />
+        <div className="flex flex-col flex-1 min-h-0 space-y-4">
+          {/* Campo de busca - fixo */}
+          <div className="flex-shrink-0">
+            <div className="flex items-center space-x-2 border rounded-md px-3 py-2">
+              <Search className="h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Buscar por nome ou e-mail..."
+                value={searchValue}
+                onChange={(e) => onSearchValueChange(e.target.value)}
+                className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+              />
+            </div>
           </div>
 
-          {/* Botão Selecionar/Desmarcar Todos */}
+          {/* Botão Selecionar/Desmarcar Todos - fixo */}
           {filteredClients.length > 0 && (
-            <div className="flex justify-between items-center">
+            <div className="flex-shrink-0 flex justify-between items-center">
               <Button
                 type="button"
                 variant="outline"
@@ -118,50 +121,53 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
             </div>
           )}
 
-          {/* Lista de clientes */}
-          <div className="border rounded-md max-h-[400px] overflow-y-auto">
-            {isLoading ? (
-              <div className="p-8 text-center text-gray-500">
-                Carregando clientes...
-              </div>
-            ) : clients.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                Nenhum cliente cadastrado ainda.
-              </div>
-            ) : filteredClients.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                Nenhum cliente encontrado com esse termo.
-              </div>
-            ) : (
-              <div className="divide-y">
-                {filteredClients.map((client) => (
-                  <div
-                    key={client.id}
-                    className="p-4 hover:bg-gray-50 cursor-pointer"
-                    onClick={() => onClientToggle(client.id)}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        checked={selectedClients.includes(client.id)}
-                        onCheckedChange={() => onClientToggle(client.id)}
-                      />
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">
-                          {client.full_name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {client.email}
+          {/* Lista de clientes - com scroll */}
+          <div className="flex-1 min-h-0">
+            <ScrollArea className="h-full border rounded-md">
+              {isLoading ? (
+                <div className="p-8 text-center text-gray-500">
+                  Carregando clientes...
+                </div>
+              ) : clients.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  Nenhum cliente cadastrado ainda.
+                </div>
+              ) : filteredClients.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  Nenhum cliente encontrado com esse termo.
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {filteredClients.map((client) => (
+                    <div
+                      key={client.id}
+                      className="p-4 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => onClientToggle(client.id)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          checked={selectedClients.includes(client.id)}
+                          onCheckedChange={() => onClientToggle(client.id)}
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">
+                            {client.full_name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {client.email}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
           </div>
         </div>
 
-        <div className="flex justify-end space-x-2 pt-4">
+        {/* Botões de ação - fixos na parte inferior */}
+        <div className="flex-shrink-0 flex justify-end space-x-2 pt-4 border-t">
           <Button
             type="button"
             variant="outline"
