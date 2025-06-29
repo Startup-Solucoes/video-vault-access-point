@@ -7,7 +7,6 @@ import {
   Video, 
   Users, 
   Plus, 
-  ArrowUpDown, 
   Trash2, 
   UserPlus
 } from 'lucide-react';
@@ -32,7 +31,6 @@ export const ClientVideoHeader = ({
   selectedVideos,
   showUsersManager,
   onToggleUsersManager,
-  onShowReorderMode,
   onBulkDelete,
   onAssignToClients,
   onAddVideo
@@ -94,16 +92,6 @@ export const ClientVideoHeader = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onShowReorderMode}
-                className="text-gray-700 hover:bg-gray-100"
-              >
-                <ArrowUpDown className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Reordenar</span>
-              </Button>
-              
               <Button
                 variant="outline"
                 size="sm"

@@ -134,7 +134,7 @@ export const ClientVideoMainView = ({
         showUsersManager={showUsersManager}
       />
 
-      {/* Filtros de Vídeo - agora integrados com seleção */}
+      {/* Filtros de Vídeo - agora integrados com seleção e reordenação */}
       <ClientVideoFilters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -148,6 +148,7 @@ export const ClientVideoMainView = ({
         selectedVideos={selectedVideos}
         allVideosSelected={allVisibleVideosSelected}
         onSelectAllVisible={onSelectAllVisible}
+        onShowReorderMode={onShowReorderMode}
       />
 
       {/* Videos Content */}

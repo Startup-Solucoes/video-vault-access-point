@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X, Tag, CheckSquare, Square } from 'lucide-react';
+import { Search, Filter, X, Tag, CheckSquare, Square, ArrowUpDown } from 'lucide-react';
 
 interface ClientVideoFiltersProps {
   searchTerm: string;
@@ -20,6 +20,7 @@ interface ClientVideoFiltersProps {
   selectedVideos: string[];
   allVideosSelected: boolean;
   onSelectAllVisible: () => void;
+  onShowReorderMode: () => void;
 }
 
 export const ClientVideoFilters = ({
@@ -34,7 +35,8 @@ export const ClientVideoFilters = ({
   setShowFilters,
   selectedVideos,
   allVideosSelected,
-  onSelectAllVisible
+  onSelectAllVisible,
+  onShowReorderMode
 }: ClientVideoFiltersProps) => {
   const hasActiveFilters = searchTerm || selectedCategory;
   const hasSelectedVideos = selectedVideos.length > 0;
@@ -60,7 +62,7 @@ export const ClientVideoFilters = ({
             />
           </div>
 
-          {/* Filtros lado a lado - sempre visível no desktop */}
+          {/* Filtros e controles lado a lado */}
           <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 w-full lg:w-auto">
             {/* Filtro de categoria */}
             <div className="min-w-0 w-full sm:w-48">
@@ -84,7 +86,7 @@ export const ClientVideoFilters = ({
               </Select>
             </div>
 
-            {/* Controles de seleção */}
+            {/* Controles de ação */}
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -98,8 +100,21 @@ export const ClientVideoFilters = ({
                   <Square className="h-4 w-4" />
                 )}
                 <span className="hidden sm:inline">
+                  {allVideosSelected ? 'Desmarcar Todos' : 'Selecionar Todos'}
+                </span>
+                <span className="sm:hidden">
                   {allVideosSelected ? 'Desmarcar' : 'Selecionar'}
                 </span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onShowReorderMode}
+                className="bg-white flex items-center gap-2"
+              >
+                <ArrowUpDown className="h-4 w-4" />
+                <span className="hidden sm:inline">Reordenar</span>
               </Button>
 
               {/* Contador de resultados */}
