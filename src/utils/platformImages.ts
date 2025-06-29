@@ -1,20 +1,20 @@
 
-// Mapeamento das plataformas com logos/favicons reais
+// Mapeamento das plataformas com logos/imagens locais
 export const platformConfigs = {
   nuvemshop: {
     color: '#00D4FF',
     name: 'Nuvemshop',
-    logo: 'https://www.nuvemshop.com.br/favicon.ico'
+    logo: '/lovable-uploads/79f5953e-cebc-4bf8-b0bf-7873084aa496.png'
   },
   bling: {
     color: '#7ED321',
     name: 'Bling',
-    logo: 'https://www.bling.com.br/wp-content/themes/bling_br/images/bling.svg'
+    logo: '/lovable-uploads/506360a2-2e3c-4e2d-965c-0017c59d36af.png'
   },
   yampi: {
     color: '#9013FE',
     name: 'Yampi',
-    logo: 'https://play-lh.googleusercontent.com/-oNcXnQ_0Kk4MyL4WWR56Se7fIPhPv65YWNwpF9PuyzRgmlezG0MiS6KYujQXka3yA=w240-h480-rw'
+    logo: '/lovable-uploads/b48eb6a8-72e0-45e9-9d0f-ed7f4e389cd3.png'
   },
   bagy: {
     color: '#FF6B6B',
@@ -24,17 +24,17 @@ export const platformConfigs = {
   woocommerce: {
     color: '#96588A',
     name: 'Woocommerce',
-    logo: 'https://s.w.org/style/images/about/WordPress-logotype-wmark.png'
+    logo: '/lovable-uploads/5c7b73d0-315a-4b66-a49c-9a659ac42ba1.png'
   },
   'olist-tiny': {
     color: '#4285F4',
     name: 'Olist/Tiny',
-    logo: 'https://olist.com/favicon.ico'
+    logo: '/lovable-uploads/dfd22cd4-d367-48df-a0f5-29c708b797ce.png'
   },
   wordpress: {
     color: '#21759B',
     name: 'Wordpress',
-    logo: 'https://wordpress.com/favicon.ico'
+    logo: '/lovable-uploads/833ca344-7e30-4b0e-907a-01b500e56050.png'
   },
   outros: {
     color: '#6B7280',
