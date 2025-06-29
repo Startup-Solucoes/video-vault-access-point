@@ -39,10 +39,17 @@ export const useAdminStats = () => {
         .gte('created_at', currentMonth.toISOString());
 
       // Buscar anúncios ativos
-      const { count: activeAdvertisements } = await supabase
+      console.log('🔍 Buscando anúncios ativos...');
+      const { count: activeAdvertisements, error: adsError } = await supabase
         .from('advertisements')
         .select('*', { count: 'exact', head: true })
         .eq('is_active', true);
+
+      if (adsError) {
+        console.error('❌ Erro ao buscar anúncios:', adsError);
+      } else {
+        console.log('✅ Anúncios ativos encontrados:', activeAdvertisements);
+      }
 
       console.log('✅ Estatísticas carregadas:', {
         totalClients,
