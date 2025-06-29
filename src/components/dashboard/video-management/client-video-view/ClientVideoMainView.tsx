@@ -4,6 +4,8 @@ import { ClientVideoHeader } from './ClientVideoHeader';
 import { ClientVideoUsersSection } from './ClientVideoUsersSection';
 import { ClientVideoContent } from './ClientVideoContent';
 import { ClientVideoModals } from './ClientVideoModals';
+import { ClientVideoFilters } from './ClientVideoFilters';
+import { useClientVideoFiltering } from '@/hooks/video-management/useClientVideoFiltering';
 import { ClientVideoData } from '@/hooks/useClientVideos';
 
 interface ClientVideoMainViewProps {
@@ -98,13 +100,24 @@ export const ClientVideoMainView = ({
   onClientToggle,
   onBulkClientChange
 }: ClientVideoMainViewProps) => {
+  const {
+    searchTerm,
+    setSearchTerm,
+    selectedCategory,
+    setSelectedCategory,
+    showFilters,
+    setShowFilters,
+    availableCategories,
+    filteredVideos
+  } = useClientVideoFiltering(videos);
+
   return (
     <div className="space-y-6 w-full">
       {/* Header */}
       <ClientVideoHeader
         clientName={clientName}
         clientLogoUrl={clientLogoUrl}
-        videosCount={videos.length}
+        videosCount={filteredVideos.length}
         selectedVideos={selectedVideos}
         showUsersManager={showUsersManager}
         onSelectAllVisible={onSelectAllVisible}
@@ -123,9 +136,22 @@ export const ClientVideoMainView = ({
         showUsersManager={showUsersManager}
       />
 
+      {/* Filtros de Vídeo */}
+      <ClientVideoFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        availableCategories={availableCategories}
+        totalVideos={videos.length}
+        filteredVideos={filteredVideos.length}
+        showFilters={showFilters}
+        setShowFilters={setShowFilters}
+      />
+
       {/* Videos Content */}
       <ClientVideoContent
-        videos={videos}
+        videos={filteredVideos}
         paginatedVideos={paginatedVideos}
         totalPages={totalPages}
         selectedVideos={selectedVideos}
