@@ -31,7 +31,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
     platform: video.platform,
     platformColor,
     platformName,
-    PlatformIcon: PlatformIcon.name
+    iconComponent: PlatformIcon
   });
 
   return (
