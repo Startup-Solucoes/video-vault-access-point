@@ -48,7 +48,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
               }}
             >
               <div className="mb-2">
-                {PlatformIcon && React.createElement(PlatformIcon, { 
+                {React.createElement(PlatformIcon, { 
                   className: "h-12 w-12",
                   'aria-label': `${platformName} icon`
                 })}

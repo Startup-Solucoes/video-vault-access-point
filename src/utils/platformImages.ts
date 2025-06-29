@@ -1,5 +1,5 @@
 
-import { ShoppingCart, Zap, Package, Globe, Briefcase } from 'lucide-react';
+import { ShoppingCart, Zap, Package, Globe, Briefcase, Store, Wordpress } from 'lucide-react';
 
 // Mapeamento correto das plataformas com os ícones do modal
 export const platformConfigs = {
@@ -21,7 +21,7 @@ export const platformConfigs = {
   bagy: {
     color: '#FF6B6B',
     name: 'Bagy',
-    icon: ShoppingCart
+    icon: Store
   },
   woocommerce: {
     color: '#96588A',
