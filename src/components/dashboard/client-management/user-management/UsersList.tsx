@@ -11,6 +11,7 @@ interface UsersListProps {
   isLoading: boolean;
   onTogglePasswordVisibility: (userId: string) => void;
   onRemoveUser: (userId: string) => void;
+  onUpdatePassword?: (userId: string, newPassword: string) => void;
 }
 
 export const UsersList = ({ 
@@ -19,7 +20,8 @@ export const UsersList = ({
   visiblePasswords, 
   isLoading,
   onTogglePasswordVisibility,
-  onRemoveUser 
+  onRemoveUser,
+  onUpdatePassword
 }: UsersListProps) => {
   if (isLoading && clientUsers.length === 0) {
     return <div className="text-sm text-gray-500">Carregando usuários...</div>;
@@ -47,6 +49,7 @@ export const UsersList = ({
           isLoading={isLoading}
           onTogglePasswordVisibility={() => onTogglePasswordVisibility(clientUser.id)}
           onRemoveUser={() => onRemoveUser(clientUser.id)}
+          onUpdatePassword={onUpdatePassword}
         />
       ))}
     </div>
