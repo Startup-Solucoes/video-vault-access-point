@@ -53,23 +53,13 @@ export const ClientUserManagementView = ({
         </div>
       </div>
 
-      {/* Conteúdo principal */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Usuários com Acesso
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ClientUsersManager 
-            clientId={clientId} 
-            clientEmail={clientEmail}
-            clientName={clientName}
-            clientLogoUrl={clientLogoUrl}
-          />
-        </CardContent>
-      </Card>
+      {/* Conteúdo principal - apenas o gerenciador sem cabeçalho adicional */}
+      <ClientUsersManager 
+        clientId={clientId} 
+        clientEmail={clientEmail}
+        clientName={clientName}
+        clientLogoUrl={clientLogoUrl}
+      />
     </div>
   );
 };
