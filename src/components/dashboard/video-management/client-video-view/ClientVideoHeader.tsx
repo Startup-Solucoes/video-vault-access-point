@@ -9,9 +9,7 @@ import {
   Plus, 
   ArrowUpDown, 
   Trash2, 
-  UserPlus,
-  CheckSquare,
-  Square
+  UserPlus
 } from 'lucide-react';
 
 interface ClientVideoHeaderProps {
@@ -20,8 +18,6 @@ interface ClientVideoHeaderProps {
   videosCount: number;
   selectedVideos: string[];
   showUsersManager: boolean;
-  allVideosSelected: boolean;
-  onSelectAllVisible: () => void;
   onToggleUsersManager: () => void;
   onShowReorderMode: () => void;
   onBulkDelete: () => void;
@@ -35,8 +31,6 @@ export const ClientVideoHeader = ({
   videosCount,
   selectedVideos,
   showUsersManager,
-  allVideosSelected,
-  onSelectAllVisible,
   onToggleUsersManager,
   onShowReorderMode,
   onBulkDelete,
@@ -88,40 +82,17 @@ export const ClientVideoHeader = ({
         </div>
       </CardHeader>
 
-      {/* Barra de controles de seleção - integrada */}
-      <CardContent className="pt-0">
-        <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3 border">
-          <div className="flex items-center gap-4">
-            {/* Seletor de todos */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onSelectAllVisible}
-              className={`${allVideosSelected ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white'} flex items-center gap-2`}
-            >
-              {allVideosSelected ? (
-                <CheckSquare className="h-4 w-4" />
-              ) : (
-                <Square className="h-4 w-4" />
-              )}
-              <span className="hidden sm:inline">
-                {allVideosSelected ? 'Desmarcar Todos' : 'Selecionar Todos'}
-              </span>
-              <span className="sm:hidden">
-                {allVideosSelected ? 'Desmarcar' : 'Selecionar'}
-              </span>
-            </Button>
-
-            {/* Contador de selecionados */}
-            {hasSelectedVideos && (
+      {/* Ações em lote - aparece apenas quando há vídeos selecionados */}
+      {hasSelectedVideos && (
+        <CardContent className="pt-0">
+          <div className="flex items-center justify-between bg-blue-50 rounded-lg p-3 border border-blue-200">
+            <div className="flex items-center gap-2">
               <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                 {selectedVideos.length} selecionado{selectedVideos.length > 1 ? 's' : ''}
               </Badge>
-            )}
-          </div>
+              <span className="text-sm text-gray-600">Escolha uma ação:</span>
+            </div>
 
-          {/* Ações em lote */}
-          {hasSelectedVideos && (
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -163,9 +134,9 @@ export const ClientVideoHeader = ({
                 </span>
               </Button>
             </div>
-          )}
-        </div>
-      </CardContent>
+          </div>
+        </CardContent>
+      )}
     </Card>
   );
 };

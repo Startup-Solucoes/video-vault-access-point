@@ -120,13 +120,11 @@ export const ClientVideoMainView = ({
         videosCount={filteredVideos.length}
         selectedVideos={selectedVideos}
         showUsersManager={showUsersManager}
-        onSelectAllVisible={onSelectAllVisible}
         onToggleUsersManager={onToggleUsersManager}
         onShowReorderMode={onShowReorderMode}
         onBulkDelete={onBulkDelete}
         onAssignToClients={onAssignToClients}
         onAddVideo={onAddVideo}
-        allVideosSelected={allVisibleVideosSelected}
       />
 
       {/* Users Manager */}
@@ -136,7 +134,7 @@ export const ClientVideoMainView = ({
         showUsersManager={showUsersManager}
       />
 
-      {/* Filtros de Vídeo */}
+      {/* Filtros de Vídeo - agora integrados com seleção */}
       <ClientVideoFilters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -147,6 +145,9 @@ export const ClientVideoMainView = ({
         filteredVideos={filteredVideos.length}
         showFilters={showFilters}
         setShowFilters={setShowFilters}
+        selectedVideos={selectedVideos}
+        allVideosSelected={allVisibleVideosSelected}
+        onSelectAllVisible={onSelectAllVisible}
       />
 
       {/* Videos Content */}
