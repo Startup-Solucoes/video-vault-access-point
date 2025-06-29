@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,54 +17,73 @@ interface VideoCardProps {
 
 export const VideoCard = ({ video }: VideoCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  
   const categoryColors = video.category ? getCategoryColor(video.category) : '';
-
   const platformColor = getPlatformColor(video.platform || 'outros');
   const platformName = getPlatformName(video.platform || 'outros');
   const platformLogo = getPlatformLogo(video.platform || 'outros');
+
+  // Preload da imagem
+  useEffect(() => {
+    if (platformLogo) {
+      const img = new Image();
+      img.onload = () => setImageLoaded(true);
+      img.onerror = () => setImageError(true);
+      img.src = platformLogo;
+    } else {
+      setImageLoaded(true); // Se não há logo, considera carregado
+    }
+  }, [platformLogo]);
 
   const handleWatchVideo = () => {
     setIsModalOpen(true);
   };
 
-  console.log('VideoCard debug - platform info:', {
-    platform: video.platform,
-    platformColor,
-    platformName,
-    platformLogo
-  });
+  const renderPlatformContent = () => {
+    if (platformLogo && !imageError && imageLoaded) {
+      return (
+        <img
+          src={platformLogo}
+          alt={`${platformName} logo`}
+          className="w-full h-full object-cover"
+          loading="eager"
+        />
+      );
+    }
+    
+    // Fallback para quando não há imagem ou erro no carregamento
+    return (
+      <div className="w-full h-full bg-white bg-opacity-20 rounded flex items-center justify-center text-4xl font-bold text-white">
+        {platformName.charAt(0)}
+      </div>
+    );
+  };
 
   return (
     <>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer w-full max-w-full overflow-hidden" onClick={handleWatchVideo}>
         <CardContent className="p-0">
           <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg flex items-center justify-center relative overflow-hidden">
-            {/* Imagem da plataforma em tamanho completo */}
+            {/* Container da imagem/logo da plataforma */}
             <div 
               className="w-full h-full flex items-center justify-center relative"
               style={{ 
                 background: `linear-gradient(135deg, ${platformColor}, ${platformColor}dd)` 
               }}
             >
-              {platformLogo ? (
-                <img
-                  src={platformLogo}
-                  alt={`${platformName} logo`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback para um ícone genérico se a imagem não carregar
-                    e.currentTarget.style.display = 'none';
-                    const fallbackDiv = document.createElement('div');
-                    fallbackDiv.className = 'w-full h-full bg-white bg-opacity-20 rounded flex items-center justify-center text-4xl font-bold text-white';
-                    fallbackDiv.textContent = platformName.charAt(0);
-                    e.currentTarget.parentNode?.appendChild(fallbackDiv);
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full bg-white bg-opacity-20 rounded flex items-center justify-center text-4xl font-bold text-white">
-                  {platformName.charAt(0)}
+              {/* Skeleton loader enquanto carrega */}
+              {!imageLoaded && !imageError && platformLogo && (
+                <div className="w-full h-full bg-white bg-opacity-10 animate-pulse flex items-center justify-center">
+                  <div className="w-16 h-16 bg-white bg-opacity-20 rounded-lg animate-pulse"></div>
                 </div>
               )}
+              
+              {/* Conteúdo da plataforma (imagem ou fallback) */}
+              <div className={`w-full h-full ${!imageLoaded && !imageError && platformLogo ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
+                {renderPlatformContent()}
+              </div>
               
               {/* Overlay de play */}
               <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
