@@ -9,7 +9,7 @@ import { ptBR } from 'date-fns/locale';
 import { VideoModal } from '@/components/ui/video-modal';
 import { ClientVideo } from '@/types/clientVideo';
 import { getCategoryColor } from '@/utils/categoryColors';
-import { getPlatformColor, getPlatformIcon, getPlatformName } from '@/utils/platformImages';
+import { getPlatformColor, getPlatformName, getPlatformLogo } from '@/utils/platformImages';
 
 interface VideoCardProps {
   video: ClientVideo;
@@ -20,8 +20,8 @@ export const VideoCard = ({ video }: VideoCardProps) => {
   const categoryColors = video.category ? getCategoryColor(video.category) : '';
 
   const platformColor = getPlatformColor(video.platform || 'outros');
-  const PlatformIcon = getPlatformIcon(video.platform || 'outros');
   const platformName = getPlatformName(video.platform || 'outros');
+  const platformLogo = getPlatformLogo(video.platform || 'outros');
 
   const handleWatchVideo = () => {
     setIsModalOpen(true);
@@ -31,8 +31,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
     platform: video.platform,
     platformColor,
     platformName,
-    PlatformIconName: PlatformIcon?.name || 'No icon name',
-    isValidComponent: typeof PlatformIcon === 'function'
+    platformLogo
   });
 
   return (
@@ -40,7 +39,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
       <Card className="hover:shadow-lg transition-shadow cursor-pointer w-full max-w-full overflow-hidden" onClick={handleWatchVideo}>
         <CardContent className="p-0">
           <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg flex items-center justify-center relative overflow-hidden">
-            {/* Imagem automática da plataforma com ícone */}
+            {/* Imagem automática da plataforma com logo/favicon */}
             <div 
               className="w-full h-full flex flex-col items-center justify-center text-white font-bold text-lg relative"
               style={{ 
@@ -48,10 +47,25 @@ export const VideoCard = ({ video }: VideoCardProps) => {
               }}
             >
               <div className="mb-2">
-                {React.createElement(PlatformIcon, { 
-                  className: "h-12 w-12",
-                  'aria-label': `${platformName} icon`
-                })}
+                {platformLogo ? (
+                  <img
+                    src={platformLogo}
+                    alt={`${platformName} logo`}
+                    className="h-12 w-12 object-contain rounded"
+                    onError={(e) => {
+                      // Fallback para um ícone genérico se a imagem não carregar
+                      e.currentTarget.style.display = 'none';
+                      const fallbackDiv = document.createElement('div');
+                      fallbackDiv.className = 'h-12 w-12 bg-white bg-opacity-20 rounded flex items-center justify-center text-2xl font-bold';
+                      fallbackDiv.textContent = platformName.charAt(0);
+                      e.currentTarget.parentNode?.appendChild(fallbackDiv);
+                    }}
+                  />
+                ) : (
+                  <div className="h-12 w-12 bg-white bg-opacity-20 rounded flex items-center justify-center text-2xl font-bold">
+                    {platformName.charAt(0)}
+                  </div>
+                )}
               </div>
               <span className="text-sm font-medium">{platformName}</span>
               
