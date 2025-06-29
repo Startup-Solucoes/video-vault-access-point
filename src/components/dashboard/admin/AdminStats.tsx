@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Video, Megaphone } from 'lucide-react';
@@ -30,17 +31,6 @@ export const AdminStats = ({
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]" onClick={onNavigateToAdvertisements}>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium opacity-90">Gerenciar Anúncios</CardTitle>
-          <Megaphone className="h-5 w-5 opacity-80" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">Anúncios</div>
-          <p className="text-xs opacity-80 mt-1">Clique para gerenciar</p>
-        </CardContent>
-      </Card>
-
       <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]" onClick={onNavigateToVideos}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium opacity-90">Total de Vídeos</CardTitle>
@@ -60,6 +50,17 @@ export const AdminStats = ({
         <CardContent>
           <div className="text-3xl font-bold">{stats?.videosThisMonth || 0}</div>
           <p className="text-xs opacity-80 mt-1">Criados recentemente</p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]" onClick={onNavigateToAdvertisements}>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium opacity-90">Gerenciar Anúncios</CardTitle>
+          <Megaphone className="h-5 w-5 opacity-80" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">Anúncios</div>
+          <p className="text-xs opacity-80 mt-1">Clique para gerenciar</p>
         </CardContent>
       </Card>
     </div>;
