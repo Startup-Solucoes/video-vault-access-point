@@ -9,7 +9,7 @@ export const platformConfigs = {
   bling: {
     color: '#7ED321',
     name: 'Bling',
-    logo: 'https://www.bling.com.br/favicon.ico'
+    logo: 'https://www.bling.com.br/wp-content/themes/bling_br/images/bling.svg'
   },
   yampi: {
     color: '#9013FE',
