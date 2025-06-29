@@ -90,16 +90,6 @@ export const ClientUsersManager = ({
 
   return (
     <div className="space-y-6">
-      {/* Cabeçalho da seção */}
-      <div>
-        <Label className="text-base font-semibold text-gray-900">Gerenciamento de Usuários</Label>
-        <p className="text-sm text-gray-600 mt-1">
-          Gerencie os usuários que têm acesso ao dashboard deste cliente
-        </p>
-      </div>
-      
-      <Separator />
-      
       {/* Formulário para adicionar usuários */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Adicionar Novo Usuário</h3>
