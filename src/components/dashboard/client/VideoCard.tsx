@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { ptBR } from 'date-fns/locale';
 import { VideoModal } from '@/components/ui/video-modal';
 import { ClientVideo } from '@/types/clientVideo';
 import { getCategoryColor } from '@/utils/categoryColors';
-import { getPlatformImage, getPlatformColor } from '@/utils/platformImages';
+import { getPlatformColor, getPlatformIcon } from '@/utils/platformImages';
 
 interface VideoCardProps {
   video: ClientVideo;
@@ -19,9 +18,8 @@ export const VideoCard = ({ video }: VideoCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const categoryColors = video.category ? getCategoryColor(video.category) : '';
 
-  // Usar imagem da plataforma se não houver thumbnail manual
-  const thumbnailUrl = video.thumbnail_url || getPlatformImage(video.platform || 'outros');
   const platformColor = getPlatformColor(video.platform || 'outros');
+  const PlatformIcon = getPlatformIcon(video.platform || 'outros');
 
   const handleWatchVideo = () => {
     setIsModalOpen(true);
@@ -32,31 +30,31 @@ export const VideoCard = ({ video }: VideoCardProps) => {
       <Card className="hover:shadow-lg transition-shadow cursor-pointer w-full max-w-full overflow-hidden" onClick={handleWatchVideo}>
         <CardContent className="p-0">
           <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg flex items-center justify-center relative overflow-hidden">
-            {thumbnailUrl ? (
+            {video.thumbnail_url ? (
               <div className="relative w-full h-full">
-                {video.thumbnail_url ? (
-                  // Thumbnail manual
-                  <img 
-                    src={thumbnailUrl} 
-                    alt={video.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // Se falhar, usar imagem da plataforma
-                      const target = e.target as HTMLImageElement;
-                      target.src = getPlatformImage(video.platform || 'outros');
-                    }}
-                  />
-                ) : (
-                  // Imagem automática da plataforma
-                  <div 
-                    className="w-full h-full flex items-center justify-center text-white font-bold text-lg"
-                    style={{ 
-                      background: `linear-gradient(135deg, ${platformColor}, ${platformColor}dd)` 
-                    }}
-                  >
-                    {video.platform ? video.platform.charAt(0).toUpperCase() + video.platform.slice(1) : 'Vídeo'}
-                  </div>
-                )}
+                <img 
+                  src={video.thumbnail_url} 
+                  alt={video.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Se falhar, usar imagem da plataforma com ícone
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML = `
+                        <div class="w-full h-full flex flex-col items-center justify-center text-white font-bold text-lg" style="background: linear-gradient(135deg, ${platformColor}, ${platformColor}dd)">
+                          <div class="mb-2">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              ${PlatformIcon.toString()}
+                            </svg>
+                          </div>
+                          <span>${video.platform ? video.platform.charAt(0).toUpperCase() + video.platform.slice(1) : 'Vídeo'}</span>
+                        </div>
+                      `;
+                    }
+                  }}
+                />
                 
                 {/* Overlay de play */}
                 <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
@@ -66,8 +64,19 @@ export const VideoCard = ({ video }: VideoCardProps) => {
                 </div>
               </div>
             ) : (
-              <div className="w-full h-full flex items-center justify-center relative">
-                <Video className="h-12 w-12 text-gray-600" />
+              <div className="relative w-full h-full">
+                {/* Imagem automática da plataforma com ícone */}
+                <div 
+                  className="w-full h-full flex flex-col items-center justify-center text-white font-bold text-lg"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${platformColor}, ${platformColor}dd)` 
+                  }}
+                >
+                  <div className="mb-2">
+                    <PlatformIcon className="h-12 w-12" />
+                  </div>
+                  <span>{video.platform ? video.platform.charAt(0).toUpperCase() + video.platform.slice(1) : 'Vídeo'}</span>
+                </div>
                 
                 {/* Overlay de play para vídeos sem thumbnail */}
                 <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">

@@ -1,50 +1,61 @@
 
-// Cores e logos das plataformas
+import { Youtube, Play, Video, Twitch, Facebook, Instagram, Globe, Monitor } from 'lucide-react';
+
+// Cores e ícones das plataformas
 export const platformConfigs = {
   youtube: {
     color: '#FF0000',
     name: 'YouTube',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg'
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg',
+    icon: Youtube
   },
   vimeo: {
     color: '#1AB7EA',
     name: 'Vimeo',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Vimeo_Logo.svg'
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Vimeo_Logo.svg',
+    icon: Play
   },
   screenpal: {
     color: '#00C851',
     name: 'ScreenPal',
-    logo: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=100&h=100&fit=crop'
+    logo: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=100&h=100&fit=crop',
+    icon: Monitor
   },
   wistia: {
     color: '#54BBFF',
     name: 'Wistia',
-    logo: 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=100&h=100&fit=crop'
+    logo: 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=100&h=100&fit=crop',
+    icon: Video
   },
   dailymotion: {
     color: '#0066CC',
     name: 'Dailymotion',
-    logo: 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=100&h=100&fit=crop'
+    logo: 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=100&h=100&fit=crop',
+    icon: Play
   },
   facebook: {
     color: '#1877F2',
     name: 'Facebook',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg'
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg',
+    icon: Facebook
   },
   instagram: {
     color: '#E4405F',
     name: 'Instagram',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png'
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png',
+    icon: Instagram
   },
   twitch: {
     color: '#9146FF',
     name: 'Twitch',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/2/26/Twitch_logo.svg'
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/2/26/Twitch_logo.svg',
+    icon: Twitch
   },
   outros: {
     color: '#6B7280',
     name: 'Outros',
-    logo: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=100&h=100&fit=crop'
+    logo: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=100&h=100&fit=crop',
+    icon: Globe
   }
 };
 
@@ -104,4 +115,10 @@ export const getPlatformImage = (platform: string): string => {
 export const getPlatformColor = (platform: string): string => {
   const config = platformConfigs[platform as keyof typeof platformConfigs] || platformConfigs.outros;
   return config.color;
+};
+
+// Função para obter o ícone da plataforma
+export const getPlatformIcon = (platform: string) => {
+  const config = platformConfigs[platform as keyof typeof platformConfigs] || platformConfigs.outros;
+  return config.icon;
 };
