@@ -39,35 +39,32 @@ export const VideoCard = ({ video }: VideoCardProps) => {
       <Card className="hover:shadow-lg transition-shadow cursor-pointer w-full max-w-full overflow-hidden" onClick={handleWatchVideo}>
         <CardContent className="p-0">
           <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg flex items-center justify-center relative overflow-hidden">
-            {/* Imagem automática da plataforma com logo/favicon */}
+            {/* Imagem da plataforma em tamanho completo */}
             <div 
-              className="w-full h-full flex flex-col items-center justify-center text-white font-bold text-lg relative"
+              className="w-full h-full flex items-center justify-center relative"
               style={{ 
                 background: `linear-gradient(135deg, ${platformColor}, ${platformColor}dd)` 
               }}
             >
-              <div className="mb-2">
-                {platformLogo ? (
-                  <img
-                    src={platformLogo}
-                    alt={`${platformName} logo`}
-                    className="h-12 w-12 object-contain rounded"
-                    onError={(e) => {
-                      // Fallback para um ícone genérico se a imagem não carregar
-                      e.currentTarget.style.display = 'none';
-                      const fallbackDiv = document.createElement('div');
-                      fallbackDiv.className = 'h-12 w-12 bg-white bg-opacity-20 rounded flex items-center justify-center text-2xl font-bold';
-                      fallbackDiv.textContent = platformName.charAt(0);
-                      e.currentTarget.parentNode?.appendChild(fallbackDiv);
-                    }}
-                  />
-                ) : (
-                  <div className="h-12 w-12 bg-white bg-opacity-20 rounded flex items-center justify-center text-2xl font-bold">
-                    {platformName.charAt(0)}
-                  </div>
-                )}
-              </div>
-              <span className="text-sm font-medium">{platformName}</span>
+              {platformLogo ? (
+                <img
+                  src={platformLogo}
+                  alt={`${platformName} logo`}
+                  className="w-full h-full object-contain p-4"
+                  onError={(e) => {
+                    // Fallback para um ícone genérico se a imagem não carregar
+                    e.currentTarget.style.display = 'none';
+                    const fallbackDiv = document.createElement('div');
+                    fallbackDiv.className = 'w-full h-full bg-white bg-opacity-20 rounded flex items-center justify-center text-4xl font-bold text-white';
+                    fallbackDiv.textContent = platformName.charAt(0);
+                    e.currentTarget.parentNode?.appendChild(fallbackDiv);
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full bg-white bg-opacity-20 rounded flex items-center justify-center text-4xl font-bold text-white">
+                  {platformName.charAt(0)}
+                </div>
+              )}
               
               {/* Overlay de play */}
               <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
