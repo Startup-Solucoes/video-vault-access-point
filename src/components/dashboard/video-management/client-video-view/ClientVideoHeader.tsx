@@ -1,18 +1,17 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { 
+  Video, 
   Users, 
-  RotateCcw, 
+  Plus, 
+  ArrowUpDown, 
   Trash2, 
-  UserPlus, 
-  CheckSquare, 
-  Square,
-  Plus,
-  Video
+  UserPlus,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 
 interface ClientVideoHeaderProps {
@@ -47,108 +46,126 @@ export const ClientVideoHeader = ({
   const hasSelectedVideos = selectedVideos.length > 0;
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-center space-x-4">
+    <Card className="border-0 shadow-sm">
+      <CardHeader className="pb-4">
+        {/* Cabeçalho do cliente */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
             {clientLogoUrl && (
               <img
                 src={clientLogoUrl}
-                alt={`${clientName} logo`}
-                className="h-12 w-12 rounded-lg object-contain bg-white border border-gray-200"
+                alt={`Logo ${clientName}`}
+                className="w-12 h-12 rounded-lg object-cover border border-gray-200"
               />
             )}
             <div>
-              <CardTitle className="text-xl text-gray-900">
-                Vídeos de {clientName}
-              </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                {videosCount} vídeo{videosCount !== 1 ? 's' : ''} disponível{videosCount !== 1 ? 'is' : ''}
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900">{clientName}</h1>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                  <Video className="h-3 w-3 mr-1" />
+                  {videosCount} vídeos
+                </Badge>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Botão Adicionar Vídeo */}
-            <Button
-              onClick={onAddVideo}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Vídeo
-            </Button>
-
-            {/* Botão Gerenciar Usuários */}
-            <Button
-              variant={showUsersManager ? "default" : "outline"}
-              onClick={onToggleUsersManager}
-              className={showUsersManager ? "bg-green-600 hover:bg-green-700" : ""}
-            >
-              <Users className="h-4 w-4 mr-2" />
-              {showUsersManager ? 'Ocultar Usuários' : 'Gerenciar Usuários'}
-            </Button>
-
-            {/* Botão Reordenar */}
+          {/* Ações principais */}
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              onClick={onShowReorderMode}
-              disabled={videosCount === 0}
+              onClick={onToggleUsersManager}
+              className={showUsersManager ? 'bg-blue-50 border-blue-200 text-blue-700' : ''}
             >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Reordenar
+              <Users className="h-4 w-4 mr-2" />
+              Gerenciar Usuários
+            </Button>
+            
+            <Button onClick={onAddVideo} className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Vídeo
             </Button>
           </div>
         </div>
       </CardHeader>
 
-      {/* Seção de ações em lote */}
-      {videosCount > 0 && (
-        <CardContent className="pt-0">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  checked={allVideosSelected}
-                  onCheckedChange={onSelectAllVisible}
-                />
-                <span className="text-sm text-gray-600">
-                  Selecionar todos visíveis
-                </span>
-              </div>
-              
-              {hasSelectedVideos && (
-                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                  {selectedVideos.length} selecionado{selectedVideos.length !== 1 ? 's' : ''}
-                </Badge>
+      {/* Barra de controles de seleção - integrada */}
+      <CardContent className="pt-0">
+        <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3 border">
+          <div className="flex items-center gap-4">
+            {/* Seletor de todos */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onSelectAllVisible}
+              className={`${allVideosSelected ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white'} flex items-center gap-2`}
+            >
+              {allVideosSelected ? (
+                <CheckSquare className="h-4 w-4" />
+              ) : (
+                <Square className="h-4 w-4" />
               )}
-            </div>
+              <span className="hidden sm:inline">
+                {allVideosSelected ? 'Desmarcar Todos' : 'Selecionar Todos'}
+              </span>
+              <span className="sm:hidden">
+                {allVideosSelected ? 'Desmarcar' : 'Selecionar'}
+              </span>
+            </Button>
 
+            {/* Contador de selecionados */}
             {hasSelectedVideos && (
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onAssignToClients}
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                >
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Atribuir a Clientes
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onBulkDelete}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Remover Selecionados
-                </Button>
-              </div>
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                {selectedVideos.length} selecionado{selectedVideos.length > 1 ? 's' : ''}
+              </Badge>
             )}
           </div>
-        </CardContent>
-      )}
+
+          {/* Ações em lote */}
+          {hasSelectedVideos && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onShowReorderMode}
+                className="text-gray-700 hover:bg-gray-100"
+              >
+                <ArrowUpDown className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Reordenar</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onAssignToClients}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">
+                  Atribuir ({selectedVideos.length})
+                </span>
+                <span className="sm:hidden">
+                  Atribuir
+                </span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onBulkDelete}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">
+                  Remover ({selectedVideos.length})
+                </span>
+                <span className="sm:hidden">
+                  Remover
+                </span>
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
     </Card>
   );
 };
