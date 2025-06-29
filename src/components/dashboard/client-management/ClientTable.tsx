@@ -24,8 +24,8 @@ interface ClientTableProps {
   clients: Client[];
   onEditClient: (client: Client) => void;
   onManageUsers: (client: Client) => void;
-  onApproveClient: (clientId: string) => void;
-  onDeleteClient: (clientId: string) => void;
+  onApproveClient: (clientId: string, clientEmail: string) => void;
+  onDeleteClient: (clientId: string, clientName: string) => void;
 }
 
 export const ClientTable = ({
@@ -116,7 +116,7 @@ export const ClientTable = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onApproveClient(client.id)}
+                      onClick={() => onApproveClient(client.id, client.email)}
                       className="text-green-600 hover:text-green-700"
                     >
                       <CheckCircle className="h-4 w-4" />
@@ -126,7 +126,7 @@ export const ClientTable = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onDeleteClient(client.id)}
+                    onClick={() => onDeleteClient(client.id, client.full_name)}
                     className="text-red-600 hover:text-red-700"
                   >
                     <Trash2 className="h-4 w-4" />
