@@ -22,7 +22,8 @@ export const MainClientCard = ({
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [currentPassword] = useState(''); // A senha real do cliente principal não é armazenada/exibida por segurança
+
+  console.log('🔍 MainClientCard - Props recebidas:', { clientEmail, clientName });
 
   const handleSavePassword = () => {
     if (newPassword.trim() && onUpdatePassword) {
@@ -154,20 +155,25 @@ export const MainClientCard = ({
             </div>
           </div>
         ) : (
-          <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
-            <div className="flex items-center gap-2 text-yellow-800">
+          <div className="bg-gray-50 border border-gray-200 rounded p-3">
+            <div className="flex items-center gap-2 text-gray-700">
               <Key className="h-4 w-4" />
               {showPassword ? (
-                <span className="text-sm">
-                  Por segurança, a senha do cliente principal não é exibida. 
-                  Use a opção "Alterar" para definir uma nova senha.
+                <span className="text-sm font-mono">
+                  ••••••••••••
                 </span>
               ) : (
                 <span className="text-sm">
-                  Clique no ícone do olho para tentar visualizar ou use "Alterar" para definir nova senha.
+                  Clique no ícone do olho para visualizar ou use "Alterar" para definir nova senha.
                 </span>
               )}
             </div>
+            {showPassword && (
+              <div className="mt-2 text-xs text-orange-600 bg-orange-50 p-2 rounded">
+                ⚠️ Por motivos de segurança, a senha atual não pode ser exibida. 
+                Use "Alterar" para definir uma nova senha de acesso.
+              </div>
+            )}
           </div>
         )}
       </div>

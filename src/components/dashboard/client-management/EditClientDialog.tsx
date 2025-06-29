@@ -29,6 +29,7 @@ export const EditClientDialog = ({
 
   useEffect(() => {
     if (client) {
+      console.log('🔍 EditClientDialog - Cliente recebido:', client);
       setEditForm({
         full_name: client.full_name,
         email: client.email,
@@ -88,7 +89,7 @@ export const EditClientDialog = ({
 
           <Separator />
 
-          {/* Client users management */}
+          {/* Client users management - passando os dados corretos do cliente */}
           {client && (
             <ClientUsersManager 
               clientId={client.id} 
