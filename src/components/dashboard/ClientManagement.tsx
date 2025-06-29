@@ -7,6 +7,7 @@ import { useClientManagement } from '@/hooks/useClientManagement';
 import { ClientSearch } from './client-management/ClientSearch';
 import { ClientTable } from './client-management/ClientTable';
 import { EditClientDialog } from './client-management/EditClientDialog';
+import { ClientUserManagementView } from './client-management/ClientUserManagementView';
 import { Client } from '@/types/client';
 
 export const ClientManagement = () => {
@@ -22,11 +23,21 @@ export const ClientManagement = () => {
   } = useClientManagement();
 
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [managingUserClient, setManagingUserClient] = useState<Client | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleEditClient = (client: Client) => {
     setEditingClient(client);
     setIsEditDialogOpen(true);
+  };
+
+  const handleManageUsers = (client: Client) => {
+    console.log('🔍 Gerenciando usuários do cliente:', client);
+    setManagingUserClient(client);
+  };
+
+  const handleBackToList = () => {
+    setManagingUserClient(null);
   };
 
   const handleUpdateClient = (clientId: string, editForm: any) => {
@@ -37,6 +48,16 @@ export const ClientManagement = () => {
     console.log('ClientManagement: Botão atualizar clicado');
     refreshClients();
   };
+
+  // Se estamos gerenciando usuários de um cliente, mostrar a view dedicada
+  if (managingUserClient) {
+    return (
+      <ClientUserManagementView
+        client={managingUserClient}
+        onBack={handleBackToList}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -69,6 +90,7 @@ export const ClientManagement = () => {
             <ClientTable
               clients={filteredClients}
               onEditClient={handleEditClient}
+              onManageUsers={handleManageUsers}
               onApproveClient={approveClient}
               onDeleteClient={deleteClient}
             />

@@ -1,96 +1,137 @@
 
 import React from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ClientActions } from './ClientActions';
+import { 
+  Edit2, 
+  Trash2, 
+  CheckCircle, 
+  Users,
+  User,
+  Mail
+} from 'lucide-react';
 import { Client } from '@/types/client';
 
 interface ClientTableProps {
   clients: Client[];
   onEditClient: (client: Client) => void;
-  onApproveClient: (clientId: string, clientEmail: string) => void;
-  onDeleteClient: (clientId: string, clientName: string) => void;
+  onManageUsers: (client: Client) => void;
+  onApproveClient: (clientId: string) => void;
+  onDeleteClient: (clientId: string) => void;
 }
 
-export const ClientTable = ({ 
-  clients, 
-  onEditClient, 
-  onApproveClient, 
-  onDeleteClient 
+export const ClientTable = ({
+  clients,
+  onEditClient,
+  onManageUsers,
+  onApproveClient,
+  onDeleteClient
 }: ClientTableProps) => {
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'Nunca';
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getRoleBadge = (role: string) => {
-    if (role === 'admin') {
-      return (
-        <Badge variant="default" className="bg-purple-100 text-purple-800">
-          Admin
-        </Badge>
-      );
-    }
-    return (
-      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-        Cliente
-      </Badge>
-    );
-  };
-
   if (clients.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">Nenhum usuário encontrado</p>
+      <div className="text-center py-8 text-gray-500">
+        <User className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+        <p>Nenhum administrador encontrado</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nome</TableHead>
+            <TableHead>Cliente</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Cadastrado em</TableHead>
-            <TableHead>Ações</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {clients.map((client) => (
             <TableRow key={client.id}>
-              <TableCell className="font-medium">
-                <div className="flex items-center space-x-3">
+              <TableCell>
+                <div className="flex items-center gap-3">
                   {client.logo_url && (
                     <img
                       src={client.logo_url}
-                      alt="Logo"
-                      className="w-8 h-8 rounded-full object-cover"
+                      alt={`Logo ${client.full_name}`}
+                      className="w-8 h-8 rounded-lg object-cover border border-gray-200"
                     />
                   )}
-                  <span>{client.full_name}</span>
+                  <div>
+                    <div className="font-medium">{client.full_name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      ID: {client.id.slice(0, 8)}...
+                    </div>
+                  </div>
                 </div>
               </TableCell>
-              <TableCell>{client.email}</TableCell>
               <TableCell>
-                {getRoleBadge(client.role)}
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-gray-400" />
+                  {client.email}
+                </div>
               </TableCell>
-              <TableCell>{formatDate(client.created_at)}</TableCell>
               <TableCell>
-                <ClientActions
-                  client={client}
-                  onEdit={onEditClient}
-                  onApprove={onApproveClient}
-                  onDelete={onDeleteClient}
-                />
+                <Badge 
+                  variant={client.role === 'approved' ? 'default' : 'secondary'}
+                  className={client.role === 'approved' ? 
+                    'bg-green-100 text-green-800' : 
+                    'bg-yellow-100 text-yellow-800'
+                  }
+                >
+                  {client.role === 'approved' ? 'Aprovado' : 'Pendente'}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onManageUsers(client)}
+                    className="flex items-center gap-2"
+                  >
+                    <Users className="h-4 w-4" />
+                    Acessos
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEditClient(client)}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+
+                  {client.role !== 'approved' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onApproveClient(client.id)}
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onDeleteClient(client.id)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}

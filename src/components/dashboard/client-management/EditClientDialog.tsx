@@ -4,9 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Client, EditClientForm } from '@/types/client';
-import { ClientUsersManager } from './ClientUsersManager';
 
 interface EditClientDialogProps {
   open: boolean;
@@ -57,24 +55,9 @@ export const EditClientDialog = ({
     return null;
   }
 
-  // Use os dados do formulário (editForm) que são atualizados conforme o usuário edita
-  // Se o formulário ainda não foi preenchido, use os dados originais do cliente
-  const currentEmail = editForm.email || client.email;
-  const currentName = editForm.full_name || client.full_name;
-
-  console.log('🎯 EditClientDialog - Dados atuais para ClientUsersManager:', {
-    clientId: client.id,
-    currentEmail,
-    currentName,
-    originalClientEmail: client.email,
-    originalClientName: client.full_name,
-    formEmail: editForm.email,
-    formName: editForm.full_name
-  });
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Editar Cliente</DialogTitle>
         </DialogHeader>
@@ -113,15 +96,6 @@ export const EditClientDialog = ({
               />
             </div>
           </div>
-
-          <Separator />
-
-          {/* Client users management - usar dados reais do cliente */}
-          <ClientUsersManager 
-            clientId={client.id} 
-            clientEmail={currentEmail}
-            clientName={currentName}
-          />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button
