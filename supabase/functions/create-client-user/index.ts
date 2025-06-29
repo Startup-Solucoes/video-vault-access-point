@@ -47,19 +47,23 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     )
 
-    const { clientId, userEmail, createdBy } = await req.json()
+    const requestBody = await req.json()
+    console.log('📥 Dados recebidos:', requestBody)
 
-    if (!clientId || !userEmail || !createdBy) {
+    const { client_id, user_email, admin_id } = requestBody
+
+    if (!client_id || !user_email || !admin_id) {
+      console.error('❌ Campos obrigatórios faltando:', { client_id, user_email, admin_id })
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ error: 'Campos obrigatórios: client_id, user_email e admin_id' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    const email = userEmail.toLowerCase().trim()
+    const email = user_email.toLowerCase().trim()
     const password = generatePassword()
 
-    console.log('Creating user with admin client:', { email, clientId })
+    console.log('👤 Criando usuário:', { email, client_id, admin_id })
 
     // Create the user in Supabase Auth
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -72,7 +76,7 @@ serve(async (req) => {
     })
 
     if (authError) {
-      console.error('Auth error:', authError)
+      console.error('❌ Erro de autenticação:', authError)
       
       if (authError.message.includes('already registered')) {
         return new Response(
@@ -87,21 +91,32 @@ serve(async (req) => {
       )
     }
 
+    if (!authData.user) {
+      console.error('❌ Usuário não foi criado')
+      return new Response(
+        JSON.stringify({ error: 'Falha na criação do usuário' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log('✅ Usuário criado no Auth:', authData.user.id)
+
     // Add to client_users table
     const { error: clientUserError } = await supabaseAdmin
       .from('client_users')
       .insert({
-        client_id: clientId,
+        client_id: client_id,
         user_email: email,
-        created_by: createdBy
+        created_by: admin_id
       })
 
     if (clientUserError) {
-      console.error('Client user error:', clientUserError)
+      console.error('❌ Erro ao inserir client_users:', clientUserError)
       
       // If adding to client_users fails, clean up the auth user
       if (authData.user) {
         await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
+        console.log('🧹 Usuário removido do Auth devido ao erro')
       }
       
       if (clientUserError.code === '23505') {
@@ -117,7 +132,7 @@ serve(async (req) => {
       )
     }
 
-    console.log('User created successfully')
+    console.log('✅ Usuário adicionado à tabela client_users')
 
     return new Response(
       JSON.stringify({
@@ -128,9 +143,9 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Function error:', error)
+    console.error('💥 Erro na função:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Erro interno do servidor: ' + error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

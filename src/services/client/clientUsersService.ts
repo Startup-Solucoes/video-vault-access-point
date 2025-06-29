@@ -61,6 +61,12 @@ export const addClientUser = async (
   }
 
   try {
+    console.log('📤 Enviando dados para a função:', {
+      client_id: clientId,
+      user_email: userEmail.toLowerCase(),
+      admin_id: adminId
+    });
+
     const { data, error } = await supabase.functions.invoke('create-client-user', {
       body: {
         client_id: clientId,
@@ -80,9 +86,6 @@ export const addClientUser = async (
     }
 
     console.log('✅ Usuário criado com sucesso:', data.user.email);
-    
-    // NÃO enviar email de confirmação - usuário pode acessar diretamente
-    console.log('ℹ️ Email de confirmação desabilitado - usuário pode fazer login diretamente');
     
     return {
       user: data.user,

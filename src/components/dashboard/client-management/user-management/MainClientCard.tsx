@@ -23,7 +23,7 @@ export const MainClientCard = ({
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  console.log('🔍 MainClientCard - Props recebidas detalhadamente:', { 
+  console.log('🔍 MainClientCard - Props recebidas:', { 
     clientEmail: `"${clientEmail}"`,
     clientName: `"${clientName}"`,
     clientEmailType: typeof clientEmail,
@@ -34,34 +34,6 @@ export const MainClientCard = ({
     hasName: !!clientName,
     isPlaceholder: clientEmail === 'placeholder@email.com'
   });
-
-  // Verificar se os dados estão chegando corretamente
-  React.useEffect(() => {
-    console.log('🔍 MainClientCard - useEffect - Verificando dados recebidos:', {
-      clientEmail: clientEmail || 'AUSENTE/VAZIO',
-      clientName: clientName || 'AUSENTE/VAZIO',
-      emailIsPlaceholder: clientEmail === 'placeholder@email.com',
-      emailIsEmpty: !clientEmail || clientEmail.trim() === '',
-      nameIsEmpty: !clientName || clientName.trim() === ''
-    });
-    
-    if (!clientEmail || clientEmail === 'placeholder@email.com') {
-      console.error('❌ MainClientCard - Email do cliente está faltando ou é placeholder:', {
-        receivedEmail: clientEmail || 'AUSENTE',
-        isPlaceholder: clientEmail === 'placeholder@email.com'
-      });
-    }
-    
-    if (!clientName || clientName.trim() === '') {
-      console.error('❌ MainClientCard - Nome do cliente está faltando:', {
-        receivedName: clientName || 'AUSENTE'
-      });
-    }
-    
-    if (clientEmail && clientEmail !== 'placeholder@email.com' && clientName && clientName.trim() !== '') {
-      console.log('✅ MainClientCard - Dados válidos recebidos!');
-    }
-  }, [clientEmail, clientName]);
 
   const handleSavePassword = () => {
     console.log('💾 Salvando nova senha para cliente:', clientEmail);
@@ -97,15 +69,15 @@ export const MainClientCard = ({
     }
   };
 
-  // Verificar se temos dados válidos (não placeholder)
-  const hasValidEmail = clientEmail && clientEmail !== 'placeholder@email.com' && clientEmail.trim() !== '';
+  // Verificar se temos dados válidos
+  const hasValidEmail = clientEmail && clientEmail.trim() !== '' && clientEmail !== 'placeholder@email.com';
   const hasValidName = clientName && clientName.trim() !== '';
   
   // Dados para exibição
   const displayEmail = hasValidEmail ? clientEmail : 'Email não disponível';
   const displayName = hasValidName ? clientName : 'Nome não disponível';
 
-  console.log('🔍 MainClientCard - Dados processados para exibição:', {
+  console.log('🔍 MainClientCard - Dados processados:', {
     hasValidEmail,
     hasValidName,
     displayEmail,
@@ -114,18 +86,6 @@ export const MainClientCard = ({
 
   return (
     <div className="space-y-4">
-      {/* Debug info - mostrar apenas se dados não estão válidos */}
-      {(!hasValidEmail || !hasValidName) && (
-        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-sm text-yellow-800">
-            ⚠️ Debug: Dados do cliente não recebidos completamente
-            <br />Email válido: {hasValidEmail ? '✅' : '❌'} | Nome válido: {hasValidName ? '✅' : '❌'}
-            <br />Email recebido: "{clientEmail}"
-            <br />Nome recebido: "{clientName}"
-          </p>
-        </div>
-      )}
-
       {/* Informações do Cliente */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">

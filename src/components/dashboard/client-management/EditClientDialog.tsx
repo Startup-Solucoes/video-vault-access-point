@@ -63,15 +63,12 @@ export const EditClientDialog = ({
     return null;
   }
 
-  // Use os dados atuais do cliente (original) para exibição, mas permita edição através do editForm
-  const currentClientEmail = client.email;
-  const currentClientName = client.full_name;
-
   console.log('🔍 EditClientDialog - Dados sendo passados para ClientUsersManager:', {
-    clientEmail: currentClientEmail,
-    clientName: currentClientName,
-    editFormEmail: editForm.email,
-    editFormName: editForm.full_name
+    clientId: client.id,
+    clientEmail: client.email,
+    clientName: client.full_name,
+    hasValidEmail: client.email && client.email !== 'placeholder@email.com',
+    hasValidName: client.full_name && client.full_name.trim() !== ''
   });
 
   return (
@@ -118,18 +115,11 @@ export const EditClientDialog = ({
 
           <Separator />
 
-          {/* Debug - mostrar os dados que estão sendo passados */}
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs text-blue-800">
-              🔍 Debug: Dados do cliente original - Email: {currentClientEmail} | Nome: {currentClientName}
-            </p>
-          </div>
-
-          {/* Client users management - usando os dados ORIGINAIS do cliente, não os editados */}
+          {/* Client users management - usando os dados REAIS do cliente */}
           <ClientUsersManager 
             clientId={client.id} 
-            clientEmail={currentClientEmail}
-            clientName={currentClientName}
+            clientEmail={client.email}
+            clientName={client.full_name}
           />
 
           <div className="flex justify-end space-x-2 pt-4">
