@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { VideoFormData } from './VideoFormTypes';
 import { sendVideoNotifications } from '@/services/emailNotificationService';
-import { generateAndSaveThumbnail, updateVideoThumbnail } from '@/services/automaticThumbnailService';
 
 export const submitVideoData = async (formData: VideoFormData, user: any): Promise<boolean> => {
   console.log('📋 Preparando dados para inserção no banco...');
@@ -23,7 +22,7 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
   console.log('👤 ID do usuário criador:', user.id);
 
   try {
-    // Primeiro, cadastrar o vídeo
+    // Inserir o vídeo
     console.log('💾 Inserindo vídeo na tabela videos...');
     const { data: insertedVideo, error: videoError } = await supabase
       .from('videos')
@@ -41,22 +40,7 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
 
     console.log('✅ Vídeo inserido com sucesso:', insertedVideo);
 
-    // Gerar thumbnail automática se não foi fornecida uma thumbnail manual
-    if (!formData.thumbnail_url.trim() && insertedVideo && formData.platform) {
-      console.log('🎨 Gerando thumbnail automática...');
-      try {
-        const automaticThumbnailUrl = await generateAndSaveThumbnail(insertedVideo.id, formData.platform);
-        if (automaticThumbnailUrl) {
-          await updateVideoThumbnail(insertedVideo.id, automaticThumbnailUrl);
-          console.log('✅ Thumbnail automática gerada e salva');
-        }
-      } catch (thumbnailError) {
-        console.warn('⚠️ Erro ao gerar thumbnail automática, continuando sem ela:', thumbnailError);
-        // Não falha o processo principal se a thumbnail falhar
-      }
-    }
-
-    // Em seguida, criar as permissões para os clientes selecionados
+    // Criar as permissões para os clientes selecionados
     if (formData.selectedClients.length > 0 && insertedVideo) {
       console.log('🔑 Criando permissões para clientes...');
       console.log('Lista de clientes selecionados:', formData.selectedClients);
@@ -109,7 +93,7 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
     
     toast({
       title: "Sucesso!",
-      description: "Vídeo cadastrado com sucesso e thumbnail gerada automaticamente",
+      description: "Vídeo cadastrado com sucesso",
     });
     
     return true;

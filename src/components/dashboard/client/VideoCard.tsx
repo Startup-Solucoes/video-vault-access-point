@@ -7,9 +7,9 @@ import { Video, Calendar, Clock, Play } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { VideoModal } from '@/components/ui/video-modal';
-import { getVideoThumbnail } from '@/utils/videoThumbnails';
 import { ClientVideo } from '@/types/clientVideo';
 import { getCategoryColor } from '@/utils/categoryColors';
+import { getPlatformImage, getPlatformColor } from '@/utils/platformImages';
 
 interface VideoCardProps {
   video: ClientVideo;
@@ -17,9 +17,11 @@ interface VideoCardProps {
 
 export const VideoCard = ({ video }: VideoCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const autoThumbnail = getVideoThumbnail(video.video_url);
-  const thumbnailUrl = video.thumbnail_url || autoThumbnail;
   const categoryColors = video.category ? getCategoryColor(video.category) : '';
+
+  // Usar imagem da plataforma se não houver thumbnail manual
+  const thumbnailUrl = video.thumbnail_url || getPlatformImage(video.platform || 'outros');
+  const platformColor = getPlatformColor(video.platform || 'outros');
 
   const handleWatchVideo = () => {
     setIsModalOpen(true);
@@ -32,20 +34,29 @@ export const VideoCard = ({ video }: VideoCardProps) => {
           <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg flex items-center justify-center relative overflow-hidden">
             {thumbnailUrl ? (
               <div className="relative w-full h-full">
-                <img 
-                  src={thumbnailUrl} 
-                  alt={video.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Se a imagem falhar ao carregar, mostra o ícone padrão
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent) {
-                      parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="h-12 w-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div>';
-                    }
-                  }}
-                />
+                {video.thumbnail_url ? (
+                  // Thumbnail manual
+                  <img 
+                    src={thumbnailUrl} 
+                    alt={video.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Se falhar, usar imagem da plataforma
+                      const target = e.target as HTMLImageElement;
+                      target.src = getPlatformImage(video.platform || 'outros');
+                    }}
+                  />
+                ) : (
+                  // Imagem automática da plataforma
+                  <div 
+                    className="w-full h-full flex items-center justify-center text-white font-bold text-lg"
+                    style={{ 
+                      background: `linear-gradient(135deg, ${platformColor}, ${platformColor}dd)` 
+                    }}
+                  >
+                    {video.platform ? video.platform.charAt(0).toUpperCase() + video.platform.slice(1) : 'Vídeo'}
+                  </div>
+                )}
                 
                 {/* Overlay de play */}
                 <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">

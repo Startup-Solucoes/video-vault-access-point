@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { ThumbnailGenerator } from '../ThumbnailGenerator';
-import { AutomaticThumbnailGenerator } from '../AutomaticThumbnailGenerator';
 
 export const AdminToolsView = () => {
   return (
@@ -14,9 +13,6 @@ export const AdminToolsView = () => {
       </div>
 
       <div className="grid gap-6">
-        {/* Gerador Automático de Thumbnails */}
-        <AutomaticThumbnailGenerator />
-        
         {/* Gerador de Thumbnails (baseado em URL) */}
         <ThumbnailGenerator />
       </div>
