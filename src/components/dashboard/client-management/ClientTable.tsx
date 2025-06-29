@@ -60,7 +60,6 @@ export const ClientTable = ({
             <TableHead>Nome</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Tipo</TableHead>
-            <TableHead>Último acesso</TableHead>
             <TableHead>Cadastrado em</TableHead>
             <TableHead>Ações</TableHead>
           </TableRow>
@@ -84,7 +83,6 @@ export const ClientTable = ({
               <TableCell>
                 {getRoleBadge(client.role)}
               </TableCell>
-              <TableCell>{formatDate(client.last_sign_in_at)}</TableCell>
               <TableCell>{formatDate(client.created_at)}</TableCell>
               <TableCell>
                 <ClientActions
