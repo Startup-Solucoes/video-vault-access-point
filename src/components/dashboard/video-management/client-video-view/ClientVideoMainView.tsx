@@ -12,6 +12,7 @@ interface ClientVideoMainViewProps {
   // Client info
   clientId: string;
   clientName: string;
+  clientEmail?: string;
   clientLogoUrl?: string;
   
   // Video data
@@ -63,6 +64,7 @@ interface ClientVideoMainViewProps {
 export const ClientVideoMainView = ({
   clientId,
   clientName,
+  clientEmail = '',
   clientLogoUrl,
   videos,
   paginatedVideos,
@@ -131,6 +133,8 @@ export const ClientVideoMainView = ({
       <ClientVideoUsersSection
         clientId={clientId}
         clientName={clientName}
+        clientEmail={clientEmail}
+        clientLogoUrl={clientLogoUrl}
         showUsersManager={showUsersManager}
       />
 

@@ -1,292 +1,191 @@
 
 import React, { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Crown, Key, Eye, EyeOff, Edit2, Save, X as Cancel, Copy, User } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { User, Mail, Key, Edit2, Save, X, Image } from 'lucide-react';
 
 interface MainClientCardProps {
   clientEmail: string;
   clientName: string;
-  onUpdatePassword?: (newPassword: string) => void;
-  onUpdateEmail?: (newEmail: string) => void;
-  isLoading?: boolean;
+  clientLogoUrl?: string;
+  onUpdatePassword: (newPassword: string) => void;
+  onUpdateEmail: (newEmail: string) => void;
 }
 
-export const MainClientCard = ({ 
-  clientEmail, 
-  clientName, 
+export const MainClientCard = ({
+  clientEmail,
+  clientName,
+  clientLogoUrl,
   onUpdatePassword,
-  onUpdateEmail,
-  isLoading = false 
+  onUpdateEmail
 }: MainClientCardProps) => {
-  const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [newEmail, setNewEmail] = useState(clientEmail);
   const [newPassword, setNewPassword] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
 
-  console.log('🔍 MainClientCard - Props recebidas:', { 
-    clientEmail: `"${clientEmail}"`,
-    clientName: `"${clientName}"`,
-    clientEmailType: typeof clientEmail,
-    clientNameType: typeof clientName,
-    clientEmailLength: clientEmail?.length || 0,
-    clientNameLength: clientName?.length || 0,
-    hasEmail: !!clientEmail,
-    hasName: !!clientName,
-    isPlaceholder: clientEmail === 'placeholder@email.com'
+  console.log('🔍 MainClientCard - Dados do cliente principal:', {
+    clientEmail,
+    clientName,
+    clientLogoUrl,
+    hasLogo: !!clientLogoUrl
   });
-
-  // Verificar se temos dados válidos
-  const hasValidEmail = clientEmail && clientEmail.trim() !== '' && clientEmail !== 'placeholder@email.com';
-  const hasValidName = clientName && clientName.trim() !== '';
-  
-  // Dados para exibição
-  const displayEmail = hasValidEmail ? clientEmail : 'Email não configurado';
-  const displayName = hasValidName ? clientName : 'Nome não disponível';
-
-  console.log('🔍 MainClientCard - Dados processados:', {
-    hasValidEmail,
-    hasValidName,
-    displayEmail,
-    displayName
-  });
-
-  const handleSavePassword = () => {
-    console.log('💾 Salvando nova senha para cliente:', clientEmail);
-    if (newPassword.trim() && onUpdatePassword) {
-      onUpdatePassword(newPassword.trim());
-      setNewPassword('');
-      setIsEditingPassword(false);
-      toast({
-        title: "Senha atualizada",
-        description: "A senha do cliente principal foi atualizada com sucesso",
-      });
-    }
-  };
 
   const handleSaveEmail = () => {
-    console.log('💾 Salvando novo email para cliente:', newEmail);
-    if (newEmail.trim() && onUpdateEmail) {
-      onUpdateEmail(newEmail.trim());
-      setNewEmail('');
-      setIsEditingEmail(false);
-      toast({
-        title: "Email atualizado",
-        description: "O email do cliente principal foi atualizado com sucesso",
-      });
+    if (newEmail !== clientEmail) {
+      onUpdateEmail(newEmail);
     }
+    setIsEditingEmail(false);
   };
 
-  const handleCancelPasswordEdit = () => {
+  const handleSavePassword = () => {
+    if (newPassword.trim()) {
+      onUpdatePassword(newPassword);
+      setNewPassword('');
+    }
+    setIsEditingPassword(false);
+  };
+
+  const handleCancelEmail = () => {
+    setNewEmail(clientEmail);
+    setIsEditingEmail(false);
+  };
+
+  const handleCancelPassword = () => {
     setNewPassword('');
     setIsEditingPassword(false);
   };
 
-  const handleCancelEmailEdit = () => {
-    setNewEmail('');
-    setIsEditingEmail(false);
-  };
-
-  const handleCopyEmail = async () => {
-    if (!hasValidEmail) return;
-    
-    try {
-      await navigator.clipboard.writeText(clientEmail);
-      toast({
-        title: "Email copiado!",
-        description: `Email ${clientEmail} copiado para a área de transferência`,
-      });
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível copiar o email",
-        variant: "destructive"
-      });
-    }
-  };
-
   return (
-    <div className="space-y-4">
-      {/* Informações do Cliente */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-            <User className="h-4 w-4" />
-            Nome do Cliente
-          </label>
-          <div className="p-3 bg-gray-50 rounded-lg border">
-            <span className="text-sm font-medium text-gray-900">{displayName}</span>
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-            <Mail className="h-4 w-4" />
-            Email de Acesso
-          </label>
-          
-          {isEditingEmail ? (
-            <div className="space-y-2">
-              <Input
-                type="email"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-                placeholder="Digite o novo email"
-                className="bg-white"
+    <Card className="border-2 border-blue-200 bg-blue-50">
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          {/* Logo do Cliente */}
+          <div className="flex-shrink-0">
+            {clientLogoUrl ? (
+              <img
+                src={clientLogoUrl}
+                alt={`Logo ${clientName}`}
+                className="w-16 h-16 rounded-lg object-cover border-2 border-blue-300 bg-white p-1"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center border-2 border-blue-300"><svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></div>';
+                  }
+                }}
               />
-              <div className="flex gap-2">
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleSaveEmail}
-                  disabled={!newEmail.trim() || isLoading}
-                  className="flex items-center gap-2"
-                >
-                  <Save className="h-4 w-4" />
-                  Salvar
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCancelEmailEdit}
-                  className="flex items-center gap-2"
-                >
-                  <Cancel className="h-4 w-4" />
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border">
-              <span className="text-sm font-medium text-gray-900 flex-1">{displayEmail}</span>
-              <div className="flex gap-1">
-                {hasValidEmail && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCopyEmail}
-                    className="h-8 w-8 p-0"
-                    title="Copiar email"
-                  >
-                    <Copy className="h-3 w-3" />
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setNewEmail(hasValidEmail ? clientEmail : '');
-                    setIsEditingEmail(true);
-                  }}
-                  className="h-8 w-8 p-0"
-                  title="Editar email"
-                >
-                  <Edit2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Permissões */}
-      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex items-center gap-2 mb-2">
-          <Crown className="h-4 w-4 text-blue-600" />
-          <span className="text-sm font-medium text-blue-900">Privilégios de Acesso</span>
-        </div>
-        <p className="text-sm text-blue-800">
-          Este usuário possui acesso total ao dashboard como administrador principal do cliente.
-        </p>
-      </div>
-
-      {/* Seção de Senha */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-          <Key className="h-4 w-4" />
-          Senha de Acesso
-        </label>
-        
-        {isEditingPassword ? (
-          <div className="space-y-3 p-4 bg-gray-50 rounded-lg border">
-            <Input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Digite a nova senha"
-              className="bg-white"
-            />
-            <div className="flex gap-2">
-              <Button
-                variant="default"
-                size="sm"
-                onClick={handleSavePassword}
-                disabled={!newPassword.trim() || isLoading}
-                className="flex items-center gap-2"
-              >
-                <Save className="h-4 w-4" />
-                Salvar Nova Senha
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCancelPasswordEdit}
-                className="flex items-center gap-2"
-              >
-                <Cancel className="h-4 w-4" />
-                Cancelar
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="p-4 bg-gray-50 rounded-lg border">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">
-                  {showPassword ? "••••••••••••" : "Senha não exibida por segurança"}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="h-8 w-8 p-0"
-                  title={showPassword ? "Ocultar indicador" : "Mostrar indicador"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditingPassword(true)}
-                  disabled={isLoading}
-                  className="flex items-center gap-2"
-                >
-                  <Edit2 className="h-4 w-4" />
-                  Alterar Senha
-                </Button>
-              </div>
-            </div>
-            
-            {showPassword && (
-              <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                <p className="text-xs text-orange-700">
-                  ⚠️ Por motivos de segurança, a senha atual não pode ser exibida. 
-                  Use "Alterar Senha" para definir uma nova senha de acesso.
-                </p>
+            ) : (
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center border-2 border-blue-300">
+                <Image className="h-8 w-8 text-blue-600" />
               </div>
             )}
           </div>
-        )}
-      </div>
-    </div>
+
+          {/* Informações do Cliente */}
+          <div className="flex-1 space-y-4">
+            {/* Nome do Cliente */}
+            <div className="flex items-center gap-2">
+              <User className="h-5 w-5 text-blue-600" />
+              <div>
+                <span className="font-semibold text-gray-900">{clientName}</span>
+                <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-800 border-blue-300">
+                  Administrador Principal
+                </Badge>
+              </div>
+            </div>
+
+            {/* Email do Cliente */}
+            <div className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-blue-600" />
+              {isEditingEmail ? (
+                <div className="flex items-center gap-2 flex-1">
+                  <Input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    className="flex-1"
+                    placeholder="Email do cliente"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSaveEmail}
+                    className="p-2"
+                  >
+                    <Save className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancelEmail}
+                    className="p-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="text-gray-700">{clientEmail}</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsEditingEmail(true)}
+                    className="p-1 h-auto"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Senha do Cliente */}
+            <div className="flex items-center gap-2">
+              <Key className="h-5 w-5 text-blue-600" />
+              {isEditingPassword ? (
+                <div className="flex items-center gap-2 flex-1">
+                  <Input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="flex-1"
+                    placeholder="Nova senha"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSavePassword}
+                    className="p-2"
+                  >
+                    <Save className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancelPassword}
+                    className="p-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="text-gray-500">••••••••</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsEditingPassword(true)}
+                    className="p-1 h-auto"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

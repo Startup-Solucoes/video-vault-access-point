@@ -13,31 +13,26 @@ interface ClientUsersManagerProps {
   clientId: string;
   clientEmail: string;
   clientName: string;
+  clientLogoUrl?: string;
 }
 
-export const ClientUsersManager = ({ clientId, clientEmail, clientName }: ClientUsersManagerProps) => {
+export const ClientUsersManager = ({ 
+  clientId, 
+  clientEmail, 
+  clientName, 
+  clientLogoUrl 
+}: ClientUsersManagerProps) => {
   const [userAuthInfo, setUserAuthInfo] = useState<Record<string, any>>({});
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const { clientUsers, isLoading, addUser, removeUser, updatePassword } = useClientUsers(clientId);
 
-  console.log('🔍 ClientUsersManager - Props recebidas:', { 
+  console.log('🔍 ClientUsersManager - Dados completos do cliente:', { 
     clientId, 
     clientEmail, 
     clientName,
-    hasClientEmail: !!clientEmail,
-    hasClientName: !!clientName,
-    clientEmailLength: clientEmail?.length || 0,
-    clientNameLength: clientName?.length || 0
+    clientLogoUrl,
+    clientUsersCount: clientUsers.length
   });
-
-  console.log('🔍 ClientUsersManager - Detalhes dos dados:', {
-    clientEmailValue: `"${clientEmail}"`,
-    clientNameValue: `"${clientName}"`,
-    clientEmailType: typeof clientEmail,
-    clientNameType: typeof clientName
-  });
-
-  console.log('🔍 ClientUsersManager - clientUsers:', clientUsers);
 
   const togglePasswordVisibility = (userId: string) => {
     setVisiblePasswords(prev => ({
@@ -69,6 +64,8 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
   // Buscar informações de autenticação dos usuários
   React.useEffect(() => {
     const fetchAuthInfo = async () => {
+      if (clientUsers.length === 0) return;
+      
       console.log('📊 Buscando informações de autenticação para usuários:', clientUsers.length);
       const authData: Record<string, any> = {};
       
@@ -88,20 +85,8 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
       console.log('📋 Todas as informações de auth coletadas:', authData);
     };
 
-    if (clientUsers.length > 0) {
-      fetchAuthInfo();
-    }
+    fetchAuthInfo();
   }, [clientUsers]);
-
-  // Verificar dados antes de passar para AllUsersList
-  React.useEffect(() => {
-    console.log('🚀 ClientUsersManager - Passando dados para AllUsersList:', {
-      clientEmail,
-      clientName,
-      isClientEmailValid: clientEmail && clientEmail !== 'placeholder@email.com',
-      isClientNameValid: clientName && clientName.length > 0
-    });
-  }, [clientEmail, clientName]);
 
   return (
     <div className="space-y-6">
@@ -125,6 +110,7 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
       <AllUsersList
         clientEmail={clientEmail}
         clientName={clientName}
+        clientLogoUrl={clientLogoUrl}
         clientUsers={clientUsers}
         userAuthInfo={userAuthInfo}
         visiblePasswords={visiblePasswords}

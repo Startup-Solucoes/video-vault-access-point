@@ -13,8 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Edit2, 
   Trash2, 
-  CheckCircle, 
-  Users,
+  CheckCircle,
   User,
   Mail
 } from 'lucide-react';
@@ -23,7 +22,6 @@ import { Client } from '@/types/client';
 interface ClientTableProps {
   clients: Client[];
   onEditClient: (client: Client) => void;
-  onManageUsers: (client: Client) => void;
   onApproveClient: (clientId: string, clientEmail: string) => void;
   onDeleteClient: (clientId: string, clientName: string) => void;
 }
@@ -31,7 +29,6 @@ interface ClientTableProps {
 export const ClientTable = ({
   clients,
   onEditClient,
-  onManageUsers,
   onApproveClient,
   onDeleteClient
 }: ClientTableProps) => {
@@ -94,16 +91,6 @@ export const ClientTable = ({
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onManageUsers(client)}
-                    className="flex items-center gap-2"
-                  >
-                    <Users className="h-4 w-4" />
-                    Acessos
-                  </Button>
-                  
                   <Button
                     variant="outline"
                     size="sm"

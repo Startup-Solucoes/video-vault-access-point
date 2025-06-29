@@ -7,7 +7,8 @@ import { ClientUsersManager } from '@/components/dashboard/client-management/Cli
 interface ClientVideoUsersSectionProps {
   clientId: string;
   clientName: string;
-  clientEmail?: string; // Tornar opcional mas preferível
+  clientEmail: string;
+  clientLogoUrl?: string;
   showUsersManager: boolean;
 }
 
@@ -15,18 +16,16 @@ export const ClientVideoUsersSection = ({
   clientId,
   clientName,
   clientEmail,
+  clientLogoUrl,
   showUsersManager
 }: ClientVideoUsersSectionProps) => {
   if (!showUsersManager) return null;
 
-  // Se não temos email específico do cliente, buscar dos dados do cliente
-  const fallbackEmail = clientEmail || 'email@temporario.com';
-
-  console.log('🎯 ClientVideoUsersSection - Dados passados:', {
+  console.log('🎯 ClientVideoUsersSection - Dados do cliente:', {
     clientId,
     clientName,
     clientEmail,
-    fallbackEmail
+    clientLogoUrl
   });
 
   return (
@@ -40,8 +39,9 @@ export const ClientVideoUsersSection = ({
       <CardContent>
         <ClientUsersManager 
           clientId={clientId} 
-          clientEmail={fallbackEmail}
+          clientEmail={clientEmail}
           clientName={clientName}
+          clientLogoUrl={clientLogoUrl}
         />
       </CardContent>
     </Card>
