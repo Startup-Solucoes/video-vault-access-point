@@ -20,13 +20,23 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const { clientUsers, isLoading, addUser, removeUser, updatePassword } = useClientUsers(clientId);
 
-  console.log('🔍 ClientUsersManager - Dados do cliente:', { 
+  console.log('🔍 ClientUsersManager - Props recebidas:', { 
     clientId, 
     clientEmail, 
     clientName,
     hasClientEmail: !!clientEmail,
-    hasClientName: !!clientName
+    hasClientName: !!clientName,
+    clientEmailLength: clientEmail?.length || 0,
+    clientNameLength: clientName?.length || 0
   });
+
+  console.log('🔍 ClientUsersManager - Detalhes dos dados:', {
+    clientEmailValue: `"${clientEmail}"`,
+    clientNameValue: `"${clientName}"`,
+    clientEmailType: typeof clientEmail,
+    clientNameType: typeof clientName
+  });
+
   console.log('🔍 ClientUsersManager - clientUsers:', clientUsers);
 
   const togglePasswordVisibility = (userId: string) => {
@@ -75,21 +85,15 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
     }
   }, [clientUsers]);
 
-  // Verificar se os dados do cliente principal estão sendo recebidos
+  // Verificar dados antes de passar para AllUsersList
   React.useEffect(() => {
-    console.log('🔍 Verificação dos dados do cliente principal:', {
-      clientEmail: clientEmail || 'VAZIO',
-      clientName: clientName || 'VAZIO',
-      clientId: clientId || 'VAZIO'
+    console.log('🚀 ClientUsersManager - Passando dados para AllUsersList:', {
+      clientEmail,
+      clientName,
+      isClientEmailValid: clientEmail && clientEmail !== 'placeholder@email.com',
+      isClientNameValid: clientName && clientName.length > 0
     });
-    
-    if (!clientEmail) {
-      console.warn('⚠️ clientEmail está vazio ou undefined');
-    }
-    if (!clientName) {
-      console.warn('⚠️ clientName está vazio ou undefined');
-    }
-  }, [clientEmail, clientName, clientId]);
+  }, [clientEmail, clientName]);
 
   return (
     <div className="space-y-6">

@@ -63,6 +63,17 @@ export const EditClientDialog = ({
     return null;
   }
 
+  // Use os dados atuais do cliente (original) para exibição, mas permita edição através do editForm
+  const currentClientEmail = client.email;
+  const currentClientName = client.full_name;
+
+  console.log('🔍 EditClientDialog - Dados sendo passados para ClientUsersManager:', {
+    clientEmail: currentClientEmail,
+    clientName: currentClientName,
+    editFormEmail: editForm.email,
+    editFormName: editForm.full_name
+  });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -110,15 +121,15 @@ export const EditClientDialog = ({
           {/* Debug - mostrar os dados que estão sendo passados */}
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-xs text-blue-800">
-              🔍 Debug: Passando para ClientUsersManager - Email: {editForm.email || 'VAZIO'} | Nome: {editForm.full_name || 'VAZIO'}
+              🔍 Debug: Dados do cliente original - Email: {currentClientEmail} | Nome: {currentClientName}
             </p>
           </div>
 
-          {/* Client users management - usando os dados do formulário que estão sendo editados */}
+          {/* Client users management - usando os dados ORIGINAIS do cliente, não os editados */}
           <ClientUsersManager 
             clientId={client.id} 
-            clientEmail={editForm.email}
-            clientName={editForm.full_name}
+            clientEmail={currentClientEmail}
+            clientName={currentClientName}
           />
 
           <div className="flex justify-end space-x-2 pt-4">
