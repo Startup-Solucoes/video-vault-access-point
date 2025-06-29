@@ -70,6 +70,7 @@ export const MainClientCard = ({
                 alt={`Logo ${clientName}`}
                 className="w-16 h-16 rounded-lg object-cover border-2 border-blue-300 bg-white p-1"
                 onError={(e) => {
+                  console.error('Erro ao carregar logo:', clientLogoUrl);
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
                   const parent = target.parentElement;
@@ -80,7 +81,7 @@ export const MainClientCard = ({
               />
             ) : (
               <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center border-2 border-blue-300">
-                <Image className="h-8 w-8 text-blue-600" />
+                <User className="h-8 w-8 text-blue-600" />
               </div>
             )}
           </div>

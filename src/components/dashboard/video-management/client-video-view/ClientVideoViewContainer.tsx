@@ -8,6 +8,8 @@ import { ClientVideoMainView } from './ClientVideoMainView';
 import { ClientUserManagementView } from './ClientUserManagementView';
 import { VideoForm } from '@/components/forms/VideoForm';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ClientVideoViewContainerProps {
   clientId: string;
@@ -24,6 +26,26 @@ export const ClientVideoViewContainer = ({
   const [showUserManagement, setShowUserManagement] = useState(false);
   
   const containerData = useClientVideoContainer({ clientId });
+  
+  // Buscar dados completos do cliente específico
+  const { data: clientData, isLoading: clientDataLoading } = useQuery({
+    queryKey: ['client-data', clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('email, full_name, logo_url')
+        .eq('id', clientId)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar dados do cliente:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    enabled: !!clientId,
+  });
   
   const callbacks = useClientVideoCallbacks({
     refreshVideos: containerData.refreshVideos,
@@ -42,21 +64,8 @@ export const ClientVideoViewContainer = ({
     selectedClients: containerData.selectedClients
   });
 
-  // Buscar informações do cliente principal pelo ID
-  const getClientInfo = () => {
-    // Como temos o clientId, precisamos buscar as informações do cliente
-    // Por enquanto vamos usar dados básicos, mas isso pode ser expandido
-    return {
-      email: user?.email || '',
-      name: clientName,
-      logoUrl: clientLogoUrl
-    };
-  };
-
-  const clientInfo = getClientInfo();
-
   // Loading state
-  if (containerData.isLoading) {
+  if (containerData.isLoading || clientDataLoading) {
     return (
       <ClientVideoLoadingState 
         clientName={clientName} 
@@ -70,9 +79,9 @@ export const ClientVideoViewContainer = ({
     return (
       <ClientUserManagementView
         clientId={clientId}
-        clientName={clientName}
-        clientEmail={clientInfo.email}
-        clientLogoUrl={clientLogoUrl}
+        clientName={clientData?.full_name || clientName}
+        clientEmail={clientData?.email || ''}
+        clientLogoUrl={clientData?.logo_url || clientLogoUrl}
         onBack={() => setShowUserManagement(false)}
       />
     );
@@ -104,7 +113,7 @@ export const ClientVideoViewContainer = ({
         totalPages={containerData.totalPages}
         selectedVideos={containerData.selectedVideos}
         allVisibleVideosSelected={containerData.allVisibleVideosSelected}
-        showUsersManager={false} // Sempre false agora, pois vamos para tela separada
+        showUsersManager={false}
         showClientSelector={containerData.showClientSelector}
         editingVideoId={containerData.editingVideoId}
         isEditModalOpen={containerData.isEditModalOpen}
@@ -118,7 +127,7 @@ export const ClientVideoViewContainer = ({
         selectedClients={containerData.selectedClients}
         isAssigning={containerData.isAssigning}
         onSelectAllVisible={containerData.handleSelectAllVisible}
-        onToggleUsersManager={() => setShowUserManagement(true)} // Mudança aqui
+        onToggleUsersManager={() => setShowUserManagement(true)}
         onShowReorderMode={() => containerData.setShowReorderMode(true)}
         onBulkDelete={containerData.handleBulkDelete}
         onAssignToClients={() => containerData.setShowClientSelector(true)}
