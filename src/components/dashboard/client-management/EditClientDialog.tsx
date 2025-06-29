@@ -29,10 +29,22 @@ export const EditClientDialog = ({
 
   useEffect(() => {
     if (client) {
-      console.log('🔍 EditClientDialog - Cliente recebido:', client);
-      setEditForm({
+      console.log('🔍 EditClientDialog - Cliente recebido:', {
+        id: client.id,
         full_name: client.full_name,
         email: client.email,
+        logo_url: client.logo_url
+      });
+      
+      setEditForm({
+        full_name: client.full_name || '',
+        email: client.email || '',
+        logo_url: client.logo_url || ''
+      });
+      
+      console.log('📝 EditClientDialog - Formulário atualizado:', {
+        full_name: client.full_name || '',
+        email: client.email || '',
         logo_url: client.logo_url || ''
       });
     }
@@ -40,10 +52,16 @@ export const EditClientDialog = ({
 
   const handleSave = () => {
     if (client) {
+      console.log('💾 Salvando cliente:', client.id, editForm);
       onSave(client.id, editForm);
       onOpenChange(false);
     }
   };
+
+  if (!client) {
+    console.log('⚠️ EditClientDialog - Cliente não disponível');
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -89,14 +107,19 @@ export const EditClientDialog = ({
 
           <Separator />
 
-          {/* Client users management - passando os dados corretos do cliente */}
-          {client && (
-            <ClientUsersManager 
-              clientId={client.id} 
-              clientEmail={client.email}
-              clientName={client.full_name}
-            />
-          )}
+          {/* Debug - mostrar os dados que estão sendo passados */}
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-xs text-blue-800">
+              🔍 Debug: Passando para ClientUsersManager - Email: {editForm.email || 'VAZIO'} | Nome: {editForm.full_name || 'VAZIO'}
+            </p>
+          </div>
+
+          {/* Client users management - usando os dados do formulário que estão sendo editados */}
+          <ClientUsersManager 
+            clientId={client.id} 
+            clientEmail={editForm.email}
+            clientName={editForm.full_name}
+          />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button

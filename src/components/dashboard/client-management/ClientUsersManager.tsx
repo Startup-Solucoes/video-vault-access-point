@@ -20,7 +20,13 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const { clientUsers, isLoading, addUser, removeUser, updatePassword } = useClientUsers(clientId);
 
-  console.log('🔍 ClientUsersManager - Dados do cliente:', { clientId, clientEmail, clientName });
+  console.log('🔍 ClientUsersManager - Dados do cliente:', { 
+    clientId, 
+    clientEmail, 
+    clientName,
+    hasClientEmail: !!clientEmail,
+    hasClientName: !!clientName
+  });
   console.log('🔍 ClientUsersManager - clientUsers:', clientUsers);
 
   const togglePasswordVisibility = (userId: string) => {
@@ -31,6 +37,8 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
   };
 
   const handleUpdateMainClientPassword = (newPassword: string) => {
+    console.log('🔑 Tentativa de atualizar senha do cliente principal:', { clientEmail, newPassword: '***' });
+    
     // Por enquanto, apenas mostra uma mensagem informativa
     // Em uma implementação real, seria necessário uma função específica para alterar a senha do cliente principal
     toast({
@@ -43,25 +51,45 @@ export const ClientUsersManager = ({ clientId, clientEmail, clientName }: Client
   // Buscar informações de autenticação dos usuários
   React.useEffect(() => {
     const fetchAuthInfo = async () => {
+      console.log('📊 Buscando informações de autenticação para usuários:', clientUsers.length);
       const authData: Record<string, any> = {};
       
       for (const user of clientUsers) {
         try {
+          console.log('🔍 Buscando auth info para usuário:', user.id, user.user_email);
           const info = await getUserAuthInfo(user.id);
           authData[user.id] = info;
+          console.log('✅ Auth info obtida para:', user.user_email, info);
         } catch (error) {
-          console.error('Erro ao buscar info de auth:', error);
+          console.error('❌ Erro ao buscar info de auth para', user.user_email, ':', error);
           authData[user.id] = { email_confirmed_at: null, last_sign_in_at: null };
         }
       }
       
       setUserAuthInfo(authData);
+      console.log('📋 Todas as informações de auth coletadas:', authData);
     };
 
     if (clientUsers.length > 0) {
       fetchAuthInfo();
     }
   }, [clientUsers]);
+
+  // Verificar se os dados do cliente principal estão sendo recebidos
+  React.useEffect(() => {
+    console.log('🔍 Verificação dos dados do cliente principal:', {
+      clientEmail: clientEmail || 'VAZIO',
+      clientName: clientName || 'VAZIO',
+      clientId: clientId || 'VAZIO'
+    });
+    
+    if (!clientEmail) {
+      console.warn('⚠️ clientEmail está vazio ou undefined');
+    }
+    if (!clientName) {
+      console.warn('⚠️ clientName está vazio ou undefined');
+    }
+  }, [clientEmail, clientName, clientId]);
 
   return (
     <div className="space-y-6">

@@ -23,9 +23,27 @@ export const MainClientCard = ({
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  console.log('🔍 MainClientCard - Props recebidas:', { clientEmail, clientName });
+  console.log('🔍 MainClientCard - Props recebidas:', { 
+    clientEmail: clientEmail || 'VAZIO', 
+    clientName: clientName || 'VAZIO',
+    hasEmail: !!clientEmail,
+    hasName: !!clientName
+  });
+
+  // Verificar se os dados estão chegando corretamente
+  React.useEffect(() => {
+    if (!clientEmail || !clientName) {
+      console.error('❌ MainClientCard - Dados faltando:', {
+        clientEmail: clientEmail || 'AUSENTE',
+        clientName: clientName || 'AUSENTE'
+      });
+    } else {
+      console.log('✅ MainClientCard - Dados completos recebidos');
+    }
+  }, [clientEmail, clientName]);
 
   const handleSavePassword = () => {
+    console.log('💾 Salvando nova senha para cliente:', clientEmail);
     if (newPassword.trim() && onUpdatePassword) {
       onUpdatePassword(newPassword.trim());
       setNewPassword('');
@@ -58,8 +76,22 @@ export const MainClientCard = ({
     }
   };
 
+  // Exibir dados de fallback se não houver dados
+  const displayEmail = clientEmail || 'Email não disponível';
+  const displayName = clientName || 'Nome não disponível';
+
   return (
     <div className="space-y-4">
+      {/* Debug info - remover em produção */}
+      {(!clientEmail || !clientName) && (
+        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800">
+            ⚠️ Debug: Dados do cliente não recebidos completamente
+            <br />Email: {clientEmail ? '✅' : '❌'} | Nome: {clientName ? '✅' : '❌'}
+          </p>
+        </div>
+      )}
+
       {/* Informações do Cliente */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -68,7 +100,7 @@ export const MainClientCard = ({
             Nome do Cliente
           </label>
           <div className="p-3 bg-gray-50 rounded-lg border">
-            <span className="text-sm font-medium text-gray-900">{clientName}</span>
+            <span className="text-sm font-medium text-gray-900">{displayName}</span>
           </div>
         </div>
         
@@ -78,16 +110,18 @@ export const MainClientCard = ({
             Email de Acesso
           </label>
           <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border">
-            <span className="text-sm font-medium text-gray-900 flex-1">{clientEmail}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopyEmail}
-              className="h-8 w-8 p-0"
-              title="Copiar email"
-            >
-              <Copy className="h-3 w-3" />
-            </Button>
+            <span className="text-sm font-medium text-gray-900 flex-1">{displayEmail}</span>
+            {clientEmail && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopyEmail}
+                className="h-8 w-8 p-0"
+                title="Copiar email"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
