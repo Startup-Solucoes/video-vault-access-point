@@ -9,15 +9,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { 
   Edit2, 
-  Trash2, 
-  CheckCircle,
+  Trash2,
   User,
-  Mail
+  Mail,
+  Calendar
 } from 'lucide-react';
 import { Client } from '@/types/client';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface ClientTableProps {
   clients: Client[];
@@ -29,7 +30,6 @@ interface ClientTableProps {
 export const ClientTable = ({
   clients,
   onEditClient,
-  onApproveClient,
   onDeleteClient
 }: ClientTableProps) => {
   if (clients.length === 0) {
@@ -46,9 +46,9 @@ export const ClientTable = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Cliente</TableHead>
+            <TableHead>Administrador</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Data de Cadastro</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -66,9 +66,6 @@ export const ClientTable = ({
                   )}
                   <div>
                     <div className="font-medium">{client.full_name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      ID: {client.id.slice(0, 8)}...
-                    </div>
                   </div>
                 </div>
               </TableCell>
@@ -79,15 +76,10 @@ export const ClientTable = ({
                 </div>
               </TableCell>
               <TableCell>
-                <Badge 
-                  variant={client.role === 'approved' ? 'default' : 'secondary'}
-                  className={client.role === 'approved' ? 
-                    'bg-green-100 text-green-800' : 
-                    'bg-yellow-100 text-yellow-800'
-                  }
-                >
-                  {client.role === 'approved' ? 'Aprovado' : 'Pendente'}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  {format(new Date(client.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                </div>
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-2">
@@ -98,17 +90,6 @@ export const ClientTable = ({
                   >
                     <Edit2 className="h-4 w-4" />
                   </Button>
-
-                  {client.role !== 'approved' && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onApproveClient(client.id, client.email)}
-                      className="text-green-600 hover:text-green-700"
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                    </Button>
-                  )}
 
                   <Button
                     variant="outline"
