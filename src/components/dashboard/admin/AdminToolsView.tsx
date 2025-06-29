@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ThumbnailGenerator } from '../ThumbnailGenerator';
+import { AdvertisementManagement } from '../advertisement-management/AdvertisementManagement';
 
 export const AdminToolsView = () => {
   return (
@@ -8,13 +8,13 @@ export const AdminToolsView = () => {
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Ferramentas Administrativas</h2>
         <p className="text-gray-600 mb-8">
-          Utilize estas ferramentas para gerenciar e otimizar o sistema de vídeos.
+          Gerencie anúncios e outras funcionalidades administrativas do sistema.
         </p>
       </div>
 
       <div className="grid gap-6">
-        {/* Gerador de Thumbnails (baseado em URL) */}
-        <ThumbnailGenerator />
+        {/* Gerenciamento de Anúncios */}
+        <AdvertisementManagement />
       </div>
     </div>
   );
