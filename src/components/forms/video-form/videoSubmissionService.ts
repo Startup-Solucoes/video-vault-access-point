@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { VideoFormData } from './VideoFormTypes';
 import { sendVideoNotifications } from '@/services/emailNotificationService';
+import { generateAndSaveThumbnail, updateVideoThumbnail } from '@/services/automaticThumbnailService';
 
 export const submitVideoData = async (formData: VideoFormData, user: any): Promise<boolean> => {
   console.log('📋 Preparando dados para inserção no banco...');
@@ -14,6 +15,7 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
     thumbnail_url: formData.thumbnail_url.trim() || null,
     category: formData.selectedCategories.join(', ') || null,
     tags: formData.selectedCategories.length > 0 ? formData.selectedCategories : null,
+    platform: formData.platform,
     created_by: user.id
   };
 
@@ -38,6 +40,21 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
     }
 
     console.log('✅ Vídeo inserido com sucesso:', insertedVideo);
+
+    // Gerar thumbnail automática se não foi fornecida uma thumbnail manual
+    if (!formData.thumbnail_url.trim() && insertedVideo && formData.platform) {
+      console.log('🎨 Gerando thumbnail automática...');
+      try {
+        const automaticThumbnailUrl = await generateAndSaveThumbnail(insertedVideo.id, formData.platform);
+        if (automaticThumbnailUrl) {
+          await updateVideoThumbnail(insertedVideo.id, automaticThumbnailUrl);
+          console.log('✅ Thumbnail automática gerada e salva');
+        }
+      } catch (thumbnailError) {
+        console.warn('⚠️ Erro ao gerar thumbnail automática, continuando sem ela:', thumbnailError);
+        // Não falha o processo principal se a thumbnail falhar
+      }
+    }
 
     // Em seguida, criar as permissões para os clientes selecionados
     if (formData.selectedClients.length > 0 && insertedVideo) {
@@ -92,7 +109,7 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
     
     toast({
       title: "Sucesso!",
-      description: "Vídeo cadastrado com sucesso e notificações enviadas",
+      description: "Vídeo cadastrado com sucesso e thumbnail gerada automaticamente",
     });
     
     return true;
