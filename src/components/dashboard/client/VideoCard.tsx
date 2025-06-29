@@ -50,7 +50,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
                 <img
                   src={platformLogo}
                   alt={`${platformName} logo`}
-                  className="w-full h-full object-contain p-4"
+                  className="w-full h-full object-cover"
                   onError={(e) => {
                     // Fallback para um ícone genérico se a imagem não carregar
                     e.currentTarget.style.display = 'none';
