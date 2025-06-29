@@ -27,11 +27,12 @@ export const VideoCard = ({ video }: VideoCardProps) => {
     setIsModalOpen(true);
   };
 
-  console.log('VideoCard debug:', {
+  console.log('VideoCard debug - platform info:', {
     platform: video.platform,
     platformColor,
     platformName,
-    iconComponent: PlatformIcon
+    PlatformIconName: PlatformIcon?.name || 'No icon name',
+    isValidComponent: typeof PlatformIcon === 'function'
   });
 
   return (
@@ -47,7 +48,10 @@ export const VideoCard = ({ video }: VideoCardProps) => {
               }}
             >
               <div className="mb-2">
-                <PlatformIcon className="h-12 w-12" />
+                {PlatformIcon && React.createElement(PlatformIcon, { 
+                  className: "h-12 w-12",
+                  'aria-label': `${platformName} icon`
+                })}
               </div>
               <span className="text-sm font-medium">{platformName}</span>
               
