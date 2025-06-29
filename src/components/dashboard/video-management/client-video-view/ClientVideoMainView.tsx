@@ -44,6 +44,7 @@ interface ClientVideoMainViewProps {
   onShowReorderMode: () => void;
   onBulkDelete: () => void;
   onAssignToClients: () => void;
+  onAddVideo: () => void;
   onVideoSelect: (videoId: string, checked: boolean) => void;
   onEditVideo: (videoId: string) => void;
   onDeleteVideo: (videoId: string, videoTitle: string) => void;
@@ -84,6 +85,7 @@ export const ClientVideoMainView = ({
   onShowReorderMode,
   onBulkDelete,
   onAssignToClients,
+  onAddVideo,
   onVideoSelect,
   onEditVideo,
   onDeleteVideo,
@@ -110,6 +112,7 @@ export const ClientVideoMainView = ({
         onShowReorderMode={onShowReorderMode}
         onBulkDelete={onBulkDelete}
         onAssignToClients={onAssignToClients}
+        onAddVideo={onAddVideo}
         allVideosSelected={allVisibleVideosSelected}
       />
 

@@ -1,5 +1,5 @@
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useClientVideos } from '@/hooks/useClientVideos';
 import { useClientSelector } from '@/hooks/useClientSelector';
 import { useClientVideoSelection } from './ClientVideoSelectionManager';
@@ -9,6 +9,7 @@ import { useClientVideoViewState } from './useClientVideoViewState';
 import { ClientVideoLoadingState } from './ClientVideoLoadingState';
 import { ClientVideoReorderMode } from './ClientVideoReorderMode';
 import { ClientVideoMainView } from './ClientVideoMainView';
+import { VideoForm } from '@/components/forms/VideoForm';
 
 interface ClientVideoViewContainerProps {
   clientId: string;
@@ -22,6 +23,7 @@ export const ClientVideoViewContainer = ({
   clientLogoUrl 
 }: ClientVideoViewContainerProps) => {
   const { videos, isLoading, refreshVideos } = useClientVideos(clientId);
+  const [showVideoForm, setShowVideoForm] = useState(false);
   
   const {
     clients,
@@ -114,6 +116,15 @@ export const ClientVideoViewContainer = ({
     handleAssignToClients();
   }, [selectedClients, setShowClientSelector, handleAssignToClients]);
 
+  const handleAddVideo = useCallback(() => {
+    setShowVideoForm(true);
+  }, []);
+
+  const handleVideoCreated = useCallback(() => {
+    refreshVideos();
+    setShowVideoForm(false);
+  }, [refreshVideos]);
+
   // Loading state
   if (isLoading) {
     return (
@@ -140,44 +151,54 @@ export const ClientVideoViewContainer = ({
 
   // Main view
   return (
-    <ClientVideoMainView
-      clientId={clientId}
-      clientName={clientName}
-      clientLogoUrl={clientLogoUrl}
-      videos={videos}
-      paginatedVideos={paginatedVideos}
-      totalPages={totalPages}
-      selectedVideos={selectedVideos}
-      allVisibleVideosSelected={allVisibleVideosSelected}
-      showUsersManager={showUsersManager}
-      showClientSelector={showClientSelector}
-      editingVideoId={editingVideoId}
-      isEditModalOpen={isEditModalOpen}
-      deletingVideoId={deletingVideoId}
-      currentPage={currentPage}
-      itemsPerPage={itemsPerPage}
-      clients={clients}
-      filteredClients={filteredClients}
-      clientsLoading={clientsLoading}
-      searchValue={searchValue}
-      selectedClients={selectedClients}
-      isAssigning={isAssigning}
-      onSelectAllVisible={handleSelectAllVisible}
-      onToggleUsersManager={() => setShowUsersManager(!showUsersManager)}
-      onShowReorderMode={() => setShowReorderMode(true)}
-      onBulkDelete={handleBulkDelete}
-      onAssignToClients={() => setShowClientSelector(true)}
-      onVideoSelect={handleVideoSelect}
-      onEditVideo={handleEditVideo}
-      onDeleteVideo={handleDeleteVideoWithState}
-      onPageChange={(page) => handlePageChange(page, clearSelectionOnPageChange)}
-      onItemsPerPageChange={(value) => handleItemsPerPageChange(value, clearSelectionOnPageChange)}
-      onModalClose={handleModalClose}
-      onConfirmSelection={handleConfirmSelection}
-      onCloseEditModal={handleCloseEditModal}
-      onSearchValueChange={setSearchValue}
-      onClientToggle={handleClientToggle}
-      onBulkClientChange={handleBulkClientChange}
-    />
+    <>
+      <ClientVideoMainView
+        clientId={clientId}
+        clientName={clientName}
+        clientLogoUrl={clientLogoUrl}
+        videos={videos}
+        paginatedVideos={paginatedVideos}
+        totalPages={totalPages}
+        selectedVideos={selectedVideos}
+        allVisibleVideosSelected={allVisibleVideosSelected}
+        showUsersManager={showUsersManager}
+        showClientSelector={showClientSelector}
+        editingVideoId={editingVideoId}
+        isEditModalOpen={isEditModalOpen}
+        deletingVideoId={deletingVideoId}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        clients={clients}
+        filteredClients={filteredClients}
+        clientsLoading={clientsLoading}
+        searchValue={searchValue}
+        selectedClients={selectedClients}
+        isAssigning={isAssigning}
+        onSelectAllVisible={handleSelectAllVisible}
+        onToggleUsersManager={() => setShowUsersManager(!showUsersManager)}
+        onShowReorderMode={() => setShowReorderMode(true)}
+        onBulkDelete={handleBulkDelete}
+        onAssignToClients={() => setShowClientSelector(true)}
+        onAddVideo={handleAddVideo}
+        onVideoSelect={handleVideoSelect}
+        onEditVideo={handleEditVideo}
+        onDeleteVideo={handleDeleteVideoWithState}
+        onPageChange={(page) => handlePageChange(page, clearSelectionOnPageChange)}
+        onItemsPerPageChange={(value) => handleItemsPerPageChange(value, clearSelectionOnPageChange)}
+        onModalClose={handleModalClose}
+        onConfirmSelection={handleConfirmSelection}
+        onCloseEditModal={handleCloseEditModal}
+        onSearchValueChange={setSearchValue}
+        onClientToggle={handleClientToggle}
+        onBulkClientChange={handleBulkClientChange}
+      />
+
+      {/* Video Form Modal */}
+      <VideoForm
+        open={showVideoForm}
+        onOpenChange={setShowVideoForm}
+        onVideoCreated={handleVideoCreated}
+      />
+    </>
   );
 };

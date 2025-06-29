@@ -1,27 +1,19 @@
 
 import React from 'react';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle, 
-  AlertDialogTrigger 
-} from '@/components/ui/alert-dialog';
-import { User, Users, ArrowUpDown, Trash2, UserPlus, MoreVertical } from 'lucide-react';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useIsMobile } from '@/hooks/use-mobile';
+  Users, 
+  RotateCcw, 
+  Trash2, 
+  UserPlus, 
+  CheckSquare, 
+  Square,
+  Plus,
+  Video
+} from 'lucide-react';
 
 interface ClientVideoHeaderProps {
   clientName: string;
@@ -29,12 +21,13 @@ interface ClientVideoHeaderProps {
   videosCount: number;
   selectedVideos: string[];
   showUsersManager: boolean;
+  allVideosSelected: boolean;
   onSelectAllVisible: () => void;
   onToggleUsersManager: () => void;
   onShowReorderMode: () => void;
   onBulkDelete: () => void;
   onAssignToClients: () => void;
-  allVideosSelected: boolean;
+  onAddVideo: () => void;
 }
 
 export const ClientVideoHeader = ({
@@ -43,196 +36,119 @@ export const ClientVideoHeader = ({
   videosCount,
   selectedVideos,
   showUsersManager,
+  allVideosSelected,
   onSelectAllVisible,
   onToggleUsersManager,
   onShowReorderMode,
   onBulkDelete,
   onAssignToClients,
-  allVideosSelected
+  onAddVideo
 }: ClientVideoHeaderProps) => {
-  const isMobile = useIsMobile();
+  const hasSelectedVideos = selectedVideos.length > 0;
 
   return (
     <Card className="w-full">
-      <CardHeader className="pb-4">
-        <div className="flex flex-col gap-4">
-          {/* Title and Logo */}
-          <CardTitle className="flex items-center text-sm md:text-base">
-            {clientLogoUrl ? (
-              <img 
-                src={clientLogoUrl} 
-                alt={`Logo ${clientName}`}
-                className="h-6 w-6 md:h-8 md:w-8 mr-2 md:mr-3 object-contain rounded flex-shrink-0"
+      <CardHeader>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-center space-x-4">
+            {clientLogoUrl && (
+              <img
+                src={clientLogoUrl}
+                alt={`${clientName} logo`}
+                className="h-12 w-12 rounded-lg object-contain bg-white border border-gray-200"
               />
-            ) : (
-              <User className="h-4 w-4 md:h-5 md:w-5 mr-2 flex-shrink-0" />
             )}
-            <span className="truncate">Vídeos de {clientName} ({videosCount})</span>
-          </CardTitle>
-          
-          {/* Selection and Actions */}
-          <div className="flex flex-col gap-3">
-            {/* Selection controls */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center space-x-2 min-w-0 flex-1">
+            <div>
+              <CardTitle className="text-xl text-gray-900">
+                Vídeos de {clientName}
+              </CardTitle>
+              <p className="text-sm text-gray-600 mt-1">
+                {videosCount} vídeo{videosCount !== 1 ? 's' : ''} disponível{videosCount !== 1 ? 'is' : ''}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Botão Adicionar Vídeo */}
+            <Button
+              onClick={onAddVideo}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Vídeo
+            </Button>
+
+            {/* Botão Gerenciar Usuários */}
+            <Button
+              variant={showUsersManager ? "default" : "outline"}
+              onClick={onToggleUsersManager}
+              className={showUsersManager ? "bg-green-600 hover:bg-green-700" : ""}
+            >
+              <Users className="h-4 w-4 mr-2" />
+              {showUsersManager ? 'Ocultar Usuários' : 'Gerenciar Usuários'}
+            </Button>
+
+            {/* Botão Reordenar */}
+            <Button
+              variant="outline"
+              onClick={onShowReorderMode}
+              disabled={videosCount === 0}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reordenar
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+
+      {/* Seção de ações em lote */}
+      {videosCount > 0 && (
+        <CardContent className="pt-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
                 <Checkbox
                   checked={allVideosSelected}
                   onCheckedChange={onSelectAllVisible}
-                  className="flex-shrink-0"
                 />
-                <span className="text-xs md:text-sm text-gray-600 truncate">
+                <span className="text-sm text-gray-600">
                   Selecionar todos visíveis
                 </span>
               </div>
               
-              {selectedVideos.length > 0 && (
-                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded flex-shrink-0">
+              {hasSelectedVideos && (
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                   {selectedVideos.length} selecionado{selectedVideos.length !== 1 ? 's' : ''}
-                </span>
+                </Badge>
               )}
             </div>
 
-            {/* Action buttons */}
-            <div className="flex items-center gap-2 overflow-x-auto">
-              {/* Selected videos actions */}
-              {selectedVideos.length > 0 && (
-                <div className="flex gap-2 flex-shrink-0">
-                  {!isMobile ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onAssignToClients}
-                        className="flex items-center gap-2 text-xs md:text-sm"
-                      >
-                        <UserPlus className="h-3 w-3 md:h-4 md:w-4" />
-                        Atribuir
-                      </Button>
-                      
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="flex items-center gap-2 text-xs md:text-sm"
-                          >
-                            <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
-                            Remover
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="max-w-sm md:max-w-md mx-4">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="text-sm md:text-base">Remover vídeos do cliente?</AlertDialogTitle>
-                            <AlertDialogDescription className="text-xs md:text-sm">
-                              Tem certeza que deseja remover <strong>{selectedVideos.length} vídeo{selectedVideos.length !== 1 ? 's' : ''}</strong> do cliente <strong>{clientName}</strong>?
-                              <br /><br />
-                              Esta ação irá apenas remover o acesso do cliente a estes vídeos. Os vídeos não serão deletados permanentemente e continuarão disponíveis para outros clientes.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
-                            <AlertDialogCancel className="text-sm">Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={onBulkDelete}
-                              className="bg-red-600 hover:bg-red-700 text-sm"
-                            >
-                              Sim, remover do cliente
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </>
-                  ) : (
-                    // Mobile dropdown for selected actions
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-xs">
-                          <MoreVertical className="h-3 w-3" />
-                          Ações
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 bg-white">
-                        <DropdownMenuItem onClick={onAssignToClients}>
-                          <UserPlus className="h-4 w-4 mr-2" />
-                          Atribuir a Clientes
-                        </DropdownMenuItem>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Remover Selecionados
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="max-w-sm mx-4">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle className="text-sm">Remover vídeos?</AlertDialogTitle>
-                              <AlertDialogDescription className="text-xs">
-                                Remover {selectedVideos.length} vídeo{selectedVideos.length !== 1 ? 's' : ''} do cliente {clientName}?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter className="flex-col-reverse gap-2">
-                              <AlertDialogCancel className="text-sm">Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={onBulkDelete} className="bg-red-600 hover:bg-red-700 text-sm">
-                                Remover
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
-              )}
-              
-              {/* General actions */}
-              <div className="flex gap-2 flex-shrink-0">
-                {!isMobile ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onToggleUsersManager}
-                      className="flex items-center gap-2 text-xs md:text-sm"
-                    >
-                      <Users className="h-3 w-3 md:h-4 md:w-4" />
-                      {showUsersManager ? 'Ocultar' : 'Gerenciar'} Usuários
-                    </Button>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onShowReorderMode}
-                      className="flex items-center gap-2 text-xs md:text-sm"
-                    >
-                      <ArrowUpDown className="h-3 w-3 md:h-4 md:w-4" />
-                      Reordenar
-                    </Button>
-                  </>
-                ) : (
-                  // Mobile dropdown for general actions
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="text-xs">
-                        <MoreVertical className="h-3 w-3" />
-                        Menu
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 bg-white">
-                      <DropdownMenuItem onClick={onToggleUsersManager}>
-                        <Users className="h-4 w-4 mr-2" />
-                        {showUsersManager ? 'Ocultar' : 'Gerenciar'} Usuários
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={onShowReorderMode}>
-                        <ArrowUpDown className="h-4 w-4 mr-2" />
-                        Reordenar Vídeos
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
+            {hasSelectedVideos && (
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onAssignToClients}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Atribuir a Clientes
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onBulkDelete}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Remover Selecionados
+                </Button>
               </div>
-            </div>
+            )}
           </div>
-        </div>
-      </CardHeader>
+        </CardContent>
+      )}
     </Card>
   );
 };
