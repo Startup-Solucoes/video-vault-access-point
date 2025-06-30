@@ -73,14 +73,16 @@ export const UserCard = ({
           <Mail className="h-3 w-3" />
           {userEmail}
         </Badge>
+        {/* Botão de remover usuário movido para uma posição mais apropriada */}
         <Button
           variant="ghost"
           size="sm"
           onClick={onRemoveUser}
           disabled={isLoading}
-          className="h-6 w-6 p-0 hover:bg-red-100"
+          className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
         >
-          <X className="h-3 w-3" />
+          <X className="h-4 w-4 mr-1" />
+          Remover
         </Button>
       </div>
       
