@@ -1,71 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ClientVideoHeader } from './ClientVideoHeader';
-import { ClientVideoUsersSection } from './ClientVideoUsersSection';
 import { ClientVideoContent } from './ClientVideoContent';
 import { ClientVideoModals } from './ClientVideoModals';
-import { ClientVideoFilters } from './ClientVideoFilters';
-import { useClientVideoFiltering } from '@/hooks/video-management/useClientVideoFiltering';
-import { ClientVideoData } from '@/hooks/useClientVideos';
-
-interface ClientVideoMainViewProps {
-  // Client info
-  clientId: string;
-  clientName: string;
-  clientEmail?: string;
-  clientLogoUrl?: string;
-  
-  // Video data
-  videos: ClientVideoData[];
-  paginatedVideos: ClientVideoData[];
-  totalPages: number;
-  
-  // Selection state
-  selectedVideos: string[];
-  allVisibleVideosSelected: boolean;
-  
-  // UI state
-  showUsersManager: boolean;
-  showClientSelector: boolean;
-  editingVideoId: string | null;
-  isEditModalOpen: boolean;
-  deletingVideoId: string | null;
-  currentPage: number;
-  itemsPerPage: number;
-  
-  // Client selector state
-  clients: any[];
-  filteredClients: any[];
-  clientsLoading: boolean;
-  searchValue: string;
-  selectedClients: string[];
-  isAssigning: boolean;
-  
-  // Handlers
-  onSelectAllVisible: () => void;
-  onToggleUsersManager: () => void;
-  onShowReorderMode: () => void;
-  onBulkDelete: () => void;
-  onAssignToClients: () => void;
-  onAddVideo: () => void;
-  onVideoSelect: (videoId: string, checked: boolean) => void;
-  onEditVideo: (videoId: string) => void;
-  onDeleteVideo: (videoId: string, videoTitle: string) => void;
-  onPageChange: (page: number) => void;
-  onItemsPerPageChange: (value: string) => void;
-  onModalClose: (open: boolean) => void;
-  onConfirmSelection: () => void;
-  onCloseEditModal: () => void;
-  onSearchValueChange: (value: string) => void;
-  onClientToggle: (clientId: string) => void;
-  onBulkClientChange: (clientIds: string[]) => void;
-}
+import { EditClientInfoDialog } from './EditClientInfoDialog';
+import { ClientVideoViewProps } from './types';
 
 export const ClientVideoMainView = ({
   clientId,
-  clientName,
-  clientEmail = '',
-  clientLogoUrl,
+  clientName: initialClientName,
+  clientLogoUrl: initialClientLogoUrl,
   videos,
   paginatedVideos,
   totalPages,
@@ -101,25 +45,22 @@ export const ClientVideoMainView = ({
   onSearchValueChange,
   onClientToggle,
   onBulkClientChange
-}: ClientVideoMainViewProps) => {
-  const {
-    searchTerm,
-    setSearchTerm,
-    selectedCategory,
-    setSelectedCategory,
-    showFilters,
-    setShowFilters,
-    availableCategories,
-    filteredVideos
-  } = useClientVideoFiltering(videos);
+}: ClientVideoViewProps) => {
+  const [isEditClientDialogOpen, setIsEditClientDialogOpen] = useState(false);
+  const [currentClientName, setCurrentClientName] = useState(initialClientName);
+  const [currentClientLogoUrl, setCurrentClientLogoUrl] = useState(initialClientLogoUrl);
+
+  const handleClientUpdated = (newName: string, newLogoUrl?: string) => {
+    setCurrentClientName(newName);
+    setCurrentClientLogoUrl(newLogoUrl);
+  };
 
   return (
-    <div className="space-y-6 w-full">
-      {/* Header */}
+    <div className="space-y-6">
       <ClientVideoHeader
-        clientName={clientName}
-        clientLogoUrl={clientLogoUrl}
-        videosCount={filteredVideos.length}
+        clientName={currentClientName}
+        clientLogoUrl={currentClientLogoUrl}
+        videosCount={videos.length}
         selectedVideos={selectedVideos}
         showUsersManager={showUsersManager}
         onToggleUsersManager={onToggleUsersManager}
@@ -127,69 +68,51 @@ export const ClientVideoMainView = ({
         onBulkDelete={onBulkDelete}
         onAssignToClients={onAssignToClients}
         onAddVideo={onAddVideo}
+        onEditClientInfo={() => setIsEditClientDialogOpen(true)}
       />
 
-      {/* Users Manager */}
-      <ClientVideoUsersSection
-        clientId={clientId}
-        clientName={clientName}
-        clientEmail={clientEmail}
-        clientLogoUrl={clientLogoUrl}
-        showUsersManager={showUsersManager}
-      />
-
-      {/* Filtros de Vídeo - agora integrados com seleção e reordenação */}
-      <ClientVideoFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        availableCategories={availableCategories}
-        totalVideos={videos.length}
-        filteredVideos={filteredVideos.length}
-        showFilters={showFilters}
-        setShowFilters={setShowFilters}
-        selectedVideos={selectedVideos}
-        allVideosSelected={allVisibleVideosSelected}
-        onSelectAllVisible={onSelectAllVisible}
-        onShowReorderMode={onShowReorderMode}
-      />
-
-      {/* Videos Content */}
       <ClientVideoContent
-        videos={filteredVideos}
+        videos={videos}
         paginatedVideos={paginatedVideos}
         totalPages={totalPages}
         selectedVideos={selectedVideos}
-        deletingVideoId={deletingVideoId}
+        allVisibleVideosSelected={allVisibleVideosSelected}
         currentPage={currentPage}
         itemsPerPage={itemsPerPage}
-        clientName={clientName}
-        onVideoSelect={onVideoSelect}
         onSelectAllVisible={onSelectAllVisible}
+        onVideoSelect={onVideoSelect}
         onEditVideo={onEditVideo}
         onDeleteVideo={onDeleteVideo}
         onPageChange={onPageChange}
         onItemsPerPageChange={onItemsPerPageChange}
       />
 
-      {/* Modals */}
       <ClientVideoModals
         showClientSelector={showClientSelector}
+        editingVideoId={editingVideoId}
+        isEditModalOpen={isEditModalOpen}
+        deletingVideoId={deletingVideoId}
         clients={clients}
         filteredClients={filteredClients}
         clientsLoading={clientsLoading}
         searchValue={searchValue}
         selectedClients={selectedClients}
         isAssigning={isAssigning}
-        editingVideoId={editingVideoId}
-        isEditModalOpen={isEditModalOpen}
         onModalClose={onModalClose}
         onConfirmSelection={onConfirmSelection}
         onCloseEditModal={onCloseEditModal}
         onSearchValueChange={onSearchValueChange}
         onClientToggle={onClientToggle}
         onBulkClientChange={onBulkClientChange}
+      />
+
+      <EditClientInfoDialog
+        open={isEditClientDialogOpen}
+        onOpenChange={setIsEditClientDialogOpen}
+        clientId={clientId}
+        clientName={currentClientName}
+        clientLogoUrl={currentClientLogoUrl}
+        onClientUpdated={handleClientUpdated}
       />
     </div>
   );

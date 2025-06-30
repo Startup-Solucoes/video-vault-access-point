@@ -8,7 +8,8 @@ import {
   Users, 
   Plus, 
   Trash2, 
-  UserPlus
+  UserPlus,
+  Edit2
 } from 'lucide-react';
 
 interface ClientVideoHeaderProps {
@@ -22,6 +23,7 @@ interface ClientVideoHeaderProps {
   onBulkDelete: () => void;
   onAssignToClients: () => void;
   onAddVideo: () => void;
+  onEditClientInfo?: () => void;
 }
 
 export const ClientVideoHeader = ({
@@ -33,7 +35,8 @@ export const ClientVideoHeader = ({
   onToggleUsersManager,
   onBulkDelete,
   onAssignToClients,
-  onAddVideo
+  onAddVideo,
+  onEditClientInfo
 }: ClientVideoHeaderProps) => {
   const hasSelectedVideos = selectedVideos.length > 0;
 
@@ -51,7 +54,20 @@ export const ClientVideoHeader = ({
               />
             )}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{clientName}</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold text-gray-900">{clientName}</h1>
+                {onEditClientInfo && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onEditClientInfo}
+                    className="text-gray-500 hover:text-gray-700 p-1"
+                    title="Editar informações do cliente"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                   <Video className="h-3 w-3 mr-1" />
