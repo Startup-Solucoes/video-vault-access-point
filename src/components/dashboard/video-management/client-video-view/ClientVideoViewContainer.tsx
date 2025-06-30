@@ -10,6 +10,7 @@ import { VideoForm } from '@/components/forms/VideoForm';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Client } from '@/types/client';
 
 interface ClientVideoViewContainerProps {
   clientId: string;
@@ -101,6 +102,22 @@ export const ClientVideoViewContainer = ({
     );
   }
 
+  // Converter os clientes do ClientSelector para o tipo Client completo
+  const convertToFullClient = (selectorClient: any): Client => ({
+    id: selectorClient.id,
+    email: selectorClient.email,
+    full_name: selectorClient.full_name,
+    role: 'client',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    logo_url: undefined,
+    last_sign_in_at: undefined,
+    is_deleted: false
+  });
+
+  const fullClients = containerData.clients.map(convertToFullClient);
+  const fullFilteredClients = containerData.filteredClients.map(convertToFullClient);
+
   // Main view
   return (
     <>
@@ -120,8 +137,8 @@ export const ClientVideoViewContainer = ({
         deletingVideoId={containerData.deletingVideoId}
         currentPage={containerData.currentPage}
         itemsPerPage={containerData.itemsPerPage}
-        clients={containerData.clients}
-        filteredClients={containerData.filteredClients}
+        clients={fullClients}
+        filteredClients={fullFilteredClients}
         clientsLoading={containerData.clientsLoading}
         searchValue={containerData.searchValue}
         selectedClients={containerData.selectedClients}

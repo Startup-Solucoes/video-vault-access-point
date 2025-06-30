@@ -91,7 +91,6 @@ export const ClientVideoMainView = ({
         showClientSelector={showClientSelector}
         editingVideoId={editingVideoId}
         isEditModalOpen={isEditModalOpen}
-        deletingVideoId={deletingVideoId}
         clients={clients}
         filteredClients={filteredClients}
         clientsLoading={clientsLoading}
