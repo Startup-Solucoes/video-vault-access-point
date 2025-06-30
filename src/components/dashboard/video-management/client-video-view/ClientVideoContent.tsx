@@ -12,10 +12,9 @@ interface ClientVideoContentProps {
   paginatedVideos: ClientVideoData[];
   totalPages: number;
   selectedVideos: string[];
-  deletingVideoId: string | null;
+  allVisibleVideosSelected: boolean;
   currentPage: number;
   itemsPerPage: number;
-  clientName: string;
   onVideoSelect: (videoId: string, checked: boolean) => void;
   onSelectAllVisible: () => void;
   onEditVideo: (videoId: string) => void;
@@ -29,10 +28,9 @@ export const ClientVideoContent = ({
   paginatedVideos,
   totalPages,
   selectedVideos,
-  deletingVideoId,
+  allVisibleVideosSelected,
   currentPage,
   itemsPerPage,
-  clientName,
   onVideoSelect,
   onSelectAllVisible,
   onEditVideo,
@@ -50,8 +48,8 @@ export const ClientVideoContent = ({
             <ClientVideoTable
               videos={paginatedVideos}
               selectedVideos={selectedVideos}
-              deletingVideoId={deletingVideoId}
-              clientName={clientName}
+              deletingVideoId={null}
+              clientName=""
               onVideoSelect={onVideoSelect}
               onSelectAllVisible={onSelectAllVisible}
               onEditVideo={onEditVideo}
@@ -61,8 +59,8 @@ export const ClientVideoContent = ({
             <ClientVideoCards
               videos={paginatedVideos}
               selectedVideos={selectedVideos}
-              deletingVideoId={deletingVideoId}
-              clientName={clientName}
+              deletingVideoId={null}
+              clientName=""
               onVideoSelect={onVideoSelect}
               onEditVideo={onEditVideo}
               onDeleteVideo={onDeleteVideo}

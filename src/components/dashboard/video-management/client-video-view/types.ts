@@ -1,26 +1,13 @@
 
 import { Client } from '@/types/client';
-
-export interface Video {
-  id: string;
-  title: string;
-  description?: string;
-  video_url: string;
-  thumbnail_url?: string;
-  category?: string;
-  tags?: string[];
-  platform?: string;
-  created_at: string;
-  view_count?: number;
-  display_order?: number;
-}
+import { ClientVideoData } from '@/hooks/useClientVideos';
 
 export interface ClientVideoViewProps {
   clientId: string;
   clientName: string;
   clientLogoUrl?: string;
-  videos: Video[];
-  paginatedVideos: Video[];
+  videos: ClientVideoData[];
+  paginatedVideos: ClientVideoData[];
   totalPages: number;
   selectedVideos: string[];
   allVisibleVideosSelected: boolean;
@@ -43,15 +30,15 @@ export interface ClientVideoViewProps {
   onBulkDelete: () => void;
   onAssignToClients: () => void;
   onAddVideo: () => void;
-  onVideoSelect: (videoId: string) => void;
+  onVideoSelect: (videoId: string, checked: boolean) => void;
   onEditVideo: (videoId: string) => void;
-  onDeleteVideo: (videoId: string) => void;
+  onDeleteVideo: (videoId: string, videoTitle: string) => void;
   onPageChange: (page: number) => void;
-  onItemsPerPageChange: (itemsPerPage: number) => void;
-  onModalClose: () => void;
+  onItemsPerPageChange: (value: string) => void;
+  onModalClose: (open: boolean) => void;
   onConfirmSelection: () => void;
   onCloseEditModal: () => void;
   onSearchValueChange: (value: string) => void;
   onClientToggle: (clientId: string) => void;
-  onBulkClientChange: (clientIds: string[], selected: boolean) => void;
+  onBulkClientChange: (clientIds: string[]) => void;
 }

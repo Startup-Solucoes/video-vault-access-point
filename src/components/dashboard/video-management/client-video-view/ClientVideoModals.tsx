@@ -2,12 +2,13 @@
 import React from 'react';
 import { ClientSelectionModal } from '@/components/forms/client-selector/ClientSelectionModal';
 import { EditVideoForm } from '@/components/forms/EditVideoForm';
+import { Client } from '@/types/client';
 
 interface ClientVideoModalsProps {
   // Client selector state
   showClientSelector: boolean;
-  clients: any[];
-  filteredClients: any[];
+  clients: Client[];
+  filteredClients: Client[];
   clientsLoading: boolean;
   searchValue: string;
   selectedClients: string[];
@@ -43,20 +44,33 @@ export const ClientVideoModals = ({
   onClientToggle,
   onBulkClientChange
 }: ClientVideoModalsProps) => {
+  // Converter Client[] para o formato esperado pelo ClientSelectionModal
+  const convertedClients = clients.map(client => ({
+    id: client.id,
+    full_name: client.full_name,
+    email: client.email
+  }));
+
+  const convertedFilteredClients = filteredClients.map(client => ({
+    id: client.id,
+    full_name: client.full_name,
+    email: client.email
+  }));
+
   return (
     <>
       {/* Client Selection Modal */}
       <ClientSelectionModal
         open={showClientSelector}
         onOpenChange={onModalClose}
-        clients={clients}
+        clients={convertedClients}
         selectedClients={selectedClients}
         onClientToggle={onClientToggle}
         onBulkClientChange={onBulkClientChange}
         isLoading={clientsLoading}
         searchValue={searchValue}
         onSearchValueChange={onSearchValueChange}
-        filteredClients={filteredClients}
+        filteredClients={convertedFilteredClients}
         onConfirmSelection={onConfirmSelection}
         isAssigning={isAssigning}
       />
