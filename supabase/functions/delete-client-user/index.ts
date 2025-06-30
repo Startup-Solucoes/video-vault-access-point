@@ -21,22 +21,22 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     )
 
-    const { clientUserId } = await req.json()
+    const { client_user_id } = await req.json()
 
-    if (!clientUserId) {
+    if (!client_user_id) {
       return new Response(
         JSON.stringify({ error: 'Missing client user ID' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('Deleting client user:', clientUserId)
+    console.log('Deleting client user:', client_user_id)
 
     // First get the user email to find the auth user
     const { data: clientUser, error: fetchError } = await supabaseAdmin
       .from('client_users')
       .select('user_email')
-      .eq('id', clientUserId)
+      .eq('id', client_user_id)
       .maybeSingle()
 
     if (fetchError) {
@@ -58,7 +58,7 @@ serve(async (req) => {
     const { error: deleteError } = await supabaseAdmin
       .from('client_users')
       .delete()
-      .eq('id', clientUserId)
+      .eq('id', client_user_id)
 
     if (deleteError) {
       console.error('Delete error:', deleteError)

@@ -65,11 +65,11 @@ serve(async (req) => {
 
     console.log('👤 Criando usuário:', { email, client_id, admin_id })
 
-    // Create the user in Supabase Auth
+    // Create the user in Supabase Auth WITHOUT sending confirmation email
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: email,
       password: password,
-      email_confirm: true,
+      email_confirm: true, // Confirma o email automaticamente
       user_metadata: {
         role: 'client'
       }
@@ -133,6 +133,7 @@ serve(async (req) => {
     }
 
     console.log('✅ Usuário adicionado à tabela client_users')
+    console.log('📧 Email de confirmação NÃO enviado - conforme solicitado')
 
     return new Response(
       JSON.stringify({
