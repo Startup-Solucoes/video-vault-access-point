@@ -25,6 +25,8 @@ export const ClientUsersManager = ({
 }: ClientUsersManagerProps) => {
   const [userAuthInfo, setUserAuthInfo] = useState<Record<string, any>>({});
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
+  const [lastUpdatedMainPassword, setLastUpdatedMainPassword] = useState<string | null>(null);
+  const [showMainPassword, setShowMainPassword] = useState(false);
   const { clientUsers, isLoading, addUser, removeUser, updatePassword } = useClientUsers(clientId);
 
   console.log('🔍 ClientUsersManager - Dados completos do cliente:', { 
@@ -48,6 +50,10 @@ export const ClientUsersManager = ({
     try {
       await updateMainClientPassword(clientId, newPassword);
       
+      // Salvar a senha para exibição temporária
+      setLastUpdatedMainPassword(newPassword);
+      setShowMainPassword(true);
+      
       toast({
         title: "Sucesso",
         description: "Senha do cliente principal atualizada com sucesso",
@@ -70,6 +76,28 @@ export const ClientUsersManager = ({
       description: "A alteração de email do cliente principal será implementada em breve",
       variant: "destructive"
     });
+  };
+
+  const handleToggleMainPasswordVisibility = () => {
+    setShowMainPassword(!showMainPassword);
+  };
+
+  const handleCopyMainPassword = async () => {
+    if (!lastUpdatedMainPassword) return;
+    
+    try {
+      await navigator.clipboard.writeText(lastUpdatedMainPassword);
+      toast({
+        title: "Senha copiada!",
+        description: `Senha do cliente principal copiada para a área de transferência`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível copiar a senha",
+        variant: "destructive"
+      });
+    }
   };
 
   // Buscar informações de autenticação dos usuários
@@ -116,11 +144,15 @@ export const ClientUsersManager = ({
         userAuthInfo={userAuthInfo}
         visiblePasswords={visiblePasswords}
         isLoading={isLoading}
+        lastUpdatedMainPassword={lastUpdatedMainPassword}
+        showMainPassword={showMainPassword}
         onTogglePasswordVisibility={togglePasswordVisibility}
         onRemoveUser={removeUser}
         onUpdatePassword={updatePassword}
         onUpdateMainClientPassword={handleUpdateMainClientPassword}
         onUpdateMainClientEmail={handleUpdateMainClientEmail}
+        onToggleMainPasswordVisibility={handleToggleMainPasswordVisibility}
+        onCopyMainPassword={handleCopyMainPassword}
       />
 
       <InfoBanner />

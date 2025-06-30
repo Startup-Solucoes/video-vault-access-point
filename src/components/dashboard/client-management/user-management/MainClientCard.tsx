@@ -11,23 +11,29 @@ interface MainClientCardProps {
   clientEmail: string;
   clientName: string;
   clientLogoUrl?: string;
+  lastUpdatedPassword?: string | null;
+  showLastPassword?: boolean;
   onUpdatePassword: (newPassword: string) => void;
   onUpdateEmail: (newEmail: string) => void;
+  onTogglePasswordVisibility?: () => void;
+  onCopyLastPassword?: () => void;
 }
 
 export const MainClientCard = ({
   clientEmail,
   clientName,
   clientLogoUrl,
+  lastUpdatedPassword,
+  showLastPassword = false,
   onUpdatePassword,
-  onUpdateEmail
+  onUpdateEmail,
+  onTogglePasswordVisibility,
+  onCopyLastPassword
 }: MainClientCardProps) => {
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [newEmail, setNewEmail] = useState(clientEmail);
   const [newPassword, setNewPassword] = useState('');
-  const [lastUpdatedPassword, setLastUpdatedPassword] = useState<string | null>(null);
-  const [showLastPassword, setShowLastPassword] = useState(false);
 
   console.log('🔍 MainClientCard - Dados do cliente principal:', {
     clientEmail,
@@ -45,8 +51,6 @@ export const MainClientCard = ({
 
   const handleSavePassword = () => {
     if (newPassword.trim()) {
-      setLastUpdatedPassword(newPassword);
-      setShowLastPassword(true);
       onUpdatePassword(newPassword);
       setNewPassword('');
     }
@@ -61,24 +65,6 @@ export const MainClientCard = ({
   const handleCancelPassword = () => {
     setNewPassword('');
     setIsEditingPassword(false);
-  };
-
-  const handleCopyLastPassword = async () => {
-    if (!lastUpdatedPassword) return;
-    
-    try {
-      await navigator.clipboard.writeText(lastUpdatedPassword);
-      toast({
-        title: "Senha copiada!",
-        description: `Senha do cliente principal copiada para a área de transferência`,
-      });
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível copiar a senha",
-        variant: "destructive"
-      });
-    }
   };
 
   return (
@@ -224,7 +210,7 @@ export const MainClientCard = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setShowLastPassword(!showLastPassword)}
+                      onClick={onTogglePasswordVisibility}
                       className="h-8 w-8 p-0"
                       title={showLastPassword ? "Ocultar senha" : "Mostrar senha"}
                     >
@@ -237,7 +223,7 @@ export const MainClientCard = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={handleCopyLastPassword}
+                      onClick={onCopyLastPassword}
                       className="h-8 w-8 p-0"
                       title="Copiar senha"
                     >
