@@ -4,7 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Key, Edit2, Save, X, Image } from 'lucide-react';
+import { User, Mail, Key, Edit2, Save, X, Image, Eye, EyeOff, Copy } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface MainClientCardProps {
   clientEmail: string;
@@ -25,6 +26,8 @@ export const MainClientCard = ({
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [newEmail, setNewEmail] = useState(clientEmail);
   const [newPassword, setNewPassword] = useState('');
+  const [lastUpdatedPassword, setLastUpdatedPassword] = useState<string | null>(null);
+  const [showLastPassword, setShowLastPassword] = useState(false);
 
   console.log('🔍 MainClientCard - Dados do cliente principal:', {
     clientEmail,
@@ -42,6 +45,8 @@ export const MainClientCard = ({
 
   const handleSavePassword = () => {
     if (newPassword.trim()) {
+      setLastUpdatedPassword(newPassword);
+      setShowLastPassword(true);
       onUpdatePassword(newPassword);
       setNewPassword('');
     }
@@ -56,6 +61,24 @@ export const MainClientCard = ({
   const handleCancelPassword = () => {
     setNewPassword('');
     setIsEditingPassword(false);
+  };
+
+  const handleCopyLastPassword = async () => {
+    if (!lastUpdatedPassword) return;
+    
+    try {
+      await navigator.clipboard.writeText(lastUpdatedPassword);
+      toast({
+        title: "Senha copiada!",
+        description: `Senha do cliente principal copiada para a área de transferência`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível copiar a senha",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -178,12 +201,52 @@ export const MainClientCard = ({
                     variant="ghost"
                     onClick={() => setIsEditingPassword(true)}
                     className="p-1 h-auto"
+                    title="Alterar senha"
                   >
                     <Edit2 className="h-4 w-4" />
                   </Button>
                 </div>
               )}
             </div>
+
+            {/* Última senha atualizada */}
+            {lastUpdatedPassword && (
+              <div className="mt-3 p-3 bg-green-50 rounded border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Key className="h-4 w-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-800">Última senha alterada:</span>
+                    <code className="text-sm bg-white px-2 py-1 rounded border">
+                      {showLastPassword ? lastUpdatedPassword : '••••••••••'}
+                    </code>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowLastPassword(!showLastPassword)}
+                      className="h-8 w-8 p-0"
+                      title={showLastPassword ? "Ocultar senha" : "Mostrar senha"}
+                    >
+                      {showLastPassword ? (
+                        <EyeOff className="h-3 w-3" />
+                      ) : (
+                        <Eye className="h-3 w-3" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCopyLastPassword}
+                      className="h-8 w-8 p-0"
+                      title="Copiar senha"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
