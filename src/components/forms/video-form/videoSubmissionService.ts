@@ -5,7 +5,13 @@ import { VideoFormData } from './VideoFormTypes';
 import { sendVideoNotifications } from '@/services/emailNotificationService';
 
 export const submitVideoData = async (formData: VideoFormData, user: any): Promise<boolean> => {
-  console.log('📋 Preparando dados para inserção no banco...');
+  console.log('📋 === INICIANDO CADASTRO DE VÍDEO ===');
+  console.log('📄 Dados do formulário:', {
+    title: formData.title,
+    clientsCount: formData.selectedClients.length,
+    categoriesCount: formData.selectedCategories.length,
+    userId: user.id
+  });
   
   const videoData = {
     title: formData.title.trim(),
@@ -18,9 +24,6 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
     created_by: user.id
   };
 
-  console.log('📄 Dados preparados para inserção:', videoData);
-  console.log('👤 ID do usuário criador:', user.id);
-
   try {
     // Inserir o vídeo
     console.log('💾 Inserindo vídeo na tabela videos...');
@@ -32,23 +35,41 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
 
     if (videoError) {
       console.error('❌ ERRO ao inserir vídeo:', videoError);
-      console.error('Código do erro:', videoError.code);
-      console.error('Mensagem do erro:', videoError.message);
-      console.error('Detalhes do erro:', videoError.details);
       throw videoError;
     }
 
-    console.log('✅ Vídeo inserido com sucesso:', insertedVideo);
+    console.log('✅ Vídeo inserido com sucesso:', insertedVideo.id);
 
     // Criar as permissões para os clientes selecionados
     if (formData.selectedClients.length > 0 && insertedVideo) {
       console.log('🔑 Criando permissões para clientes...');
       console.log('Lista de clientes selecionados:', formData.selectedClients);
       
+      // Obter próximo display_order para cada cliente
+      const clientOrderPromises = formData.selectedClients.map(async (clientId) => {
+        const { data: lastOrder } = await supabase
+          .from('video_permissions')
+          .select('display_order')
+          .eq('client_id', clientId)
+          .order('display_order', { ascending: false })
+          .limit(1);
+        
+        return {
+          clientId,
+          nextOrder: (lastOrder?.[0]?.display_order || 0) + 1
+        };
+      });
+
+      const clientOrders = await Promise.all(clientOrderPromises);
+      const orderMap = Object.fromEntries(
+        clientOrders.map(co => [co.clientId, co.nextOrder])
+      );
+
       const permissions = formData.selectedClients.map(clientId => ({
         video_id: insertedVideo.id,
         client_id: clientId,
-        granted_by: user.id
+        granted_by: user.id,
+        display_order: orderMap[clientId]
       }));
 
       console.log('📋 Permissões preparadas:', permissions);
@@ -63,12 +84,13 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
         throw permissionError;
       }
 
-      console.log('✅ Permissões inseridas com sucesso:', insertedPermissions);
+      console.log('✅ Permissões inseridas com sucesso');
 
-      // Enviar notificações por email para os usuários dos clientes selecionados
-      console.log('📧 Enviando notificações por email...');
+      // Enviar notificações por email APENAS se há clientes selecionados
+      console.log('📧 === INICIANDO ENVIO DE NOTIFICAÇÕES ===');
+      
       try {
-        const emailSuccess = await sendVideoNotifications({
+        const notificationSuccess = await sendVideoNotifications({
           videoTitle: formData.title,
           videoDescription: formData.description,
           categories: formData.selectedCategories,
@@ -76,13 +98,13 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
           adminId: user.id
         });
 
-        if (emailSuccess) {
-          console.log('✅ Notificações por email enviadas com sucesso');
+        if (notificationSuccess) {
+          console.log('✅ Notificações enviadas com sucesso');
         } else {
-          console.warn('⚠️ Algumas notificações por email falharam, mas o vídeo foi cadastrado');
+          console.warn('⚠️ Algumas notificações falharam, mas o vídeo foi cadastrado');
         }
       } catch (emailError) {
-        console.error('❌ Erro ao enviar notificações por email:', emailError);
+        console.error('❌ Erro ao enviar notificações:', emailError);
         // Não falha o processo principal se o email falhar
       }
     } else {
@@ -93,7 +115,7 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
     
     toast({
       title: "Sucesso!",
-      description: "Vídeo cadastrado com sucesso",
+      description: `Vídeo cadastrado com sucesso${formData.selectedClients.length > 0 ? ' e notificações enviadas' : ''}`,
     });
     
     return true;
@@ -101,8 +123,6 @@ export const submitVideoData = async (formData: VideoFormData, user: any): Promi
   } catch (error) {
     console.error('💥 === ERRO NO PROCESSO DE CADASTRO ===');
     console.error('Erro completo:', error);
-    console.error('Tipo do erro:', typeof error);
-    console.error('Message:', error instanceof Error ? error.message : 'Erro desconhecido');
     
     // Análise específica para RLS
     if (error instanceof Error && error.message.includes('row-level security')) {

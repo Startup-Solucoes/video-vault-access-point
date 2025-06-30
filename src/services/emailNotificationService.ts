@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 interface VideoNotificationData {
@@ -16,21 +15,49 @@ interface ClientConfirmationData {
 
 export const sendVideoNotifications = async (data: VideoNotificationData): Promise<boolean> => {
   try {
-    console.log('Sending video notifications:', data);
-
-    const { data: response, error } = await supabase.functions.invoke('send-video-notification', {
-      body: data
+    console.log('📧 === INICIANDO ENVIO DE NOTIFICAÇÕES ===');
+    console.log('📋 Dados da notificação:', {
+      videoTitle: data.videoTitle,
+      clientIds: data.clientIds,
+      adminId: data.adminId,
+      categoriesCount: data.categories?.length || 0
     });
 
-    if (error) {
-      console.error('Error sending video notifications:', error);
+    if (!data.clientIds || data.clientIds.length === 0) {
+      console.warn('⚠️ Nenhum cliente selecionado para notificação');
       return false;
     }
 
-    console.log('Video notifications sent successfully:', response);
-    return true;
+    const { data: response, error } = await supabase.functions.invoke('send-video-notification', {
+      body: {
+        videoTitle: data.videoTitle,
+        videoDescription: data.videoDescription || '',
+        categories: data.categories || [],
+        clientIds: data.clientIds,
+        adminId: data.adminId
+      }
+    });
+
+    if (error) {
+      console.error('❌ Erro ao chamar função de envio de notificações:', error);
+      return false;
+    }
+
+    console.log('✅ Resposta da função de notificações:', response);
+    
+    if (response?.success) {
+      console.log(`📊 Notificações enviadas: ${response.emailsSent || 0} emails`);
+      if (response.errors && response.errors.length > 0) {
+        console.warn('⚠️ Alguns erros ocorreram:', response.errors);
+      }
+      return true;
+    } else {
+      console.error('❌ Função retornou erro:', response?.error || 'Erro desconhecido');
+      return false;
+    }
+
   } catch (error) {
-    console.error('Error in sendVideoNotifications:', error);
+    console.error('💥 Erro crítico no sendVideoNotifications:', error);
     return false;
   }
 };
