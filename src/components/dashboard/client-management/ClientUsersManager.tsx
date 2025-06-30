@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useClientUsers } from '@/hooks/useClientUsers';
 import { getUserAuthInfo } from '@/services/emailNotificationService';
+import { updateMainClientPassword } from '@/services/client/mainClientPasswordService';
 import { UserAddForm } from './user-management/UserAddForm';
 import { AllUsersList } from './user-management/AllUsersList';
 import { InfoBanner } from './user-management/InfoBanner';
@@ -41,14 +42,24 @@ export const ClientUsersManager = ({
     }));
   };
 
-  const handleUpdateMainClientPassword = (newPassword: string) => {
-    console.log('🔑 Tentativa de atualizar senha do cliente principal:', { clientEmail, newPassword: '***' });
+  const handleUpdateMainClientPassword = async (newPassword: string) => {
+    console.log('🔑 Atualizando senha do cliente principal:', { clientEmail, newPassword: '***' });
     
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "A alteração de senha do cliente principal será implementada em breve",
-      variant: "destructive"
-    });
+    try {
+      await updateMainClientPassword(clientId, newPassword);
+      
+      toast({
+        title: "Sucesso",
+        description: "Senha do cliente principal atualizada com sucesso",
+      });
+    } catch (error) {
+      console.error('❌ Erro ao atualizar senha do cliente principal:', error);
+      toast({
+        title: "Erro",
+        description: error instanceof Error ? error.message : "Erro ao atualizar senha",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleUpdateMainClientEmail = (newEmail: string) => {
