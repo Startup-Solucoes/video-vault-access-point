@@ -65,25 +65,35 @@ export const AllUsersList = ({
         />
       </div>
 
-      {/* Usuários Adicionais */}
-      <div className="bg-white border border-gray-200 rounded-lg">
-        <div className="p-6 pb-4">
-          <Label className="text-lg font-semibold text-gray-900 mb-6 block">
-            Usuários Adicionais
-          </Label>
-          
-          {/* Formulário para adicionar usuários - agora mais integrado */}
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Adicionar Novo Usuário</h4>
+      {/* Usuários Adicionais - Layout Reorganizado */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <Label className="text-lg font-semibold text-gray-900 mb-6 block">
+          Usuários Adicionais
+        </Label>
+        
+        {/* Formulário para adicionar usuários */}
+        <div className="mb-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center">
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs font-medium mr-2">
+                NOVO
+              </span>
+              Adicionar Novo Usuário
+            </h4>
             <UserAddForm onAddUser={onAddUser} isLoading={isLoading} />
           </div>
         </div>
 
-        <Separator className="mx-6" />
+        <Separator className="my-6" />
 
-        {/* Lista de usuários adicionais */}
-        <div className="p-6 pt-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-4">Usuários Cadastrados</h4>
+        {/* Lista de usuários cadastrados */}
+        <div>
+          <h4 className="text-sm font-medium text-gray-700 mb-4 flex items-center">
+            <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-medium mr-2">
+              {clientUsers.length}
+            </span>
+            Usuários Cadastrados
+          </h4>
           <UsersList
             clientUsers={clientUsers}
             userAuthInfo={userAuthInfo}
