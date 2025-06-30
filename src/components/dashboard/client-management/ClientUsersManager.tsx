@@ -1,11 +1,8 @@
 
 import React, { useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { useClientUsers } from '@/hooks/useClientUsers';
 import { getUserAuthInfo } from '@/services/emailNotificationService';
 import { updateMainClientPassword } from '@/services/client/mainClientPasswordService';
-import { UserAddForm } from './user-management/UserAddForm';
 import { AllUsersList } from './user-management/AllUsersList';
 import { InfoBanner } from './user-management/InfoBanner';
 import { toast } from '@/hooks/use-toast';
@@ -129,13 +126,7 @@ export const ClientUsersManager = ({
 
   return (
     <div className="space-y-6">
-      {/* Formulário para adicionar usuários */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Adicionar Novo Usuário</h3>
-        <UserAddForm onAddUser={addUser} isLoading={isLoading} />
-      </div>
-
-      {/* Lista de todos os usuários */}
+      {/* Lista unificada de usuários */}
       <AllUsersList
         clientEmail={clientEmail}
         clientName={clientName}
@@ -153,6 +144,7 @@ export const ClientUsersManager = ({
         onUpdateMainClientEmail={handleUpdateMainClientEmail}
         onToggleMainPasswordVisibility={handleToggleMainPasswordVisibility}
         onCopyMainPassword={handleCopyMainPassword}
+        onAddUser={addUser}
       />
 
       <InfoBanner />

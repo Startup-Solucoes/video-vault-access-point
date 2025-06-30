@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { MainClientCard } from './MainClientCard';
 import { UsersList } from './UsersList';
+import { UserAddForm } from './UserAddForm';
 
 interface AllUsersListProps {
   clientEmail: string;
@@ -22,6 +23,7 @@ interface AllUsersListProps {
   onUpdateMainClientEmail: (newEmail: string) => void;
   onToggleMainPasswordVisibility?: () => void;
   onCopyMainPassword?: () => void;
+  onAddUser: (email: string) => void;
 }
 
 export const AllUsersList = ({
@@ -40,18 +42,17 @@ export const AllUsersList = ({
   onUpdateMainClientPassword,
   onUpdateMainClientEmail,
   onToggleMainPasswordVisibility,
-  onCopyMainPassword
+  onCopyMainPassword,
+  onAddUser
 }: AllUsersListProps) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <div className="mb-6">
-        <Label className="text-lg font-semibold text-gray-900 mb-4 block">
-          Usuários com Acesso
-        </Label>
-        
-        {/* Cliente Principal */}
-        <div className="mb-6">
-          <h3 className="text-base font-medium text-gray-700 mb-3">Cliente Principal</h3>
+    <div className="space-y-6">
+      {/* Cliente Principal */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="mb-4">
+          <Label className="text-lg font-semibold text-gray-900 mb-4 block">
+            Cliente Principal
+          </Label>
           <MainClientCard
             clientEmail={clientEmail}
             clientName={clientName}
@@ -64,21 +65,36 @@ export const AllUsersList = ({
             onCopyLastPassword={onCopyMainPassword}
           />
         </div>
+      </div>
 
-        <Separator className="my-6" />
+      {/* Usuários Adicionais - Seção Unificada */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="mb-6">
+          <Label className="text-lg font-semibold text-gray-900 mb-4 block">
+            Usuários Adicionais
+          </Label>
+          
+          {/* Formulário para adicionar usuários */}
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Adicionar Novo Usuário</h4>
+            <UserAddForm onAddUser={onAddUser} isLoading={isLoading} />
+          </div>
 
-        {/* Usuários Adicionais */}
-        <div>
-          <h3 className="text-base font-medium text-gray-700 mb-3">Usuários Adicionais</h3>
-          <UsersList
-            clientUsers={clientUsers}
-            userAuthInfo={userAuthInfo}
-            visiblePasswords={visiblePasswords}
-            isLoading={isLoading}
-            onTogglePasswordVisibility={onTogglePasswordVisibility}
-            onRemoveUser={onRemoveUser}
-            onUpdatePassword={onUpdatePassword}
-          />
+          <Separator className="my-4" />
+
+          {/* Lista de usuários adicionais */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Usuários Cadastrados</h4>
+            <UsersList
+              clientUsers={clientUsers}
+              userAuthInfo={userAuthInfo}
+              visiblePasswords={visiblePasswords}
+              isLoading={isLoading}
+              onTogglePasswordVisibility={onTogglePasswordVisibility}
+              onRemoveUser={onRemoveUser}
+              onUpdatePassword={onUpdatePassword}
+            />
+          </div>
         </div>
       </div>
     </div>
