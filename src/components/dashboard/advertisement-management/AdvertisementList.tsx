@@ -155,8 +155,8 @@ export const AdvertisementList = ({
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {/* Imagem do anúncio */}
-              <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+              {/* Imagem do anúncio com proporção 1:1 */}
+              <div className="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                 {ad.image_url ? (
                   <img 
                     src={ad.image_url} 
