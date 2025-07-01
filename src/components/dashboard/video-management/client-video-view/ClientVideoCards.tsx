@@ -178,7 +178,6 @@ export const ClientVideoCards = ({
                 <div className="flex items-center text-xs md:text-sm text-gray-600 min-w-0 flex-1">
                   <Eye className="h-3 w-3 md:h-4 md:w-4 mr-1 flex-shrink-0" />
                   <span className="truncate">0 visualizações</span>
-                  <span className="text-xs text-gray-400 ml-1 flex-shrink-0">(em breve)</span>
                 </div>
                 <Button 
                   variant="outline" 

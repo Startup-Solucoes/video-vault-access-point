@@ -130,7 +130,6 @@ export const ClientVideoTable = ({
                 <div className="flex items-center text-sm text-gray-600">
                   <Eye className="h-4 w-4 mr-1" />
                   0 views
-                  <span className="text-xs text-gray-400 ml-1">(em breve)</span>
                 </div>
               </TableCell>
               <TableCell>
