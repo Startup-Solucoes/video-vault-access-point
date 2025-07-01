@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Megaphone, Users, FileImage, ArrowLeft } from 'lucide-react';
+import { Megaphone, Users, FileImage, MessageCircle, ArrowLeft } from 'lucide-react';
 import { AdvertisementDisplay } from '../advertisement-management/AdvertisementDisplay';
 import { FileConverterView } from './FileConverterView';
+import { WhatsAppLinkGenerator } from './WhatsAppLinkGenerator';
 
 export const AdminToolsView = () => {
   const [currentView, setCurrentView] = useState<string>('tools');
@@ -24,6 +26,13 @@ export const AdminToolsView = () => {
       available: true
     },
     {
+      id: 'whatsapp-generator',
+      title: 'Gerador de Link WhatsApp',
+      description: 'Crie links personalizados do WhatsApp com mensagens pré-definidas',
+      icon: MessageCircle,
+      available: true
+    },
+    {
       id: 'user-analytics',
       title: 'Análise de Usuários',
       description: 'Visualize estatísticas e relatórios de uso do sistema',
@@ -33,7 +42,7 @@ export const AdminToolsView = () => {
   ];
 
   const handleToolClick = (toolId: string) => {
-    if (toolId === 'advertisements' || toolId === 'file-converter') {
+    if (toolId === 'advertisements' || toolId === 'file-converter' || toolId === 'whatsapp-generator') {
       console.log(`Navegando para ${toolId}...`);
       setCurrentView(toolId);
     }
@@ -77,6 +86,24 @@ export const AdminToolsView = () => {
               </Button>
             </div>
             <FileConverterView />
+          </div>
+        );
+
+      case 'whatsapp-generator':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                onClick={handleBackToTools}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Voltar</span>
+              </Button>
+              <h2 className="text-2xl font-bold text-gray-900">Gerador de Link WhatsApp</h2>
+            </div>
+            <WhatsAppLinkGenerator />
           </div>
         );
       
