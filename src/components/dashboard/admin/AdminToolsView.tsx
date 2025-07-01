@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Megaphone, Users, FileImage, MessageCircle, ArrowLeft } from 'lucide-react';
+import { Megaphone, Users, FileImage, MessageCircle, Calculator, ArrowLeft } from 'lucide-react';
 import { AdvertisementDisplay } from '../advertisement-management/AdvertisementDisplay';
 import { FileConverterView } from './FileConverterView';
 import { WhatsAppLinkGenerator } from './WhatsAppLinkGenerator';
+import { ProductPriceCalculator } from './ProductPriceCalculator';
 
 export const AdminToolsView = () => {
   const [currentView, setCurrentView] = useState<string>('tools');
@@ -33,6 +34,13 @@ export const AdminToolsView = () => {
       available: true
     },
     {
+      id: 'product-calculator',
+      title: 'Calculadora de Preço de Produto',
+      description: 'Calcule o preço final de venda considerando custos, margem de lucro e taxas de pagamento',
+      icon: Calculator,
+      available: true
+    },
+    {
       id: 'user-analytics',
       title: 'Análise de Usuários',
       description: 'Visualize estatísticas e relatórios de uso do sistema',
@@ -42,7 +50,7 @@ export const AdminToolsView = () => {
   ];
 
   const handleToolClick = (toolId: string) => {
-    if (toolId === 'advertisements' || toolId === 'file-converter' || toolId === 'whatsapp-generator') {
+    if (toolId === 'advertisements' || toolId === 'file-converter' || toolId === 'whatsapp-generator' || toolId === 'product-calculator') {
       console.log(`Navegando para ${toolId}...`);
       setCurrentView(toolId);
     }
@@ -104,6 +112,24 @@ export const AdminToolsView = () => {
               <h2 className="text-2xl font-bold text-gray-900">Gerador de Link WhatsApp</h2>
             </div>
             <WhatsAppLinkGenerator />
+          </div>
+        );
+
+      case 'product-calculator':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                onClick={handleBackToTools}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Voltar</span>
+              </Button>
+              <h2 className="text-2xl font-bold text-gray-900">Calculadora de Preço de Produto</h2>
+            </div>
+            <ProductPriceCalculator />
           </div>
         );
       
