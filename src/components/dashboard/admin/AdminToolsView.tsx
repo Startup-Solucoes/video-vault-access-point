@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Megaphone, Users, Database } from 'lucide-react';
+import { Settings, Megaphone, Users, Database, FileImage } from 'lucide-react';
 
 export const AdminToolsView = () => {
   const tools = [
@@ -10,6 +9,13 @@ export const AdminToolsView = () => {
       title: 'Gerenciamento de Anúncios',
       description: 'Gerencie anúncios e campanhas publicitárias do sistema',
       icon: Megaphone,
+      available: true
+    },
+    {
+      id: 'file-converter',
+      title: 'Conversor de Arquivos',
+      description: 'Converta arquivos entre diferentes formatos (PDF, JPG, WebP, PNG) e remova fundos automaticamente',
+      icon: FileImage,
       available: true
     },
     {
@@ -37,9 +43,11 @@ export const AdminToolsView = () => {
 
   const handleToolClick = (toolId: string) => {
     if (toolId === 'advertisements') {
-      // Aqui você pode implementar a navegação para a tela de gerenciamento de anúncios
       console.log('Navegando para gerenciamento de anúncios...');
       // Exemplo: navigate('/admin/advertisements');
+    } else if (toolId === 'file-converter') {
+      console.log('Navegando para conversor de arquivos...');
+      // Exemplo: navigate('/admin/file-converter');
     }
   };
 
