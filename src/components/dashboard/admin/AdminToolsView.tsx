@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Settings, Megaphone, Users, Database, FileImage, ArrowLeft } from 'lucide-react';
+import { Megaphone, Users, FileImage, ArrowLeft } from 'lucide-react';
 import { AdvertisementDisplay } from '../advertisement-management/AdvertisementDisplay';
 import { FileConverterView } from './FileConverterView';
 
@@ -25,24 +24,10 @@ export const AdminToolsView = () => {
       available: true
     },
     {
-      id: 'system-config',
-      title: 'Configurações do Sistema',
-      description: 'Configure parâmetros gerais e preferências do sistema',
-      icon: Settings,
-      available: false
-    },
-    {
       id: 'user-analytics',
       title: 'Análise de Usuários',
       description: 'Visualize estatísticas e relatórios de uso do sistema',
       icon: Users,
-      available: false
-    },
-    {
-      id: 'database-tools',
-      title: 'Ferramentas de Banco',
-      description: 'Utilitários para manutenção e backup do banco de dados',
-      icon: Database,
       available: false
     }
   ];
