@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, Eye, Edit, Trash2 } from 'lucide-react';
+import { Calendar, Eye, Edit, Trash2, Share2, Check } from 'lucide-react';
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { ClientVideoData } from '@/hooks/useClientVideos';
 import { getCategoryColor } from '@/utils/categoryColors';
+import { useState } from 'react';
 
 interface ClientVideoCardsProps {
   videos: ClientVideoData[];
@@ -38,6 +39,8 @@ export const ClientVideoCards = ({
   onEditVideo,
   onDeleteVideo
 }: ClientVideoCardsProps) => {
+  const [copiedVideoId, setCopiedVideoId] = useState<string | null>(null);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('pt-BR', {
       day: '2-digit',
@@ -46,6 +49,21 @@ export const ClientVideoCards = ({
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleShareVideo = async (videoId: string) => {
+    const shareUrl = `${window.location.origin}/?video=${videoId}`;
+    
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopiedVideoId(videoId);
+      
+      setTimeout(() => {
+        setCopiedVideoId(null);
+      }, 2000);
+    } catch (err) {
+      console.error('Erro ao copiar link:', err);
+    }
   };
 
   return (
@@ -67,6 +85,20 @@ export const ClientVideoCards = ({
                   </Badge>
                 </div>
                 <div className="flex gap-1 md:gap-2 flex-shrink-0">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleShareVideo(video.id)}
+                    className="text-green-600 hover:text-green-700 hover:bg-green-50 p-1.5 md:p-2 h-auto"
+                    title="Copiar link de compartilhamento"
+                  >
+                    {copiedVideoId === video.id ? (
+                      <Check className="h-3 w-3 md:h-4 md:w-4" />
+                    ) : (
+                      <Share2 className="h-3 w-3 md:h-4 md:w-4" />
+                    )}
+                  </Button>
+                  
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -132,21 +164,12 @@ export const ClientVideoCards = ({
                 )}
               </div>
 
-              {/* Dates */}
-              <div className="grid grid-cols-1 gap-3 text-xs md:text-sm">
-                <div className="flex items-start text-gray-600 gap-2">
-                  <Calendar className="h-3 w-3 md:h-4 md:w-4 mt-0.5 flex-shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <div className="font-medium">Criado em:</div>
-                    <div className="break-words">{formatDate(video.created_at)}</div>
-                  </div>
-                </div>
-                <div className="flex items-start text-gray-600 gap-2">
-                  <Calendar className="h-3 w-3 md:h-4 md:w-4 mt-0.5 flex-shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <div className="font-medium">Acesso em:</div>
-                    <div className="break-words">{formatDate(video.permission_created_at)}</div>
-                  </div>
+              {/* Creation date only */}
+              <div className="flex items-start text-gray-600 gap-2 text-xs md:text-sm">
+                <Calendar className="h-3 w-3 md:h-4 md:w-4 mt-0.5 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium">Criado em:</div>
+                  <div className="break-words">{formatDate(video.created_at)}</div>
                 </div>
               </div>
 

@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Video, Calendar, Eye, Edit, Trash2 } from 'lucide-react';
+import { Calendar, Eye, Edit, Trash2, Share2, Check } from 'lucide-react';
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -17,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { ClientVideoData } from '@/hooks/useClientVideos';
 import { getCategoryColor } from '@/utils/categoryColors';
+import { useState } from 'react';
 
 interface ClientVideoTableProps {
   videos: ClientVideoData[];
@@ -39,6 +41,8 @@ export const ClientVideoTable = ({
   onEditVideo,
   onDeleteVideo
 }: ClientVideoTableProps) => {
+  const [copiedVideoId, setCopiedVideoId] = useState<string | null>(null);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('pt-BR', {
       day: '2-digit',
@@ -49,6 +53,23 @@ export const ClientVideoTable = ({
     });
   };
 
+  const handleShareVideo = async (videoId: string) => {
+    const shareUrl = `${window.location.origin}/?video=${videoId}`;
+    
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopiedVideoId(videoId);
+      
+      setTimeout(() => {
+        setCopiedVideoId(null);
+      }, 2000);
+    } catch (err) {
+      console.error('Erro ao copiar link:', err);
+    }
+  };
+
+  const allSelected = videos.length > 0 && videos.every(video => selectedVideos.includes(video.id));
+
   return (
     <div className="hidden lg:block overflow-x-auto">
       <Table>
@@ -56,22 +77,21 @@ export const ClientVideoTable = ({
           <TableRow>
             <TableHead className="w-12">
               <Checkbox
-                checked={videos.length > 0 && videos.every(video => selectedVideos.includes(video.id))}
+                checked={allSelected}
                 onCheckedChange={onSelectAllVisible}
               />
             </TableHead>
-            <TableHead className="w-20">Ordem</TableHead>
-            <TableHead className="min-w-[300px]">Título e Descrição</TableHead>
+            <TableHead className="w-16">#</TableHead>
+            <TableHead className="min-w-[250px]">Título</TableHead>
             <TableHead className="w-32">Categoria</TableHead>
-            <TableHead className="w-40">Data de Criação</TableHead>
-            <TableHead className="w-40">Data de Acesso</TableHead>
-            <TableHead className="w-32">Visualizações</TableHead>
-            <TableHead className="w-32 text-right">Ações</TableHead>
+            <TableHead className="w-44">Data de Criação</TableHead>
+            <TableHead className="w-28">Visualizações</TableHead>
+            <TableHead className="w-40">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {videos.map((video, index) => (
-            <TableRow key={video.id} className="hover:bg-gray-50">
+            <TableRow key={video.id}>
               <TableCell>
                 <Checkbox
                   checked={selectedVideos.includes(video.id)}
@@ -79,27 +99,16 @@ export const ClientVideoTable = ({
                 />
               </TableCell>
               <TableCell>
-                <Badge variant="outline">
-                  #{video.display_order || index + 1}
-                </Badge>
+                <Badge variant="outline">#{video.display_order || index + 1}</Badge>
               </TableCell>
               <TableCell>
-                <div className="space-y-2">
-                  <div className="font-medium text-gray-900 line-clamp-2">{video.title}</div>
+                <div className="space-y-1">
+                  <div className="font-medium line-clamp-2">{video.title}</div>
                   {video.description && (
-                    <div className="text-sm text-gray-500 line-clamp-2 max-w-xs">
+                    <div className="text-sm text-gray-500 line-clamp-2">
                       {video.description}
                     </div>
                   )}
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                    onClick={() => window.open(video.video_url, '_blank')}
-                  >
-                    <Eye className="h-3 w-3 mr-1" />
-                    Visualizar
-                  </Button>
                 </div>
               </TableCell>
               <TableCell>
@@ -108,7 +117,7 @@ export const ClientVideoTable = ({
                     {video.category}
                   </Badge>
                 ) : (
-                  <span className="text-gray-400 text-sm">Sem categoria</span>
+                  <span className="text-gray-400">Sem categoria</span>
                 )}
               </TableCell>
               <TableCell>
@@ -119,21 +128,27 @@ export const ClientVideoTable = ({
               </TableCell>
               <TableCell>
                 <div className="flex items-center text-sm text-gray-600">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  {formatDate(video.permission_created_at)}
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center text-sm text-gray-600">
                   <Eye className="h-4 w-4 mr-1" />
-                  <div className="flex flex-col">
-                    <span>0 visualizações</span>
-                    <span className="text-xs text-gray-400">(em breve)</span>
-                  </div>
+                  0 views
+                  <span className="text-xs text-gray-400 ml-1">(em breve)</span>
                 </div>
               </TableCell>
               <TableCell>
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex gap-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleShareVideo(video.id)}
+                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                    title="Copiar link de compartilhamento"
+                  >
+                    {copiedVideoId === video.id ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Share2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                  
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -141,6 +156,15 @@ export const ClientVideoTable = ({
                     className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                   >
                     <Edit className="h-4 w-4" />
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => window.open(video.video_url, '_blank')}
+                    className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                  >
+                    <Eye className="h-4 w-4" />
                   </Button>
                   
                   <AlertDialog>
