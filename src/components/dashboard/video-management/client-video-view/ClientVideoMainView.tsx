@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { ClientVideoHeader } from './ClientVideoHeader';
+import { ClientVideoFilters } from './ClientVideoFilters';
 import { ClientVideoContent } from './ClientVideoContent';
 import { ClientVideoModals } from './ClientVideoModals';
 import { EditClientInfoDialog } from './EditClientInfoDialog';
@@ -69,6 +70,22 @@ export const ClientVideoMainView = ({
         onAssignToClients={onAssignToClients}
         onAddVideo={onAddVideo}
         onEditClientInfo={() => setIsEditClientDialogOpen(true)}
+      />
+
+      <ClientVideoFilters
+        searchTerm=""
+        setSearchTerm={() => {}}
+        selectedCategory=""
+        setSelectedCategory={() => {}}
+        availableCategories={[]}
+        totalVideos={videos.length}
+        filteredVideos={videos.length}
+        showFilters={false}
+        setShowFilters={() => {}}
+        selectedVideos={selectedVideos}
+        allVideosSelected={allVisibleVideosSelected}
+        onSelectAllVisible={onSelectAllVisible}
+        onShowReorderMode={onShowReorderMode}
       />
 
       <ClientVideoContent
