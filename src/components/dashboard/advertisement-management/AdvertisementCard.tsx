@@ -88,7 +88,6 @@ export const AdvertisementCard = ({
         {/* Preço */}
         {ad.price && (
           <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
-            <DollarSign className="h-4 w-4 text-green-600" />
             <span className="font-semibold text-green-800">
               {formatPrice(ad.price)}
             </span>
