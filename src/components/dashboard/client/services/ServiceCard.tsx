@@ -1,16 +1,16 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Star, Sparkles } from 'lucide-react';
+import { Star, Sparkles, Eye } from 'lucide-react';
 import { Advertisement } from '@/types/advertisement';
 
 interface ServiceCardProps {
   advertisement: Advertisement;
+  onViewDetails: (advertisement: Advertisement) => void;
 }
 
-export const ServiceCard = ({ advertisement }: ServiceCardProps) => {
-  const handleClick = () => {
+export const ServiceCard = ({ advertisement, onViewDetails }: ServiceCardProps) => {
+  const handleRequestService = () => {
     window.open(advertisement.link_url, '_blank', 'noopener,noreferrer');
   };
 
@@ -22,10 +22,7 @@ export const ServiceCard = ({ advertisement }: ServiceCardProps) => {
   };
 
   return (
-    <Card 
-      className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-l-4 border-l-yellow-400 bg-gradient-to-br from-yellow-50 via-white to-orange-50 overflow-hidden"
-      onClick={handleClick}
-    >
+    <Card className="group hover:shadow-xl transition-all duration-300 border-l-4 border-l-yellow-400 bg-gradient-to-br from-yellow-50 via-white to-orange-50 overflow-hidden">
       <CardContent className="p-0">
         {/* Service Image */}
         <div className="aspect-video bg-gradient-to-br from-yellow-100 to-yellow-200 flex items-center justify-center overflow-hidden relative">
@@ -84,17 +81,25 @@ export const ServiceCard = ({ advertisement }: ServiceCardProps) => {
               </div>
             )}
             
-            {/* Action Button */}
-            <Button 
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleClick();
-              }}
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              Solicitar Serviço
-            </Button>
+            {/* Action Buttons */}
+            <div className="space-y-2">
+              <Button 
+                onClick={() => onViewDetails(advertisement)}
+                variant="outline"
+                className="w-full border-yellow-400 text-yellow-700 hover:bg-yellow-50 font-semibold py-3 shadow-sm hover:shadow-md transition-all duration-300"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Ver Detalhes
+              </Button>
+              
+              <Button 
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 shadow-lg hover:shadow-xl transition-all duration-300"
+                onClick={handleRequestService}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Solicitar Serviço
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>

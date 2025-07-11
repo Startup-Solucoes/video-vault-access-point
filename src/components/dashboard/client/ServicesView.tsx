@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Advertisement } from '@/types/advertisement';
 import { ServiceHeader } from './services/ServiceHeader';
@@ -7,12 +7,21 @@ import { ServiceCard } from './services/ServiceCard';
 import { ServiceFeatures } from './services/ServiceFeatures';
 import { ContactSection } from './services/ContactSection';
 import { EmptyServicesState } from './services/EmptyServicesState';
+import { ServiceDetailModal } from './services/ServiceDetailModal';
 
 interface ServicesViewProps {
   advertisements: Advertisement[];
 }
 
 export const ServicesView = ({ advertisements }: ServicesViewProps) => {
+  const [selectedService, setSelectedService] = useState<Advertisement | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleViewDetails = (advertisement: Advertisement) => {
+    setSelectedService(advertisement);
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="space-y-8">
       <ServiceHeader />
@@ -27,7 +36,11 @@ export const ServicesView = ({ advertisements }: ServicesViewProps) => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {advertisements.map((ad) => (
-              <ServiceCard key={ad.id} advertisement={ad} />
+              <ServiceCard 
+                key={ad.id} 
+                advertisement={ad} 
+                onViewDetails={handleViewDetails}
+              />
             ))}
           </div>
         </div>
@@ -37,6 +50,12 @@ export const ServicesView = ({ advertisements }: ServicesViewProps) => {
 
       <ServiceFeatures />
       <ContactSection />
+      
+      <ServiceDetailModal 
+        advertisement={selectedService}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </div>
   );
 };
