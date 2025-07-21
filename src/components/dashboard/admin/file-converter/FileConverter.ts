@@ -1,10 +1,13 @@
 
 export class FileConverter {
   private removeBackground: any;
+  private pdfjs: any;
 
   constructor() {
     // Lazy load do módulo de remoção de fundo
     this.initializeBackgroundRemoval();
+    // Lazy load do PDF.js
+    this.initializePDFJS();
   }
 
   private async initializeBackgroundRemoval() {
@@ -13,6 +16,16 @@ export class FileConverter {
       this.removeBackground = module.removeBackground;
     } catch (error) {
       console.warn('Background removal not available:', error);
+    }
+  }
+
+  private async initializePDFJS() {
+    try {
+      const pdfjs = await import('pdfjs-dist');
+      pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
+      this.pdfjs = pdfjs;
+    } catch (error) {
+      console.warn('PDF.js not available:', error);
     }
   }
 
@@ -43,6 +56,11 @@ export class FileConverter {
       return file;
     }
 
+    // Se for PDF, converter usando PDF.js
+    if (file.type === 'application/pdf') {
+      return this.convertPDFToImage(file, 'image/jpeg', progressCallback);
+    }
+
     return this.convertImageFormat(file, 'image/jpeg', progressCallback);
   }
 
@@ -52,6 +70,11 @@ export class FileConverter {
     if (file.type === 'image/png') {
       progressCallback?.(100);
       return file;
+    }
+
+    // Se for PDF, converter usando PDF.js
+    if (file.type === 'application/pdf') {
+      return this.convertPDFToImage(file, 'image/png', progressCallback);
     }
 
     return this.convertImageFormat(file, 'image/png', progressCallback);
@@ -137,6 +160,65 @@ export class FileConverter {
     
     progressCallback?.(100);
     return pngBlob;
+  }
+
+  private async convertPDFToImage(file: File, targetMimeType: string, progressCallback?: (progress: number) => void): Promise<Blob> {
+    if (!this.pdfjs) {
+      await this.initializePDFJS();
+    }
+
+    if (!this.pdfjs) {
+      throw new Error('PDF.js não disponível');
+    }
+
+    progressCallback?.(40);
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await this.pdfjs.getDocument({ data: arrayBuffer }).promise;
+      
+      progressCallback?.(60);
+      
+      // Renderizar a primeira página
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 2.0 }); // Scale 2.0 para melhor qualidade
+      
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        throw new Error('Não foi possível criar contexto do canvas');
+      }
+      
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      
+      progressCallback?.(80);
+      
+      await page.render({
+        canvasContext: ctx,
+        viewport: viewport
+      }).promise;
+      
+      progressCallback?.(90);
+      
+      return new Promise((resolve, reject) => {
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              progressCallback?.(100);
+              resolve(blob);
+            } else {
+              reject(new Error('Falha na conversão do PDF'));
+            }
+          },
+          targetMimeType,
+          0.9
+        );
+      });
+    } catch (error) {
+      throw new Error('Falha na conversão do PDF: ' + (error as Error).message);
+    }
   }
 
   private async removeBackgroundAndConvert(file: File, progressCallback?: (progress: number) => void): Promise<Blob> {
