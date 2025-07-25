@@ -24,7 +24,10 @@ export const categories = [
   'Pedidos de venda',
   'Fiscal',
   'Integrações',
-  'Serviços'
+  'Serviços',
+  'Estoques',
+  'Contatos',
+  'Logística'
 ];
 
 export const platforms = [

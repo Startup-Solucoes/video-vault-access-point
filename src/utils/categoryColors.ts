@@ -9,7 +9,10 @@ export const getCategoryColor = (category: string) => {
     'Pedidos de venda': 'bg-orange-600 text-white',
     'Fiscal': 'bg-red-600 text-white',
     'Integrações': 'bg-teal-600 text-white',
-    'Serviços': 'bg-indigo-600 text-white'
+    'Serviços': 'bg-indigo-600 text-white',
+    'Estoques': 'bg-cyan-600 text-white',
+    'Contatos': 'bg-pink-600 text-white',
+    'Logística': 'bg-amber-600 text-white'
   };
   
   // Cor padrão se a categoria não estiver mapeada
@@ -26,7 +29,10 @@ export const getCategoryTextColor = (category: string) => {
     'Pedidos de venda': 'text-orange-600',
     'Fiscal': 'text-red-600',
     'Integrações': 'text-teal-600',
-    'Serviços': 'text-indigo-600'
+    'Serviços': 'text-indigo-600',
+    'Estoques': 'text-cyan-600',
+    'Contatos': 'text-pink-600',
+    'Logística': 'text-amber-600'
   };
   
   return colors[category] || 'text-gray-600';
