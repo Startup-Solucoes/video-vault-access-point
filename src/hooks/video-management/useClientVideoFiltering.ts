@@ -1,21 +1,17 @@
 
 import { useState, useMemo } from 'react';
 import { ClientVideoData } from '@/hooks/useClientVideos';
+import { categories } from '@/components/forms/video-form/VideoFormTypes';
 
 export const useClientVideoFiltering = (allVideos: ClientVideoData[]) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Extrair categorias únicas dos vídeos
+  // Usar todas as categorias disponíveis no sistema
   const availableCategories = useMemo(() => {
-    const categories = allVideos
-      .map(video => video.category)
-      .filter((category): category is string => Boolean(category))
-      .filter((category, index, arr) => arr.indexOf(category) === index)
-      .sort();
-    return categories;
-  }, [allVideos]);
+    return categories.sort();
+  }, []);
 
   // Filtrar vídeos baseado nos critérios
   const filteredVideos = useMemo(() => {
