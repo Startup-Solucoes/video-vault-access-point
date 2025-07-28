@@ -245,6 +245,7 @@ export type Database = {
           description: string | null
           id: string
           platform: string | null
+          publish_date: string | null
           tags: string[] | null
           thumbnail_url: string | null
           title: string
@@ -259,6 +260,7 @@ export type Database = {
           description?: string | null
           id?: string
           platform?: string | null
+          publish_date?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
           title: string
@@ -273,6 +275,7 @@ export type Database = {
           description?: string | null
           id?: string
           platform?: string | null
+          publish_date?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
           title?: string
