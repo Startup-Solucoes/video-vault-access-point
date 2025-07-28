@@ -31,7 +31,7 @@ export const loadVideoData = async (videoId: string) => {
       thumbnail_url: videoData.thumbnail_url || '',
       selectedCategories: categories,
       selectedClients: clientIds,
-      publishDateTime: videoData.created_at ? new Date(videoData.created_at) : new Date(),
+      publishDateTime: videoData.publish_date ? new Date(videoData.publish_date) : new Date(),
       platform: videoData.platform || 'outros'
     };
   } catch (error) {

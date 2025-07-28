@@ -28,6 +28,7 @@ export const submitEditVideoData = async (formData: EditVideoFormData, videoId: 
       category: formData.selectedCategories.join(', ') || null,
       tags: formData.selectedCategories.length > 0 ? formData.selectedCategories : null,
       platform: formData.platform,
+      publish_date: formData.publishDateTime.toISOString(),
       updated_at: new Date().toISOString()
     };
 
