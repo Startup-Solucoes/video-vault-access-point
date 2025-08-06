@@ -2,11 +2,12 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Megaphone, Users, FileImage, MessageCircle, Calculator, ArrowLeft } from 'lucide-react';
+import { Megaphone, Users, FileImage, MessageCircle, Calculator, FileSpreadsheet, ArrowLeft } from 'lucide-react';
 import { AdvertisementDisplay } from '../advertisement-management/AdvertisementDisplay';
 import { FileConverterView } from './FileConverterView';
 import { WhatsAppLinkGenerator } from './WhatsAppLinkGenerator';
 import { ProductPriceCalculator } from './ProductPriceCalculator';
+import { ExcelWizardView } from './ExcelWizardView';
 
 export const AdminToolsView = () => {
   const [currentView, setCurrentView] = useState<string>('tools');
@@ -41,6 +42,13 @@ export const AdminToolsView = () => {
       available: true
     },
     {
+      id: 'excel-wizard',
+      title: 'Excel Wizard',
+      description: 'Processe planilhas Excel com operações em massa inteligentes',
+      icon: FileSpreadsheet,
+      available: true
+    },
+    {
       id: 'user-analytics',
       title: 'Análise de Usuários',
       description: 'Visualize estatísticas e relatórios de uso do sistema',
@@ -50,7 +58,7 @@ export const AdminToolsView = () => {
   ];
 
   const handleToolClick = (toolId: string) => {
-    if (toolId === 'advertisements' || toolId === 'file-converter' || toolId === 'whatsapp-generator' || toolId === 'product-calculator') {
+    if (toolId === 'advertisements' || toolId === 'file-converter' || toolId === 'whatsapp-generator' || toolId === 'product-calculator' || toolId === 'excel-wizard') {
       console.log(`Navegando para ${toolId}...`);
       setCurrentView(toolId);
     }
@@ -130,6 +138,23 @@ export const AdminToolsView = () => {
               <h2 className="text-2xl font-bold text-gray-900">Calculadora de Preço de Produto</h2>
             </div>
             <ProductPriceCalculator />
+          </div>
+        );
+
+      case 'excel-wizard':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                onClick={handleBackToTools}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Voltar</span>
+              </Button>
+            </div>
+            <ExcelWizardView />
           </div>
         );
       
