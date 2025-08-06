@@ -167,6 +167,9 @@ export const createUser = async ({ formData, logoFile }: CreateUserParams) => {
 
   console.log('=== USUÁRIO CADASTRADO COM SUCESSO ===');
   
+  // Aguardar um pouco mais para garantir que o banco sincronizou
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
   // Mostrar mensagem de sucesso
   const userTypeLabel = formData.userType === 'admin' ? 'Administrador' : 'Cliente';
   toast({

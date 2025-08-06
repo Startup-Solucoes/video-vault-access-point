@@ -53,10 +53,13 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
         onOpenChange(false);
       }
       
-      // Chamar callback para atualizar lista de usuários (sem atraso)
+      // Aguardar um pouco e chamar callback para atualizar lista
       if (onClientCreated) {
         console.log('Chamando callback para atualizar lista...');
-        onClientCreated();
+        // Aguardar para garantir que o banco sincronizou com a logo
+        setTimeout(() => {
+          onClientCreated();
+        }, 1500);
       }
     } catch (error: any) {
       console.error('=== ERRO NO CADASTRO ===');
