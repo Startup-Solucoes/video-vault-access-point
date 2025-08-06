@@ -638,11 +638,13 @@ export const ExcelWizardView = () => {
               className="hidden"
               id="file-input"
             />
-            <label htmlFor="file-input">
-              <Button variant="outline" className="cursor-pointer">
-                Selecionar Arquivos
-              </Button>
-            </label>
+            <Button 
+              variant="outline" 
+              className="cursor-pointer"
+              onClick={() => document.getElementById('file-input')?.click()}
+            >
+              Selecionar Arquivos
+            </Button>
           </div>
         </div>
 
