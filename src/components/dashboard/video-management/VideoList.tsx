@@ -143,86 +143,103 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h3 className="text-lg font-medium text-gray-900">
-            Clientes ({filteredClients.length})
-          </h3>
-          <p className="text-sm text-gray-500 mt-1">
-            {clientsWithVideos.length} com vídeos • {clientsWithoutVideos.length} sem vídeos
-          </p>
-        </div>
-        
-        {/* Opções de Ordenação */}
-        <div className="flex items-center gap-2">
-          <ArrowUpDown className="h-4 w-4 text-gray-500" />
-          <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Ordenar por..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="videos-desc">
-                <div className="flex items-center gap-2">
-                  <Hash className="h-4 w-4" />
-                  Mais vídeos primeiro
-                </div>
-              </SelectItem>
-              <SelectItem value="videos-asc">
-                <div className="flex items-center gap-2">
-                  <Hash className="h-4 w-4" />
-                  Menos vídeos primeiro
-                </div>
-              </SelectItem>
-              <SelectItem value="name-asc">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Nome A-Z
-                </div>
-              </SelectItem>
-              <SelectItem value="name-desc">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Nome Z-A
-                </div>
-              </SelectItem>
-              <SelectItem value="date-desc">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Mais recentes
-                </div>
-              </SelectItem>
-              <SelectItem value="date-asc">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Mais antigos
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Cabeçalho com estatísticas e controles */}
+      <div className="bg-white rounded-lg border p-6 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-xl font-semibold text-gray-900">
+              Clientes ({filteredClients.length})
+            </h3>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                <span>{clientsWithVideos.length} com vídeos</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                <span>{clientsWithoutVideos.length} sem vídeos</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Controles de busca e ordenação */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            {/* Barra de Busca */}
+            <SearchBar
+              searchValue={searchTerm}
+              onSearchChange={setSearchTerm}
+              placeholder="Buscar cliente..."
+              className="w-full sm:w-64"
+            />
+            
+            {/* Seletor de Ordenação */}
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="hidden sm:flex items-center gap-2 text-sm text-gray-600">
+                <ArrowUpDown className="h-4 w-4" />
+                <span className="whitespace-nowrap">Ordenar:</span>
+              </div>
+              <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+                <SelectTrigger className="w-full sm:w-48 bg-white">
+                  <SelectValue placeholder="Escolher ordenação..." />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="videos-desc">
+                    <div className="flex items-center gap-2">
+                      <Hash className="h-4 w-4 text-blue-500" />
+                      <span>Mais vídeos primeiro</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="videos-asc">
+                    <div className="flex items-center gap-2">
+                      <Hash className="h-4 w-4 text-blue-500" />
+                      <span>Menos vídeos primeiro</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="name-asc">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-green-500" />
+                      <span>Nome A-Z</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="name-desc">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-green-500" />
+                      <span>Nome Z-A</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="date-desc">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-purple-500" />
+                      <span>Mais recentes</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="date-asc">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-purple-500" />
+                      <span>Mais antigos</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Barra de Busca */}
-      <SearchBar
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
-        placeholder="Buscar cliente por nome ou email..."
-        className="max-w-md"
-      />
-
+      {/* Resultados */}
       {filteredClients.length === 0 && searchTerm ? (
-        <div className="text-center py-8">
-          <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+        <div className="text-center py-12 bg-white rounded-lg border">
+          <Search className="h-16 w-16 mx-auto mb-4 text-gray-300" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             Nenhum cliente encontrado
           </h3>
           <p className="text-gray-500">
-            Tente ajustar o termo de busca
+            Tente ajustar o termo de busca ou filtros
           </p>
         </div>
       ) : (
         /* Grid responsivo de cards */
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredClients.map(({ client, videoCount }) => (
             <ClientCard
               key={client.id}
