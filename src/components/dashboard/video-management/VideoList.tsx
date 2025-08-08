@@ -5,15 +5,20 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ClientCard } from './ClientCard';
 import { SearchBar } from './SearchBar';
-import { Video, Search } from 'lucide-react';
+import { Video, Search, ArrowUpDown, Users, Calendar, Hash } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 interface VideoListProps {
   onClientSelect: (clientId: string, clientName: string, clientLogoUrl?: string) => void;
 }
 
+type SortOption = 'name-asc' | 'name-desc' | 'videos-asc' | 'videos-desc' | 'date-asc' | 'date-desc';
+
 export const VideoList = ({ onClientSelect }: VideoListProps) => {
   const { clients, isLoading } = useClientData();
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('videos-desc');
 
   // Buscar contagem de vídeos por cliente diretamente da tabela video_permissions
   const { data: videoCountsByClient = {}, isLoading: isLoadingVideoCounts } = useQuery({
@@ -66,12 +71,24 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
       return { client, videoCount };
     });
 
-    // Ordenar por quantidade de vídeos (maior para menor) e depois por nome
+    // Aplicar ordenação baseada na opção selecionada
     clientsWithVideos.sort((a, b) => {
-      if (a.videoCount !== b.videoCount) {
-        return b.videoCount - a.videoCount; // Maior quantidade primeiro
+      switch (sortBy) {
+        case 'name-asc':
+          return a.client.full_name.localeCompare(b.client.full_name);
+        case 'name-desc':
+          return b.client.full_name.localeCompare(a.client.full_name);
+        case 'videos-asc':
+          return a.videoCount - b.videoCount;
+        case 'videos-desc':
+          return b.videoCount - a.videoCount;
+        case 'date-asc':
+          return new Date(a.client.created_at || 0).getTime() - new Date(b.client.created_at || 0).getTime();
+        case 'date-desc':
+          return new Date(b.client.created_at || 0).getTime() - new Date(a.client.created_at || 0).getTime();
+        default:
+          return b.videoCount - a.videoCount; // Fallback para videos-desc
       }
-      return a.client.full_name.localeCompare(b.client.full_name); // Alfabético
     });
 
     console.log('✅ Clientes (role=client) com contagem:', clientsWithVideos.length);
@@ -91,7 +108,7 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
       client.full_name.toLowerCase().includes(searchLower) ||
       client.email.toLowerCase().includes(searchLower)
     );
-  }, [clients, videoCountsByClient, searchTerm]);
+  }, [clients, videoCountsByClient, searchTerm, sortBy]);
 
   if (isLoading || isLoadingVideoCounts) {
     return (
@@ -126,7 +143,7 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-lg font-medium text-gray-900">
             Clientes ({filteredClients.length})
@@ -134,6 +151,54 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
           <p className="text-sm text-gray-500 mt-1">
             {clientsWithVideos.length} com vídeos • {clientsWithoutVideos.length} sem vídeos
           </p>
+        </div>
+        
+        {/* Opções de Ordenação */}
+        <div className="flex items-center gap-2">
+          <ArrowUpDown className="h-4 w-4 text-gray-500" />
+          <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Ordenar por..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="videos-desc">
+                <div className="flex items-center gap-2">
+                  <Hash className="h-4 w-4" />
+                  Mais vídeos primeiro
+                </div>
+              </SelectItem>
+              <SelectItem value="videos-asc">
+                <div className="flex items-center gap-2">
+                  <Hash className="h-4 w-4" />
+                  Menos vídeos primeiro
+                </div>
+              </SelectItem>
+              <SelectItem value="name-asc">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Nome A-Z
+                </div>
+              </SelectItem>
+              <SelectItem value="name-desc">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Nome Z-A
+                </div>
+              </SelectItem>
+              <SelectItem value="date-desc">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Mais recentes
+                </div>
+              </SelectItem>
+              <SelectItem value="date-asc">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Mais antigos
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
