@@ -137,7 +137,14 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        user: authData.user,
+        success: true,
+        message: 'Usuário criado com sucesso',
+        user: {
+          id: authData.user.id,
+          email: authData.user.email
+        },
+        // ⚠️ SECURITY: Retornar senha em texto plano apenas temporariamente
+        // TODO: Implementar método mais seguro (ex: email ou token temporário)
         password: password
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
