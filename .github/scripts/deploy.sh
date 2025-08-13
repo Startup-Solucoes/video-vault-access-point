@@ -50,6 +50,10 @@ sudo chown -R www-data:www-data /var/www/tutoriaiserp.com.br
 sudo chmod -R 755 /var/www/tutoriaiserp.com.br
 echo "Permissoes definidas"
 
+# Executar correção SSL
+echo "Executando correção SSL..."
+source /tmp/deploy-scripts/ssl-fix.sh $TIMESTAMP
+
 # Configurar Nginx
 source /tmp/deploy-scripts/nginx-config.sh $TIMESTAMP
 
