@@ -1,5 +1,5 @@
 
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Video, Users, BarChart3, Upload } from 'lucide-react';
@@ -29,8 +29,29 @@ export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isVideoFormOpen, setIsVideoFormOpen] = useState(false);
   const [isClientFormOpen, setIsClientFormOpen] = useState(false);
+  const [sharedVideoId, setSharedVideoId] = useState<string | null>(null);
   const isAdmin = profile?.role === 'admin';
   const isMobile = useIsMobile();
+
+  // Verificar se há um vídeo compartilhado na URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('video');
+    
+    if (videoId) {
+      console.log('🔗 Vídeo compartilhado detectado:', videoId);
+      setSharedVideoId(videoId);
+      
+      // Se for cliente, ir direto para a aba de dashboard onde estão os vídeos
+      if (!isAdmin) {
+        setActiveTab('dashboard');
+      }
+      
+      // Limpar URL sem recarregar a página
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, [isAdmin]);
 
   const handleTabChange = (tab: string) => {
     console.log('🏷️ Mudando aba para:', tab);
@@ -51,13 +72,23 @@ export const Dashboard = () => {
     console.log('🎨 Renderizando conteúdo para aba:', activeTab);
     switch (activeTab) {
       case 'dashboard':
-        return isAdmin ? <AdminDashboard /> : <ClientDashboard />;
+        return isAdmin ? <AdminDashboard /> : (
+          <ClientDashboard 
+            sharedVideoId={sharedVideoId} 
+            onVideoOpened={() => setSharedVideoId(null)} 
+          />
+        );
       case 'videos':
         return <VideoManagement />;
       case 'clients':
         return <ClientManagement />;
       default:
-        return isAdmin ? <AdminDashboard /> : <ClientDashboard />;
+        return isAdmin ? <AdminDashboard /> : (
+          <ClientDashboard 
+            sharedVideoId={sharedVideoId} 
+            onVideoOpened={() => setSharedVideoId(null)} 
+          />
+        );
     }
   };
 

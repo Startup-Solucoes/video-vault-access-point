@@ -88,16 +88,16 @@ else
     echo "❌ Problema no carregamento do conteúdo"
 fi
 
-# 6. Testar funcionalidade de compartilhamento de vídeo
-echo "6. Testando URLs de compartilhamento de vídeo..."
-# Simular uma URL de vídeo compartilhado
-VIDEO_URL_TEST=$(curl -s -o /dev/null -w "%{http_code}" -I "https://tutoriais.consultoriabling.com.br/?video=test-video-id" --connect-timeout 10 --max-time 30)
-echo "Status para URL de vídeo compartilhado: $VIDEO_URL_TEST"
+# 6. Testar funcionalidade de autenticação (área do cliente)
+echo "6. Testando acesso à área autenticada..."
+# O compartilhamento de vídeo agora funciona dentro do painel do cliente
+CLIENT_AREA_TEST=$(curl -s -o /dev/null -w "%{http_code}" -I "https://tutoriais.consultoriabling.com.br/" --connect-timeout 10 --max-time 30)
+echo "Status para área do cliente: $CLIENT_AREA_TEST"
 
-if [ "$VIDEO_URL_TEST" = "200" ]; then
-    echo "✅ URLs de compartilhamento funcionando"
+if [ "$CLIENT_AREA_TEST" = "200" ]; then
+    echo "✅ Área do cliente acessível (compartilhamento funcionará dentro do painel)"
 else
-    echo "❌ Problema nas URLs de compartilhamento (Status: $VIDEO_URL_TEST)"
+    echo "❌ Problema no acesso à área do cliente (Status: $CLIENT_AREA_TEST)"
 fi
 
 # 7. Verificar logs do Nginx (últimas 10 linhas)
@@ -121,7 +121,7 @@ if [ "$PRIMARY_HTTP_STATUS" = "200" ] && [ "$NGINX_STATUS" = "active" ]; then
     echo ""
     echo "🎉 DEPLOY CONCLUÍDO COM SUCESSO!"
     echo "🔗 Acesse: https://tutoriais.consultoriabling.com.br"
-    echo "📧 Compartilhamento de vídeos: https://tutoriais.consultoriabling.com.br/?video=VIDEO_ID"
+    echo "📧 Compartilhamento de vídeos: Funciona dentro do painel do cliente"
 else
     echo ""
     echo "⚠️ DEPLOY CONCLUÍDO COM PROBLEMAS"

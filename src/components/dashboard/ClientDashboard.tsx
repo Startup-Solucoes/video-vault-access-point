@@ -10,10 +10,14 @@ import { VideoGrid } from './client/VideoGrid';
 import { VideoModal } from '@/components/ui/video-modal';
 import { getCategoryColor } from '@/utils/categoryColors';
 
-export const ClientDashboard = () => {
+interface ClientDashboardProps {
+  sharedVideoId?: string | null;
+  onVideoOpened?: () => void;
+}
+
+export const ClientDashboard = ({ sharedVideoId: propSharedVideoId, onVideoOpened }: ClientDashboardProps = {}) => {
   const { signOut } = useAuth();
   const [currentView, setCurrentView] = useState<'welcome' | 'videos' | 'services'>('welcome');
-  const [sharedVideoId, setSharedVideoId] = useState<string | null>(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   const {
@@ -35,24 +39,20 @@ export const ClientDashboard = () => {
     hasActiveFilters
   } = useClientDashboard();
 
-  // Detectar vídeo compartilhado na URL
+  // Detectar vídeo compartilhado das props
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const videoId = urlParams.get('video');
-    
-    if (videoId && videos.length > 0) {
-      const video = videos.find(v => v.id === videoId);
+    if (propSharedVideoId && videos.length > 0) {
+      const video = videos.find(v => v.id === propSharedVideoId);
       if (video) {
-        setSharedVideoId(videoId);
+        console.log('🎬 Abrindo vídeo compartilhado:', video.title);
         setCurrentView('videos');
         setIsVideoModalOpen(true);
         
-        // Limpar o parâmetro da URL sem recarregar a página
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
+        // Notificar o Dashboard que o vídeo foi aberto
+        onVideoOpened?.();
       }
     }
-  }, [videos]);
+  }, [propSharedVideoId, videos, onVideoOpened]);
 
   if (!profile) {
     return (
@@ -62,7 +62,7 @@ export const ClientDashboard = () => {
     );
   }
 
-  const sharedVideo = sharedVideoId ? videos.find(v => v.id === sharedVideoId) : null;
+  const sharedVideo = propSharedVideoId ? videos.find(v => v.id === propSharedVideoId) : null;
 
   const renderMainContent = () => {
     switch (currentView) {
