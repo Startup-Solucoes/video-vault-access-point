@@ -45,10 +45,14 @@ fi
 echo "Arquivos assets criados:"
 find dist/assets -name "*.js" -o -name "*.css" | head -5
 
-# Definir permissões
+# Definir permissões (mantém o diretório físico como tutoriaiserp.com.br)
 sudo chown -R www-data:www-data /var/www/tutoriaiserp.com.br
 sudo chmod -R 755 /var/www/tutoriaiserp.com.br
 echo "Permissoes definidas"
+
+# Criar diretório de trabalho se necessário
+sudo mkdir -p /var/www/tutoriaiserp.com.br
+cd /var/www/tutoriaiserp.com.br
 
 # Executar correção SSL
 echo "Executando correção SSL..."
@@ -79,3 +83,17 @@ source /tmp/deploy-scripts/final-test.sh $TIMESTAMP
 
 # Limpar backups antigos
 sudo find /var/www/tutoriaiserp.com.br -name "dist_backup_*" -type d | sort | head -n -3 | sudo xargs rm -rf 2>/dev/null || true
+
+echo "=== RESUMO DO DEPLOY ==="
+echo "Domínio principal: https://tutoriais.consultoriabling.com.br"
+echo "Domínio secundário: https://tutoriaiserp.com.br (redireciona para o principal)"
+echo "Deploy timestamp: $TIMESTAMP"
+echo "Status Nginx: $(sudo systemctl is-active nginx)"
+
+# Teste final dos domínios
+echo "=== TESTE FINAL DOS DOMÍNIOS ==="
+echo "Testando acesso ao domínio principal..."
+curl -I https://tutoriais.consultoriabling.com.br/ 2>/dev/null | head -3 || echo "Falha no teste do domínio principal"
+
+echo "Testando redirecionamento do domínio secundário..."
+curl -I https://tutoriaiserp.com.br/ 2>/dev/null | head -3 || echo "Falha no teste do domínio secundário"

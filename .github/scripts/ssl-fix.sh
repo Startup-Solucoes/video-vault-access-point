@@ -1,26 +1,39 @@
 #!/bin/bash
 
-DOMAIN="tutoriaiserp.com.br"
+PRIMARY_DOMAIN="tutoriais.consultoriabling.com.br"
+SECONDARY_DOMAIN="tutoriaiserp.com.br"
 TIMESTAMP=$1
 
-echo "=== INICIANDO CORREÇÃO SSL PARA $DOMAIN ==="
+echo "=== INICIANDO CORREÇÃO SSL PARA AMBOS OS DOMÍNIOS ==="
+echo "Domínio Principal: $PRIMARY_DOMAIN"
+echo "Domínio Secundário: $SECONDARY_DOMAIN"
 echo "Timestamp: $TIMESTAMP"
 
-# 1. Verificar status atual do certificado
-echo "1. Verificando certificado atual..."
-if [ -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]; then
-    echo "Certificado encontrado. Verificando validade..."
-    CERT_EXPIRY=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/$DOMAIN/fullchain.pem | cut -d= -f2)
-    echo "Certificado expira em: $CERT_EXPIRY"
+# 1. Verificar status atual dos certificados
+echo "1. Verificando certificados atuais..."
+
+# Verificar certificado do domínio principal
+if [ -f "/etc/letsencrypt/live/$PRIMARY_DOMAIN/fullchain.pem" ]; then
+    echo "Certificado encontrado para $PRIMARY_DOMAIN. Verificando validade..."
+    CERT_EXPIRY=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/$PRIMARY_DOMAIN/fullchain.pem | cut -d= -f2)
+    echo "Certificado $PRIMARY_DOMAIN expira em: $CERT_EXPIRY"
     
-    # Verificar se expira em menos de 30 dias
-    if sudo openssl x509 -checkend 2592000 -noout -in /etc/letsencrypt/live/$DOMAIN/fullchain.pem; then
-        echo "Certificado ainda válido por mais de 30 dias."
+    if sudo openssl x509 -checkend 2592000 -noout -in /etc/letsencrypt/live/$PRIMARY_DOMAIN/fullchain.pem; then
+        echo "Certificado $PRIMARY_DOMAIN ainda válido por mais de 30 dias."
     else
-        echo "ATENÇÃO: Certificado expira em menos de 30 dias ou já expirou!"
+        echo "ATENÇÃO: Certificado $PRIMARY_DOMAIN expira em menos de 30 dias ou já expirou!"
     fi
 else
-    echo "ERRO: Certificado não encontrado em /etc/letsencrypt/live/$DOMAIN/"
+    echo "AVISO: Certificado não encontrado para $PRIMARY_DOMAIN"
+fi
+
+# Verificar certificado do domínio secundário
+if [ -f "/etc/letsencrypt/live/$SECONDARY_DOMAIN/fullchain.pem" ]; then
+    echo "Certificado encontrado para $SECONDARY_DOMAIN. Verificando validade..."
+    CERT_EXPIRY_SEC=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/$SECONDARY_DOMAIN/fullchain.pem | cut -d= -f2)
+    echo "Certificado $SECONDARY_DOMAIN expira em: $CERT_EXPIRY_SEC"
+else
+    echo "AVISO: Certificado não encontrado para $SECONDARY_DOMAIN"
 fi
 
 # 2. Verificar se Certbot está instalado
@@ -37,45 +50,91 @@ fi
 echo "3. Parando Nginx para renovação..."
 sudo systemctl stop nginx
 
-# 4. Renovar certificado
-echo "4. Renovando certificado SSL..."
+# 4. Renovar certificados para ambos os domínios
+echo "4. Renovando certificados SSL para ambos os domínios..."
+
+# Renovar certificado para o domínio principal
+echo "4a. Renovando certificado para $PRIMARY_DOMAIN..."
 sudo certbot certonly \
     --standalone \
     --non-interactive \
     --agree-tos \
-    --email admin@$DOMAIN \
-    --domains $DOMAIN,www.$DOMAIN \
+    --email admin@$PRIMARY_DOMAIN \
+    --domains $PRIMARY_DOMAIN,www.$PRIMARY_DOMAIN \
     --force-renewal
 
-CERTBOT_EXIT_CODE=$?
+PRIMARY_CERTBOT_EXIT_CODE=$?
 
-if [ $CERTBOT_EXIT_CODE -eq 0 ]; then
-    echo "✅ Certificado renovado com sucesso!"
+# Renovar certificado para o domínio secundário
+echo "4b. Renovando certificado para $SECONDARY_DOMAIN..."
+sudo certbot certonly \
+    --standalone \
+    --non-interactive \
+    --agree-tos \
+    --email admin@$SECONDARY_DOMAIN \
+    --domains $SECONDARY_DOMAIN,www.$SECONDARY_DOMAIN \
+    --force-renewal
+
+SECONDARY_CERTBOT_EXIT_CODE=$?
+
+# Verificar resultados
+if [ $PRIMARY_CERTBOT_EXIT_CODE -eq 0 ]; then
+    echo "✅ Certificado para $PRIMARY_DOMAIN renovado com sucesso!"
 else
-    echo "❌ Erro na renovação do certificado (código: $CERTBOT_EXIT_CODE)"
-    echo "Tentando método alternativo..."
+    echo "❌ Erro na renovação do certificado para $PRIMARY_DOMAIN (código: $PRIMARY_CERTBOT_EXIT_CODE)"
+fi
+
+if [ $SECONDARY_CERTBOT_EXIT_CODE -eq 0 ]; then
+    echo "✅ Certificado para $SECONDARY_DOMAIN renovado com sucesso!"
+else
+    echo "❌ Erro na renovação do certificado para $SECONDARY_DOMAIN (código: $SECONDARY_CERTBOT_EXIT_CODE)"
+fi
+
+# Se ambos falharam, tentar método alternativo
+if [ $PRIMARY_CERTBOT_EXIT_CODE -ne 0 ] && [ $SECONDARY_CERTBOT_EXIT_CODE -ne 0 ]; then
+    echo "Tentando método alternativo para ambos os domínios..."
     
-    # Método alternativo usando webroot
     sudo mkdir -p /var/www/html/.well-known/acme-challenge
     sudo chown -R www-data:www-data /var/www/html
     
+    # Tentar webroot para domínio principal
     sudo certbot certonly \
         --webroot \
         --webroot-path=/var/www/html \
         --non-interactive \
         --agree-tos \
-        --email admin@$DOMAIN \
-        --domains $DOMAIN,www.$DOMAIN \
+        --email admin@$PRIMARY_DOMAIN \
+        --domains $PRIMARY_DOMAIN,www.$PRIMARY_DOMAIN \
+        --force-renewal
+    
+    # Tentar webroot para domínio secundário
+    sudo certbot certonly \
+        --webroot \
+        --webroot-path=/var/www/html \
+        --non-interactive \
+        --agree-tos \
+        --email admin@$SECONDARY_DOMAIN \
+        --domains $SECONDARY_DOMAIN,www.$SECONDARY_DOMAIN \
         --force-renewal
 fi
 
-# 5. Verificar certificado após renovação
-echo "5. Verificando certificado renovado..."
-if [ -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]; then
-    NEW_CERT_EXPIRY=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/$DOMAIN/fullchain.pem | cut -d= -f2)
-    echo "✅ Novo certificado expira em: $NEW_CERT_EXPIRY"
+# 5. Verificar certificados após renovação
+echo "5. Verificando certificados renovados..."
+
+# Verificar certificado do domínio principal
+if [ -f "/etc/letsencrypt/live/$PRIMARY_DOMAIN/fullchain.pem" ]; then
+    NEW_CERT_EXPIRY_PRIMARY=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/$PRIMARY_DOMAIN/fullchain.pem | cut -d= -f2)
+    echo "✅ Novo certificado para $PRIMARY_DOMAIN expira em: $NEW_CERT_EXPIRY_PRIMARY"
 else
-    echo "❌ Certificado ainda não encontrado após renovação!"
+    echo "❌ Certificado para $PRIMARY_DOMAIN ainda não encontrado após renovação!"
+fi
+
+# Verificar certificado do domínio secundário
+if [ -f "/etc/letsencrypt/live/$SECONDARY_DOMAIN/fullchain.pem" ]; then
+    NEW_CERT_EXPIRY_SECONDARY=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/$SECONDARY_DOMAIN/fullchain.pem | cut -d= -f2)
+    echo "✅ Novo certificado para $SECONDARY_DOMAIN expira em: $NEW_CERT_EXPIRY_SECONDARY"
+else
+    echo "❌ Certificado para $SECONDARY_DOMAIN ainda não encontrado após renovação!"
 fi
 
 # 6. Configurar renovação automática
@@ -97,16 +156,28 @@ sudo systemctl reload nginx
 echo "8. Verificando status dos serviços..."
 echo "Nginx: $(sudo systemctl is-active nginx)"
 
-# 9. Teste SSL
-echo "9. Testando SSL..."
+# 9. Teste SSL para ambos os domínios
+echo "9. Testando SSL para ambos os domínios..."
 sleep 5
 
-SSL_TEST=$(echo | timeout 10 openssl s_client -servername $DOMAIN -connect $DOMAIN:443 2>/dev/null | openssl x509 -noout -dates 2>/dev/null)
+# Testar SSL do domínio principal
+echo "9a. Testando SSL para $PRIMARY_DOMAIN..."
+SSL_TEST_PRIMARY=$(echo | timeout 10 openssl s_client -servername $PRIMARY_DOMAIN -connect $PRIMARY_DOMAIN:443 2>/dev/null | openssl x509 -noout -dates 2>/dev/null)
 if [ $? -eq 0 ]; then
-    echo "✅ SSL funcionando corretamente!"
-    echo "$SSL_TEST"
+    echo "✅ SSL funcionando corretamente para $PRIMARY_DOMAIN!"
+    echo "$SSL_TEST_PRIMARY"
 else
-    echo "❌ Problema no teste SSL"
+    echo "❌ Problema no teste SSL para $PRIMARY_DOMAIN"
+fi
+
+# Testar SSL do domínio secundário
+echo "9b. Testando SSL para $SECONDARY_DOMAIN..."
+SSL_TEST_SECONDARY=$(echo | timeout 10 openssl s_client -servername $SECONDARY_DOMAIN -connect $SECONDARY_DOMAIN:443 2>/dev/null | openssl x509 -noout -dates 2>/dev/null)
+if [ $? -eq 0 ]; then
+    echo "✅ SSL funcionando corretamente para $SECONDARY_DOMAIN!"
+    echo "$SSL_TEST_SECONDARY"
+else
+    echo "❌ Problema no teste SSL para $SECONDARY_DOMAIN"
 fi
 
 echo "=== CORREÇÃO SSL CONCLUÍDA ==="
