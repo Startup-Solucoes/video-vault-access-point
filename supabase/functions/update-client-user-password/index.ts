@@ -25,6 +25,10 @@ serve(async (req) => {
     )
 
     const { client_user_id, new_password } = await req.json()
+    
+    // Log security event info
+    const userAgent = req.headers.get('user-agent') || 'Unknown';
+    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'Unknown';
 
     console.log('🔑 Atualizando senha para client_user_id:', client_user_id)
 
@@ -70,7 +74,32 @@ serve(async (req) => {
 
     if (updateError) {
       console.error('❌ Erro ao atualizar senha:', updateError)
+      
+      // Log failed password change attempt
+      try {
+        await supabaseClient.rpc('log_security_event', {
+          p_action: 'client_password_change_failed',
+          p_details: { client_user_id, user_email: clientUser.user_email, error: updateError.message },
+          p_ip_address: clientIP,
+          p_user_agent: userAgent
+        });
+      } catch (logError) {
+        console.error('Erro ao registrar evento de segurança:', logError);
+      }
+      
       throw new Error('Erro ao atualizar senha: ' + updateError.message)
+    }
+
+    // Log successful password change
+    try {
+      await supabaseClient.rpc('log_security_event', {
+        p_action: 'client_password_changed',
+        p_details: { client_user_id, user_email: clientUser.user_email },
+        p_ip_address: clientIP,
+        p_user_agent: userAgent
+      });
+    } catch (logError) {
+      console.error('Erro ao registrar evento de segurança:', logError);
     }
 
     console.log('✅ Senha atualizada com sucesso para:', clientUser.user_email)

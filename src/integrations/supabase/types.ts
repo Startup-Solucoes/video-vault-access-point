@@ -161,6 +161,36 @@ export type Database = {
         }
         Relationships: []
       }
+      security_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       video_permissions: {
         Row: {
           client_id: string
@@ -305,6 +335,15 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      log_security_event: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_ip_address?: string
+          p_user_agent?: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

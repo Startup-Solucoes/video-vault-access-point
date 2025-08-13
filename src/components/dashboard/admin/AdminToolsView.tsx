@@ -2,12 +2,13 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Megaphone, Users, FileImage, MessageCircle, Calculator, FileSpreadsheet, ArrowLeft } from 'lucide-react';
+import { Megaphone, Users, FileImage, MessageCircle, Calculator, FileSpreadsheet, ArrowLeft, Shield } from 'lucide-react';
 import { AdvertisementDisplay } from '../advertisement-management/AdvertisementDisplay';
 import { FileConverterView } from './FileConverterView';
 import { WhatsAppLinkGenerator } from './WhatsAppLinkGenerator';
 import { ProductPriceCalculator } from './ProductPriceCalculator';
 import { ExcelWizardView } from './ExcelWizardView';
+import { SecurityMonitor } from './SecurityMonitor';
 
 export const AdminToolsView = () => {
   const [currentView, setCurrentView] = useState<string>('tools');
@@ -49,6 +50,13 @@ export const AdminToolsView = () => {
       available: true
     },
     {
+      id: 'security-monitor',
+      title: 'Monitor de Segurança',
+      description: 'Monitore eventos de segurança e logs de autenticação do sistema',
+      icon: Shield,
+      available: true
+    },
+    {
       id: 'user-analytics',
       title: 'Análise de Usuários',
       description: 'Visualize estatísticas e relatórios de uso do sistema',
@@ -58,7 +66,7 @@ export const AdminToolsView = () => {
   ];
 
   const handleToolClick = (toolId: string) => {
-    if (toolId === 'advertisements' || toolId === 'file-converter' || toolId === 'whatsapp-generator' || toolId === 'product-calculator' || toolId === 'excel-wizard') {
+    if (toolId === 'advertisements' || toolId === 'file-converter' || toolId === 'whatsapp-generator' || toolId === 'product-calculator' || toolId === 'excel-wizard' || toolId === 'security-monitor') {
       console.log(`Navegando para ${toolId}...`);
       setCurrentView(toolId);
     }
@@ -155,6 +163,24 @@ export const AdminToolsView = () => {
               </Button>
             </div>
             <ExcelWizardView />
+          </div>
+        );
+
+      case 'security-monitor':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                onClick={handleBackToTools}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Voltar</span>
+              </Button>
+              <h2 className="text-2xl font-bold text-gray-900">Monitor de Segurança</h2>
+            </div>
+            <SecurityMonitor />
           </div>
         );
       
