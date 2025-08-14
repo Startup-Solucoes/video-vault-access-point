@@ -70,25 +70,6 @@ server {
         add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT" always;
     }
 
-    # Proxy reverso para tutoriais.consultoriabling.com.br
-    location /video-proxy/ {
-        proxy_pass https://tutoriais.consultoriabling.com.br/;
-        proxy_set_header Host tutoriais.consultoriabling.com.br;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_ssl_verify off;
-        
-        # Headers para permitir iframe embedding
-        proxy_hide_header X-Frame-Options;
-        add_header X-Frame-Options "ALLOWALL" always;
-        
-        # Anti-cache headers
-        add_header X-Deploy-Time "$TIMESTAMP" always;
-        add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
-        add_header Pragma "no-cache" always;
-        add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT" always;
-    }
 
     # Redirecionamento especial para links de vídeos
     location ~ ^/.*[?&]video=([a-f0-9-]+) {
