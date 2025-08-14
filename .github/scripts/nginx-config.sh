@@ -22,7 +22,7 @@ server {
     return 301 https://tutoriais.consultoriabling.com.br\$request_uri;
 }
 
-# Redirecionamento HTTPS do domínio secundário para o principal
+# Servidor principal - tutoriaiserp.com.br
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
@@ -30,18 +30,6 @@ server {
 
     ssl_certificate /etc/letsencrypt/live/tutoriaiserp.com.br/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/tutoriaiserp.com.br/privkey.pem;
-
-    return 301 https://tutoriais.consultoriabling.com.br\$request_uri;
-}
-
-# Servidor principal - tutoriais.consultoriabling.com.br
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name tutoriais.consultoriabling.com.br www.tutoriais.consultoriabling.com.br;
-
-    ssl_certificate /etc/letsencrypt/live/tutoriais.consultoriabling.com.br/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/tutoriais.consultoriabling.com.br/privkey.pem;
 
     # Configurações SSL melhoradas
     ssl_protocols TLSv1.2 TLSv1.3;

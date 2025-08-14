@@ -97,15 +97,11 @@ source /tmp/deploy-scripts/final-test.sh $TIMESTAMP
 sudo find /var/www/tutoriaiserp.com.br -name "dist_backup_*" -type d | sort | head -n -3 | sudo xargs rm -rf 2>/dev/null || true
 
 echo "=== RESUMO DO DEPLOY ==="
-echo "Domínio principal: https://tutoriais.consultoriabling.com.br"
-echo "Domínio secundário: https://tutoriaiserp.com.br (redireciona para o principal)"
+echo "Domínio do servidor: https://tutoriaiserp.com.br"
 echo "Deploy timestamp: $TIMESTAMP"
 echo "Status Nginx: $(sudo systemctl is-active nginx)"
 
-# Teste final dos domínios
-echo "=== TESTE FINAL DOS DOMÍNIOS ==="
-echo "Testando acesso ao domínio principal..."
-curl -I https://tutoriais.consultoriabling.com.br/ 2>/dev/null | head -3 || echo "Falha no teste do domínio principal"
-
-echo "Testando redirecionamento do domínio secundário..."
-curl -I https://tutoriaiserp.com.br/ 2>/dev/null | head -3 || echo "Falha no teste do domínio secundário"
+# Teste final do domínio
+echo "=== TESTE FINAL DO SERVIDOR ==="
+echo "Testando acesso ao servidor..."
+curl -I https://tutoriaiserp.com.br/ 2>/dev/null | head -3 || echo "Falha no teste do servidor"
