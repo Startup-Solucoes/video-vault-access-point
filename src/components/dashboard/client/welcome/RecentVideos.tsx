@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { VideoModal } from '@/components/ui/video-modal';
+import { getCategoryColor } from '@/utils/categoryColors';
 import { Play, Video, ArrowRight } from 'lucide-react';
 import { ClientVideo } from '@/types/clientVideo';
 
@@ -12,6 +14,14 @@ interface RecentVideosProps {
 }
 
 export const RecentVideos = ({ videos, onNavigateToVideos }: RecentVideosProps) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<ClientVideo | null>(null);
+
+  const handleVideoClick = (video: ClientVideo) => {
+    setSelectedVideo(video);
+    setIsModalOpen(true);
+  };
+
   if (videos.length === 0) return null;
 
   return (
@@ -39,7 +49,7 @@ export const RecentVideos = ({ videos, onNavigateToVideos }: RecentVideosProps) 
             <div 
               key={video.id} 
               className="flex items-center space-x-4 p-4 rounded-xl border border-gray-100 hover:bg-gray-50 hover:border-blue-200 transition-all group cursor-pointer"
-              onClick={() => window.open(video.video_url, '_blank')}
+              onClick={() => handleVideoClick(video)}
             >
               {video.thumbnail_url ? (
                 <img 
@@ -74,6 +84,15 @@ export const RecentVideos = ({ videos, onNavigateToVideos }: RecentVideosProps) 
           ))}
         </div>
       </CardContent>
+
+      {selectedVideo && (
+        <VideoModal
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          video={selectedVideo}
+          getCategoryColor={getCategoryColor}
+        />
+      )}
     </Card>
   );
 };
