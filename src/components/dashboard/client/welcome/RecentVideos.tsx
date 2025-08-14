@@ -36,7 +36,11 @@ export const RecentVideos = ({ videos, onNavigateToVideos }: RecentVideosProps) 
       <CardContent>
         <div className="grid gap-4">
           {videos.map(video => (
-            <div key={video.id} className="flex items-center space-x-4 p-4 rounded-xl border border-gray-100 hover:bg-gray-50 hover:border-blue-200 transition-all group">
+            <div 
+              key={video.id} 
+              className="flex items-center space-x-4 p-4 rounded-xl border border-gray-100 hover:bg-gray-50 hover:border-blue-200 transition-all group cursor-pointer"
+              onClick={() => window.open(video.video_url, '_blank')}
+            >
               {video.thumbnail_url ? (
                 <img 
                   src={video.thumbnail_url} 
