@@ -28,13 +28,6 @@ interface VideoModalProps {
 }
 
 const getScreenPalEmbedUrl = (url: string): string => {
-  // Para URLs do tutoriais.consultoriabling.com.br, extrair ID e usar ScreenPal embed
-  const tutoriaisMatch = url.match(/(?:https?:\/\/)?tutoriais\.consultoriabling\.com\.br\/watch\/([^/?&#]+)/);
-  if (tutoriaisMatch) {
-    // Tentar usar a URL de embed do ScreenPal diretamente
-    return `https://screenpal.com/embed/${tutoriaisMatch[1]}`;
-  }
-  
   const screenPalMatch = url.match(/screenpal\.com\/watch\/([^/?&#]+)/);
   if (screenPalMatch) {
     return `https://screenpal.com/embed/${screenPalMatch[1]}`;
@@ -54,6 +47,8 @@ const getScreenPalEmbedUrl = (url: string): string => {
     return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
   }
   
+  // Para URLs tutoriais.consultoriabling.com.br, manter URL original
+  // Terá mixed content warning mas pelo menos carrega
   return url;
 };
 
