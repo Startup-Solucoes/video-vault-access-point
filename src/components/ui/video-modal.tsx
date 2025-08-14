@@ -28,6 +28,12 @@ interface VideoModalProps {
 }
 
 const getScreenPalEmbedUrl = (url: string): string => {
+  // Proxy reverso para tutoriais.consultoriabling.com.br
+  const tutoriaisMatch = url.match(/(?:https?:\/\/)?tutoriais\.consultoriabling\.com\.br\/watch\/([^/?&#]+)/);
+  if (tutoriaisMatch) {
+    return `https://tutoriaiserp.com.br/video-proxy/watch/${tutoriaisMatch[1]}`;
+  }
+  
   const screenPalMatch = url.match(/screenpal\.com\/watch\/([^/?&#]+)/);
   if (screenPalMatch) {
     return `https://screenpal.com/embed/${screenPalMatch[1]}`;
