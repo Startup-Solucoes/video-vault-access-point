@@ -50,32 +50,68 @@ fi
 echo "3. Parando Nginx para renovação..."
 sudo systemctl stop nginx
 
-# 4. Renovar certificados para ambos os domínios
-echo "4. Renovando certificados SSL para ambos os domínios..."
+# 4. Renovar certificados para ambos os domínios (apenas se necessário)
+echo "4. Verificando necessidade de renovacao..."
 
-# Renovar certificado para o domínio principal
-echo "4a. Renovando certificado para $PRIMARY_DOMAIN..."
-sudo certbot certonly \
-    --standalone \
-    --non-interactive \
-    --agree-tos \
-    --email admin@$PRIMARY_DOMAIN \
-    --domains $PRIMARY_DOMAIN,www.$PRIMARY_DOMAIN \
-    --force-renewal
+PRIMARY_NEEDS_RENEWAL=false
+SECONDARY_NEEDS_RENEWAL=false
 
-PRIMARY_CERTBOT_EXIT_CODE=$?
+# Verificar se o domínio principal precisa de renovação
+if [ -f "/etc/letsencrypt/live/$PRIMARY_DOMAIN/fullchain.pem" ]; then
+    if ! sudo openssl x509 -checkend 2592000 -noout -in /etc/letsencrypt/live/$PRIMARY_DOMAIN/fullchain.pem; then
+        PRIMARY_NEEDS_RENEWAL=true
+        echo "Dominio principal precisa de renovacao"
+    else
+        echo "Dominio principal ja tem certificado valido"
+    fi
+else
+    PRIMARY_NEEDS_RENEWAL=true
+    echo "Certificado nao encontrado para dominio principal"
+fi
 
-# Renovar certificado para o domínio secundário
-echo "4b. Renovando certificado para $SECONDARY_DOMAIN..."
-sudo certbot certonly \
-    --standalone \
-    --non-interactive \
-    --agree-tos \
-    --email admin@$SECONDARY_DOMAIN \
-    --domains $SECONDARY_DOMAIN,www.$SECONDARY_DOMAIN \
-    --force-renewal
+# Verificar se o domínio secundário precisa de renovação  
+if [ -f "/etc/letsencrypt/live/$SECONDARY_DOMAIN/fullchain.pem" ]; then
+    if ! sudo openssl x509 -checkend 2592000 -noout -in /etc/letsencrypt/live/$SECONDARY_DOMAIN/fullchain.pem; then
+        SECONDARY_NEEDS_RENEWAL=true
+        echo "Dominio secundario precisa de renovacao"
+    else
+        echo "Dominio secundario ja tem certificado valido"
+    fi
+else
+    SECONDARY_NEEDS_RENEWAL=true
+    echo "Certificado nao encontrado para dominio secundario"
+fi
 
-SECONDARY_CERTBOT_EXIT_CODE=$?
+# Renovar apenas se necessário
+if [ "$PRIMARY_NEEDS_RENEWAL" = true ]; then
+    echo "4a. Renovando certificado para $PRIMARY_DOMAIN..."
+    sudo certbot certonly \
+        --standalone \
+        --non-interactive \
+        --agree-tos \
+        --email admin@$PRIMARY_DOMAIN \
+        --domains $PRIMARY_DOMAIN,www.$PRIMARY_DOMAIN \
+        --force-renewal
+    PRIMARY_CERTBOT_EXIT_CODE=$?
+else
+    echo "4a. Pulando renovacao para $PRIMARY_DOMAIN (certificado valido)"
+    PRIMARY_CERTBOT_EXIT_CODE=0
+fi
+
+if [ "$SECONDARY_NEEDS_RENEWAL" = true ]; then
+    echo "4b. Renovando certificado para $SECONDARY_DOMAIN..."
+    sudo certbot certonly \
+        --standalone \
+        --non-interactive \
+        --agree-tos \
+        --email admin@$SECONDARY_DOMAIN \
+        --domains $SECONDARY_DOMAIN,www.$SECONDARY_DOMAIN \
+        --force-renewal
+    SECONDARY_CERTBOT_EXIT_CODE=$?
+else
+    echo "4b. Pulando renovacao para $SECONDARY_DOMAIN (certificado valido)"
+    SECONDARY_CERTBOT_EXIT_CODE=0
+fi
 
 # Verificar resultados
 if [ $PRIMARY_CERTBOT_EXIT_CODE -eq 0 ]; then

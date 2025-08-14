@@ -5,6 +5,11 @@ TIMESTAMP=$1
 
 echo "Iniciando deploy com timestamp: $TIMESTAMP"
 
+# Criar diretório de trabalho ANTES de tudo
+echo "Criando diretorio de trabalho..."
+sudo mkdir -p /var/www/tutoriaiserp.com.br
+cd /var/www/tutoriaiserp.com.br
+
 # Parar nginx
 echo "Parando Nginx..."
 sudo systemctl stop nginx
@@ -23,6 +28,12 @@ echo "Diretorio dist removido"
 # Extrair novos arquivos
 echo "Extraindo novos arquivos..."
 sudo tar -xzf /tmp/deploy.tar.gz
+
+# Definir permissões APÓS a extração
+echo "Definindo permissoes..."
+sudo chown -R www-data:www-data /var/www/tutoriaiserp.com.br
+sudo chmod -R 755 /var/www/tutoriaiserp.com.br
+echo "Permissoes definidas"
 
 echo "Conteudo APOS a extracao:"
 ls -la dist/ 2>/dev/null || echo "ERRO: Diretorio dist nao foi criado!"
@@ -45,18 +56,19 @@ fi
 echo "Arquivos assets criados:"
 find dist/assets -name "*.js" -o -name "*.css" | head -5
 
-# Definir permissões (mantém o diretório físico como tutoriaiserp.com.br)
-sudo chown -R www-data:www-data /var/www/tutoriaiserp.com.br
-sudo chmod -R 755 /var/www/tutoriaiserp.com.br
-echo "Permissoes definidas"
-
-# Criar diretório de trabalho se necessário
-sudo mkdir -p /var/www/tutoriaiserp.com.br
-cd /var/www/tutoriaiserp.com.br
-
-# Executar correção SSL
-echo "Executando correção SSL..."
-source /tmp/deploy-scripts/ssl-fix.sh $TIMESTAMP
+# Executar correção SSL apenas se necessário
+echo "Verificando necessidade de renovacao SSL..."
+if [ -f "/etc/letsencrypt/live/tutoriais.consultoriabling.com.br/fullchain.pem" ]; then
+  if sudo openssl x509 -checkend 2592000 -noout -in /etc/letsencrypt/live/tutoriais.consultoriabling.com.br/fullchain.pem; then
+    echo "Certificados SSL validos por mais de 30 dias. Pulando renovacao."
+  else
+    echo "Certificados SSL precisam ser renovados..."
+    source /tmp/deploy-scripts/ssl-fix.sh $TIMESTAMP
+  fi
+else
+  echo "Certificados SSL nao encontrados. Executando renovacao..."
+  source /tmp/deploy-scripts/ssl-fix.sh $TIMESTAMP
+fi
 
 # Configurar Nginx
 source /tmp/deploy-scripts/nginx-config.sh $TIMESTAMP
