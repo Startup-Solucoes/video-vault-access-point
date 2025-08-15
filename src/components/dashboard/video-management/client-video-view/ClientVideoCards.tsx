@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { ClientVideoData } from '@/hooks/useClientVideos';
 import { getCategoryColor } from '@/utils/categoryColors';
+import { generateShareUrl } from '@/utils/urlUtils';
 import { useState } from 'react';
 
 interface ClientVideoCardsProps {
@@ -52,7 +53,7 @@ export const ClientVideoCards = ({
   };
 
   const handleShareVideo = async (videoId: string) => {
-    const shareUrl = `${window.location.origin}/?video=${videoId}`;
+    const shareUrl = generateShareUrl(`?video=${videoId}`);
     
     try {
       await navigator.clipboard.writeText(shareUrl);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Share2, Check } from 'lucide-react';
+import { generateShareUrl } from '@/utils/urlUtils';
 
 interface VideoShareButtonProps {
   videoId: string;
@@ -10,7 +11,7 @@ export const VideoShareButton = ({ videoId }: VideoShareButtonProps) => {
   const [copiedVideoId, setCopiedVideoId] = useState<string | null>(null);
 
   const handleShareVideo = async (videoId: string) => {
-    const shareUrl = `${window.location.origin}/?video=${videoId}`;
+    const shareUrl = generateShareUrl(`?video=${videoId}`);
     
     try {
       await navigator.clipboard.writeText(shareUrl);

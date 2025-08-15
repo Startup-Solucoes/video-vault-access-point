@@ -56,3 +56,30 @@ export const generateShareUrl = (path: string = ''): string => {
   
   return `${protocol}//${host}${cleanPath}`;
 };
+
+/**
+ * Força HTTPS em todos os links de uma página
+ * Processa links <a> para garantir que usem HTTPS
+ */
+export const forceHttpsOnAllLinks = (): void => {
+  if (typeof window === 'undefined') return;
+  
+  const links = document.querySelectorAll('a[href]');
+  links.forEach((link) => {
+    const href = link.getAttribute('href');
+    if (href && (href.startsWith('http://') || href.startsWith('//'))) {
+      link.setAttribute('href', forceHttps(href));
+    }
+  });
+};
+
+/**
+ * Redirecionamento seguro sempre com HTTPS
+ * @param path Caminho para redirecionar
+ */
+export const safeRedirect = (path: string): void => {
+  if (typeof window === 'undefined') return;
+  
+  const url = path.startsWith('/') ? generateShareUrl(path) : forceHttps(path);
+  window.location.href = url;
+};

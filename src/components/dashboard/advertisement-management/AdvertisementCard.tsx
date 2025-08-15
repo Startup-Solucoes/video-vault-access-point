@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { AdvertisementWithPermissions } from '@/types/advertisement';
 import { AdvertisementCardActions } from './AdvertisementCardActions';
+import { forceHttps } from '@/utils/urlUtils';
 
 interface AdvertisementCardProps {
   advertisement: AdvertisementWithPermissions;
@@ -98,7 +99,7 @@ export const AdvertisementCard = ({
         <div className="flex items-center space-x-2">
           <ExternalLink className="h-3 w-3 text-blue-600" />
           <a 
-            href={ad.link_url} 
+            href={forceHttps(ad.link_url)} 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-blue-600 hover:text-blue-800 text-xs truncate flex-1"

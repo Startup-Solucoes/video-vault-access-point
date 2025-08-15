@@ -47,12 +47,13 @@ server {
     add_header Pragma "no-cache" always;
     add_header Expires "Thu, 01 Jan 1970 00:00:00 GMT" always;
 
-    # Cabeçalhos de segurança
+    # Cabeçalhos de segurança com HTTPS forçado
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-XSS-Protection "1; mode=block" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    add_header Content-Security-Policy "default-src 'self' http: https: ws: wss: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self';" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self' https:; frame-src 'self' https:; media-src 'self' https:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests;" always;
 
     location / {
         try_files \$uri \$uri/ /index.html;

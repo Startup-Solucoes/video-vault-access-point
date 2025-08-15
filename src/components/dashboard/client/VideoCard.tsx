@@ -10,6 +10,7 @@ import { VideoModal } from '@/components/ui/video-modal';
 import { ClientVideo } from '@/types/clientVideo';
 import { getCategoryColor } from '@/utils/categoryColors';
 import { getPlatformColor, getPlatformName, getPlatformLogo } from '@/utils/platformImages';
+import { generateShareUrl } from '@/utils/urlUtils';
 
 interface VideoCardProps {
   video: ClientVideo;
@@ -45,7 +46,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
   const handleShareVideo = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    const shareUrl = `${window.location.origin}/?video=${video.id}`;
+    const shareUrl = generateShareUrl(`?video=${video.id}`);
     
     try {
       await navigator.clipboard.writeText(shareUrl);

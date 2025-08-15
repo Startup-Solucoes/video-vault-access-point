@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
+import { safeRedirect } from '@/utils/urlUtils';
 
 export const SuccessState = () => {
   return (
@@ -32,7 +33,7 @@ export const SuccessState = () => {
             </AlertDescription>
           </Alert>
           <Button 
-            onClick={() => window.location.href = '/'} 
+            onClick={() => safeRedirect('/')} 
             className="w-full mt-4"
           >
             Ir para Login

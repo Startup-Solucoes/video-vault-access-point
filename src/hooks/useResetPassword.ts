@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { validatePasswordStrength } from '@/utils/passwordGenerator';
+import { safeRedirect } from '@/utils/urlUtils';
 
 export const useResetPassword = () => {
   const [password, setPassword] = useState('');
@@ -150,7 +151,7 @@ export const useResetPassword = () => {
 
       // Redirecionar para login após 3 segundos
       setTimeout(() => {
-        window.location.href = '/';
+        safeRedirect('/');
       }, 3000);
 
     } catch (error: any) {
