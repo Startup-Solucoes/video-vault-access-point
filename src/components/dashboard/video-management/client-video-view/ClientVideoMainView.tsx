@@ -4,7 +4,7 @@ import { ClientVideoHeader } from './ClientVideoHeader';
 import { ClientVideoFilters } from './ClientVideoFilters';
 import { ClientVideoContent } from './ClientVideoContent';
 import { ClientVideoModals } from './ClientVideoModals';
-import { EditClientInfoDialog } from './EditClientInfoDialog';
+import { ClientInfoAdapter } from './ClientInfoAdapter';
 import { ClientVideoViewProps } from './types';
 
 export const ClientVideoMainView = ({
@@ -122,7 +122,7 @@ export const ClientVideoMainView = ({
         onBulkClientChange={onBulkClientChange}
       />
 
-      <EditClientInfoDialog
+      <ClientInfoAdapter
         open={isEditClientDialogOpen}
         onOpenChange={setIsEditClientDialogOpen}
         clientId={clientId}
