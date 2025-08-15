@@ -3,6 +3,10 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import { enforceHttps } from './utils/urlUtils';
+
+// Força HTTPS em produção
+enforceHttps();
 
 // Deploy test - 2024-01-06
 const container = document.getElementById("root");

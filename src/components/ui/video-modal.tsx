@@ -12,6 +12,7 @@ import { Calendar, Clock, Eye, Share2, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useVideoViewing } from '@/hooks/useVideoViewing';
+import { forceHttps, generateShareUrl } from '@/utils/urlUtils';
 
 interface VideoModalProps {
   open: boolean;
@@ -28,28 +29,29 @@ interface VideoModalProps {
 }
 
 const getScreenPalEmbedUrl = (url: string): string => {
-  const screenPalMatch = url.match(/screenpal\.com\/watch\/([^/?&#]+)/);
+  // Força HTTPS em todas as URLs
+  const httpsUrl = forceHttps(url);
+  
+  const screenPalMatch = httpsUrl.match(/screenpal\.com\/watch\/([^/?&#]+)/);
   if (screenPalMatch) {
     return `https://screenpal.com/embed/${screenPalMatch[1]}`;
   }
   
-  if (url.includes('/embed/')) {
-    return url;
+  if (httpsUrl.includes('/embed/')) {
+    return httpsUrl;
   }
   
-  const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+  const youtubeMatch = httpsUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
   if (youtubeMatch) {
     return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
   }
   
-  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  const vimeoMatch = httpsUrl.match(/vimeo\.com\/(\d+)/);
   if (vimeoMatch) {
     return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
   }
   
-  // Para URLs tutoriais.consultoriabling.com.br, manter URL original
-  // Terá mixed content warning mas pelo menos carrega
-  return url;
+  return httpsUrl;
 };
 
 export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: VideoModalProps) => {
@@ -76,7 +78,7 @@ export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: Vide
   }, [open]);
 
   const handleShareVideo = async () => {
-    const shareUrl = `${window.location.origin}/?video=${video.id}`;
+    const shareUrl = generateShareUrl(`?video=${video.id}`);
     
     try {
       await navigator.clipboard.writeText(shareUrl);
