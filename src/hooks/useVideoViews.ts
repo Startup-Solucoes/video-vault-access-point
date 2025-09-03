@@ -32,6 +32,7 @@ export const useVideoViews = () => {
           profiles!inner(email)
         `)
         .eq('is_valid_view', true)
+        .gte('watch_duration', 20)
         .order('viewed_at', { ascending: false });
 
       if (error) {
@@ -65,7 +66,8 @@ export const useVideoViewStats = () => {
       const { data: stats, error: statsError } = await supabase
         .from('video_views')
         .select('id, is_valid_view, video_id')
-        .eq('is_valid_view', true);
+        .eq('is_valid_view', true)
+        .gte('watch_duration', 20);
 
       if (statsError) {
         console.error('Erro ao buscar estatísticas:', statsError);

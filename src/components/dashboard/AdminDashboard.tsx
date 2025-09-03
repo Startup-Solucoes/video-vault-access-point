@@ -10,6 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { AdminSidebar } from './admin/AdminSidebar';
 import { AdminOverview } from './admin/AdminOverview';
 import { AdminToolsView } from './admin/AdminToolsView';
+import { VideoViewsManager } from './admin/VideoViewsManager';
 
 // Componente de Loading para Suspense
 const ComponentLoader = () => (
@@ -65,6 +66,12 @@ export const AdminDashboard = () => {
         return (
           <Suspense fallback={<ComponentLoader />}>
             <ClientManagement />
+          </Suspense>
+        );
+      case 'views':
+        return (
+          <Suspense fallback={<ComponentLoader />}>
+            <VideoViewsManager />
           </Suspense>
         );
       case 'history':

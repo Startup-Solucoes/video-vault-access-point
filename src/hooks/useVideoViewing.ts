@@ -41,7 +41,7 @@ export const useVideoViewing = ({ videoId, isPlaying }: UseVideoViewingProps) =>
     };
   }, [isPlaying, profile]);
 
-  // Registrar visualização quando atingir 60 segundos
+  // Registrar visualização quando atingir 20 segundos
   useEffect(() => {
     const recordView = async () => {
       if (!profile || !videoId || viewRecorded) return;
@@ -55,7 +55,7 @@ export const useVideoViewing = ({ videoId, isPlaying }: UseVideoViewingProps) =>
             video_id: videoId,
             user_id: profile.id,
             watch_duration: watchDuration,
-            is_valid_view: watchDuration >= 60,
+            is_valid_view: watchDuration >= 20,
             viewed_at: new Date().toISOString()
           });
 
@@ -70,7 +70,7 @@ export const useVideoViewing = ({ videoId, isPlaying }: UseVideoViewingProps) =>
       }
     };
 
-    if (watchDuration >= 60 && !viewRecorded) {
+    if (watchDuration >= 20 && !viewRecorded) {
       recordView();
     }
   }, [watchDuration, videoId, profile, viewRecorded]);
@@ -85,6 +85,6 @@ export const useVideoViewing = ({ videoId, isPlaying }: UseVideoViewingProps) =>
   return {
     watchDuration,
     viewRecorded,
-    isValidView: watchDuration >= 60
+    isValidView: watchDuration >= 20
   };
 };

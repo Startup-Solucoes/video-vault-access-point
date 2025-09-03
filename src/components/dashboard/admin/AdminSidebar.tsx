@@ -13,7 +13,8 @@ import {
   LogOut, 
   ChevronRight, 
   Menu, 
-  X 
+  X,
+  Eye 
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
@@ -50,6 +51,13 @@ export const AdminSidebar = ({ currentView, onViewChange, stats }: AdminSidebarP
       view: 'clients',
       description: "Gerenciar admins",
       badge: stats?.totalClients || 0
+    },
+    {
+      title: "Visualizações",
+      icon: Eye,
+      view: 'views',
+      description: "Analytics de vídeos",
+      badge: null
     },
     {
       title: "Histórico",

@@ -40,7 +40,7 @@ export const VideoViewsManager = () => {
           <CardContent>
             <div className="text-2xl font-bold">{stats?.totalValidViews || 0}</div>
             <p className="text-xs text-muted-foreground">
-              Visualizações válidas (≥ 1 minuto)
+              Visualizações válidas (≥ 20 segundos)
             </p>
           </CardContent>
         </Card>
