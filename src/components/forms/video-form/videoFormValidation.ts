@@ -17,6 +17,17 @@ export const validateVideoForm = (formData: VideoFormData, user: any): boolean =
     return false;
   }
 
+  // Verificar se o usuário é admin
+  if (user.user_metadata?.role !== 'admin') {
+    console.error('❌ ERRO: Usuário não é admin');
+    toast({
+      title: "Acesso Negado",
+      description: "Apenas administradores podem cadastrar vídeos",
+      variant: "destructive"
+    });
+    return false;
+  }
+
   if (!formData.title.trim()) {
     console.error('❌ ERRO: Título não preenchido');
     toast({

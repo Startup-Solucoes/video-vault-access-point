@@ -12,6 +12,16 @@ export const validateEditVideoForm = (formData: EditVideoFormData, user: any): b
     return false;
   }
 
+  // Verificar se o usuário é admin
+  if (user.user_metadata?.role !== 'admin') {
+    toast({
+      title: "Acesso Negado",
+      description: "Apenas administradores podem editar vídeos",
+      variant: "destructive"
+    });
+    return false;
+  }
+
   if (!formData.title.trim()) {
     toast({
       title: "Erro",
