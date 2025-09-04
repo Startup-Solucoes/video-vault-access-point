@@ -34,21 +34,23 @@ const getScreenPalEmbedUrl = (url: string): string => {
   
   const screenPalMatch = httpsUrl.match(/screenpal\.com\/watch\/([^/?&#]+)/);
   if (screenPalMatch) {
-    return `https://screenpal.com/embed/${screenPalMatch[1]}`;
+    return `https://screenpal.com/embed/${screenPalMatch[1]}?controls=0&showinfo=0`;
   }
   
   if (httpsUrl.includes('/embed/')) {
-    return httpsUrl;
+    // Se já é uma URL de embed, adiciona parâmetros para remover controles
+    const separator = httpsUrl.includes('?') ? '&' : '?';
+    return `${httpsUrl}${separator}controls=0&showinfo=0&modestbranding=1`;
   }
   
   const youtubeMatch = httpsUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
   if (youtubeMatch) {
-    return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    return `https://www.youtube.com/embed/${youtubeMatch[1]}?controls=0&showinfo=0&modestbranding=1&rel=0`;
   }
   
   const vimeoMatch = httpsUrl.match(/vimeo\.com\/(\d+)/);
   if (vimeoMatch) {
-    return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    return `https://player.vimeo.com/video/${vimeoMatch[1]}?controls=0&title=0&byline=0&portrait=0`;
   }
   
   return httpsUrl;
