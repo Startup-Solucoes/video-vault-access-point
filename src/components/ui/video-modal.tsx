@@ -100,59 +100,63 @@ export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: Vide
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-[95vw] h-[85vh] sm:h-[80vh] p-0 max-h-screen overflow-hidden">
+      <DialogContent className="max-w-4xl w-[95vw] h-[90vh] sm:h-[85vh] md:h-[80vh] p-0 max-h-[100dvh] overflow-hidden">
         <div className="flex flex-col h-full">
-          <DialogHeader className="p-4 sm:p-6 pb-2 sm:pb-4 flex-shrink-0">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-2 sm:space-y-0">
+          <DialogHeader className="p-3 sm:p-4 md:p-6 pb-1 sm:pb-2 md:pb-4 flex-shrink-0">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-2 lg:space-y-0">
               <div className="flex-1 min-w-0">
-                <DialogTitle className="text-lg sm:text-xl font-semibold mb-2 break-words hyphens-auto leading-tight">
+                <DialogTitle className="text-base sm:text-lg md:text-xl font-semibold mb-1 sm:mb-2 break-words hyphens-auto leading-tight">
                   {video.title}
                 </DialogTitle>
                 
                 {video.description && (
-                  <p className="text-sm text-gray-600 mb-3 break-words">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3 break-words line-clamp-2 sm:line-clamp-none">
                     {video.description}
                   </p>
                 )}
                 
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-gray-500 mb-3">
+                <div className="flex flex-wrap sm:flex-row items-center gap-1 sm:gap-2 md:gap-4 text-xs text-gray-500 mb-2 sm:mb-3">
                   <div className="flex items-center">
                     <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
-                    <span>Publicado em {format(new Date(video.created_at), 'dd/MM/yyyy', { locale: ptBR })}</span>
+                    <span className="hidden sm:inline">Publicado em </span>
+                    <span>{format(new Date(video.created_at), 'dd/MM/yyyy', { locale: ptBR })}</span>
                   </div>
                   <div className="flex items-center">
                     <Clock className="h-3 w-3 mr-1 flex-shrink-0" />
-                    <span>às {format(new Date(video.created_at), 'HH:mm', { locale: ptBR })}</span>
+                    <span className="hidden sm:inline">às </span>
+                    <span>{format(new Date(video.created_at), 'HH:mm', { locale: ptBR })}</span>
                   </div>
                   {watchDuration > 0 && (
                     <div className="flex items-center">
                       <Eye className="h-3 w-3 mr-1 flex-shrink-0" />
-                      <span>Assistido: {formatDuration(watchDuration)}</span>
+                      <span>{formatDuration(watchDuration)}</span>
                       {isValidView && (
-                        <Badge variant="secondary" className="ml-2 text-xs bg-green-100 text-green-700">
-                          Visualização contabilizada
+                        <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs bg-green-100 text-green-700 px-1 py-0">
+                          ✓
                         </Badge>
                       )}
                     </div>
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={handleShareVideo}
-                    className="text-xs"
+                    className="text-xs h-7 sm:h-8"
                   >
                     {isLinkCopied ? (
                       <>
                         <Check className="h-3 w-3 mr-1 text-green-600" />
-                        Link copiado!
+                        <span className="hidden sm:inline">Link copiado!</span>
+                        <span className="sm:hidden">Copiado!</span>
                       </>
                     ) : (
                       <>
                         <Share2 className="h-3 w-3 mr-1" />
-                        Compartilhar
+                        <span className="hidden sm:inline">Compartilhar</span>
+                        <span className="sm:hidden">Share</span>
                       </>
                     )}
                   </Button>
@@ -160,14 +164,14 @@ export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: Vide
               </div>
               
               {video.category && getCategoryColor && (
-                <Badge className={`${getCategoryColor(video.category)} flex-shrink-0 mt-2 sm:mt-0`}>
+                <Badge className={`${getCategoryColor(video.category)} flex-shrink-0 mt-2 lg:mt-0 self-start`}>
                   {video.category}
                 </Badge>
               )}
             </div>
           </DialogHeader>
           
-          <div className="flex-1 px-4 sm:px-6 pb-4 sm:pb-6 overflow-hidden">
+          <div className="flex-1 px-3 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6 overflow-hidden min-h-0">
             <div className="w-full h-full bg-black rounded-lg overflow-hidden">
               <iframe
                 ref={iframeRef}
