@@ -11,6 +11,7 @@ import { ClientVideo } from '@/types/clientVideo';
 import { getCategoryColor } from '@/utils/categoryColors';
 import { getPlatformColor, getPlatformName, getPlatformLogo } from '@/utils/platformImages';
 import { generateShareUrl } from '@/utils/urlUtils';
+import { useAuth } from '@/hooks/useAuth';
 
 interface VideoCardProps {
   video: ClientVideo;
@@ -21,6 +22,8 @@ export const VideoCard = ({ video }: VideoCardProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isLinkCopied, setIsLinkCopied] = useState(false);
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === 'admin';
   
   const categoryColors = video.category ? getCategoryColor(video.category) : '';
   const platformColor = getPlatformColor(video.platform || 'outros');
@@ -145,25 +148,27 @@ export const VideoCard = ({ video }: VideoCardProps) => {
                   e.stopPropagation();
                   handleWatchVideo();
                 }}
-                className="bg-gray-700 hover:bg-gray-800 text-xs sm:text-sm flex-1"
+                className={`bg-gray-700 hover:bg-gray-800 text-xs sm:text-sm ${isAdmin ? 'flex-1' : 'w-full'}`}
               >
                 <Play className="h-3 w-3 mr-1" />
                 Assistir
               </Button>
               
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleShareVideo}
-                className="text-xs sm:text-sm px-3"
-                title="Compartilhar vídeo"
-              >
-                {isLinkCopied ? (
-                  <Check className="h-3 w-3 text-green-600" />
-                ) : (
-                  <Share2 className="h-3 w-3" />
-                )}
-              </Button>
+              {isAdmin && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleShareVideo}
+                  className="text-xs sm:text-sm px-3"
+                  title="Compartilhar vídeo"
+                >
+                  {isLinkCopied ? (
+                    <Check className="h-3 w-3 text-green-600" />
+                  ) : (
+                    <Share2 className="h-3 w-3" />
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>

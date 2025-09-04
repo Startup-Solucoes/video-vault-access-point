@@ -12,6 +12,7 @@ import { Calendar, Clock, Eye, Share2, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useVideoViewing } from '@/hooks/useVideoViewing';
+import { useAuth } from '@/hooks/useAuth';
 import { forceHttps, generateShareUrl } from '@/utils/urlUtils';
 
 interface VideoModalProps {
@@ -61,6 +62,8 @@ export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: Vide
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const embedUrl = getScreenPalEmbedUrl(video.video_url);
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === 'admin';
   
   const { watchDuration, viewRecorded, isValidView } = useVideoViewing({
     videoId: video.id,
@@ -142,26 +145,28 @@ export const VideoModal = ({ open, onOpenChange, video, getCategoryColor }: Vide
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleShareVideo}
-                    className="text-xs h-7 sm:h-8"
-                  >
-                    {isLinkCopied ? (
-                      <>
-                        <Check className="h-3 w-3 mr-1 text-green-600" />
-                        <span className="hidden sm:inline">Link copiado!</span>
-                        <span className="sm:hidden">Copiado!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Share2 className="h-3 w-3 mr-1" />
-                        <span className="hidden sm:inline">Compartilhar</span>
-                        <span className="sm:hidden">Share</span>
-                      </>
-                    )}
-                  </Button>
+                  {isAdmin && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleShareVideo}
+                      className="text-xs h-7 sm:h-8"
+                    >
+                      {isLinkCopied ? (
+                        <>
+                          <Check className="h-3 w-3 mr-1 text-green-600" />
+                          <span className="hidden sm:inline">Link copiado!</span>
+                          <span className="sm:hidden">Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Share2 className="h-3 w-3 mr-1" />
+                          <span className="hidden sm:inline">Compartilhar</span>
+                          <span className="sm:hidden">Share</span>
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
               
