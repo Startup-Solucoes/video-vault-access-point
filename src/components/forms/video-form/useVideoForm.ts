@@ -6,7 +6,7 @@ import { submitVideoData } from './videoSubmissionService';
 import { useCacheInvalidation } from '@/hooks/useCacheInvalidation';
 
 export const useVideoForm = (onClose: () => void) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { invalidateVideoCache } = useCacheInvalidation();
   const {
     formData,
@@ -24,7 +24,7 @@ export const useVideoForm = (onClose: () => void) => {
     e.preventDefault();
     console.log('=== INICIANDO PROCESSO DE CADASTRO DE VÍDEO ===');
 
-    if (!validateVideoForm(formData, user)) {
+    if (!validateVideoForm(formData, user, profile)) {
       return;
     }
 

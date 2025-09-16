@@ -8,7 +8,7 @@ import { useEditVideoFormState } from './useEditVideoFormState';
 import { useCacheInvalidation } from '@/hooks/useCacheInvalidation';
 
 export const useEditVideoForm = (videoId: string, onClose: () => void) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { invalidateVideoCache } = useCacheInvalidation();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -56,7 +56,7 @@ export const useEditVideoForm = (videoId: string, onClose: () => void) => {
     
     console.log('📝 Dados do formulário no submit:', formData);
     
-    if (!validateEditVideoForm(formData, user)) {
+    if (!validateEditVideoForm(formData, user, profile)) {
       return;
     }
 

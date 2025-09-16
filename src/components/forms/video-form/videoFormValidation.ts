@@ -2,10 +2,11 @@
 import { toast } from '@/hooks/use-toast';
 import { VideoFormData } from './VideoFormTypes';
 
-export const validateVideoForm = (formData: VideoFormData, user: any): boolean => {
+export const validateVideoForm = (formData: VideoFormData, user: any, profile?: { role?: string } | null): boolean => {
   console.log('=== VALIDANDO FORMULÁRIO ===');
   console.log('Dados do formulário:', formData);
   console.log('Usuário logado:', user);
+  console.log('Perfil carregado:', profile);
 
   if (!user) {
     console.error('❌ ERRO: Usuário não logado');
@@ -17,8 +18,9 @@ export const validateVideoForm = (formData: VideoFormData, user: any): boolean =
     return false;
   }
 
-  // Verificar se o usuário é admin
-  if (user.user_metadata?.role !== 'admin') {
+  // Verificar se o usuário é admin (via metadata ou perfil)
+  const isAdmin = user?.user_metadata?.role === 'admin' || profile?.role === 'admin';
+  if (!isAdmin) {
     console.error('❌ ERRO: Usuário não é admin');
     toast({
       title: "Acesso Negado",

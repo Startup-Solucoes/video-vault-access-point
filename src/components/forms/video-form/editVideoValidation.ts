@@ -2,7 +2,7 @@
 import { toast } from '@/hooks/use-toast';
 import { EditVideoFormData } from './EditVideoFormTypes';
 
-export const validateEditVideoForm = (formData: EditVideoFormData, user: any): boolean => {
+export const validateEditVideoForm = (formData: EditVideoFormData, user: any, profile?: { role?: string } | null): boolean => {
   if (!user) {
     toast({
       title: "Erro",
@@ -12,8 +12,9 @@ export const validateEditVideoForm = (formData: EditVideoFormData, user: any): b
     return false;
   }
 
-  // Verificar se o usuário é admin
-  if (user.user_metadata?.role !== 'admin') {
+  // Verificar se o usuário é admin (via metadata ou perfil)
+  const isAdmin = user?.user_metadata?.role === 'admin' || profile?.role === 'admin';
+  if (!isAdmin) {
     toast({
       title: "Acesso Negado",
       description: "Apenas administradores podem editar vídeos",
