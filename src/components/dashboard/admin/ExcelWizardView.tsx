@@ -172,8 +172,20 @@ export const ExcelWizardView = () => {
       XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "Sheet1");
       
       const fileName = `${file.name.split('.')[0]}_parte_${i + 1}.xlsx`;
-      const buffer = XLSX.write(newWorkbook, { type: 'array', bookType: 'xlsx' });
+      
+      // Otimizar configurações de escrita para reduzir tamanho do arquivo
+      const buffer = XLSX.write(newWorkbook, { 
+        type: 'array', 
+        bookType: 'xlsx',
+        compression: true,  // Ativar compressão
+        bookSST: false,     // Não usar shared string table para arquivos pequenos
+        cellStyles: false   // Não incluir estilos para reduzir tamanho
+      });
+      
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      // Log do tamanho do arquivo gerado
+      console.log(`📊 Arquivo gerado: ${fileName} - ${(blob.size / 1024).toFixed(1)} KB`);
       
       files.push({ name: fileName, blob });
     }
@@ -212,8 +224,17 @@ export const ExcelWizardView = () => {
     const newWorkbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "Planilha_Unificada");
     
-    const buffer = XLSX.write(newWorkbook, { type: 'array', bookType: 'xlsx' });
+    const buffer = XLSX.write(newWorkbook, { 
+      type: 'array', 
+      bookType: 'xlsx',
+      compression: true,  // Ativar compressão
+      bookSST: false,     // Não usar shared string table 
+      cellStyles: false   // Não incluir estilos para reduzir tamanho
+    });
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    
+    // Log do tamanho do arquivo unificado
+    console.log(`📊 Planilha unificada gerada - ${(blob.size / 1024).toFixed(1)} KB`);
     
     return [{ name: 'planilha_unificada.xlsx', blob }];
   };
@@ -247,8 +268,17 @@ export const ExcelWizardView = () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Análise");
     
-    const buffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
+    const buffer = XLSX.write(workbook, { 
+      type: 'array', 
+      bookType: 'xlsx',
+      compression: true,  // Ativar compressão
+      bookSST: false,     // Não usar shared string table
+      cellStyles: false   // Não incluir estilos para reduzir tamanho
+    });
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    
+    // Log do tamanho do arquivo de análise
+    console.log(`📊 Relatório de análise gerado - ${(blob.size / 1024).toFixed(1)} KB`);
     
     return [{ name: 'análise_planilhas.xlsx', blob }];
   };
@@ -273,9 +303,19 @@ export const ExcelWizardView = () => {
           convertedFiles.push({ name, blob });
         });
       } else {
-        // Manter como XLSX
-        const buffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
+        // Manter como XLSX com otimizações
+        const buffer = XLSX.write(workbook, { 
+          type: 'array', 
+          bookType: 'xlsx',
+          compression: true,  // Ativar compressão
+          bookSST: false,     // Não usar shared string table
+          cellStyles: false   // Não incluir estilos para reduzir tamanho
+        });
         const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        
+        // Log do tamanho do arquivo convertido
+        console.log(`📊 Arquivo convertido: ${fileName}.xlsx - ${(blob.size / 1024).toFixed(1)} KB`);
+        
         convertedFiles.push({ name: `${fileName}.xlsx`, blob });
       }
     }
