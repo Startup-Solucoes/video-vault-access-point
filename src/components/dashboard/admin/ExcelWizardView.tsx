@@ -35,37 +35,40 @@ interface ProcessingConfig {
 export const ExcelWizardView = () => {
   console.log('🧪 ExcelWizardView renderizado com sucesso');
   
-  // Verificar se as dependências estão disponíveis
-  if (typeof XLSX === 'undefined') {
-    console.error('❌ Dependência XLSX não encontrada');
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center space-x-3">
-          <FileSpreadsheet className="h-8 w-8 text-red-500" />
-          <div>
-            <h1 className="text-2xl font-bold">Excel Wizard - Erro</h1>
-            <p className="text-red-600">
-              Erro: Dependência XLSX não encontrada. Verifique a instalação dos pacotes.
-            </p>
-          </div>
+  // Teste básico primeiro
+  try {
+    console.log('📦 Testando dependências...');
+    console.log('- XLSX disponível:', typeof XLSX !== 'undefined');
+    console.log('- saveAs disponível:', typeof saveAs !== 'undefined');
+    
+    if (typeof XLSX === 'undefined') {
+      console.error('❌ XLSX não definido');
+      return (
+        <div className="p-8 text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Erro: XLSX não encontrado</h1>
+          <p>A dependência xlsx não está disponível.</p>
         </div>
-      </div>
-    );
-  }
-
-  if (typeof saveAs === 'undefined') {
-    console.error('❌ Dependência file-saver não encontrada');
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center space-x-3">
-          <FileSpreadsheet className="h-8 w-8 text-red-500" />
-          <div>
-            <h1 className="text-2xl font-bold">Excel Wizard - Erro</h1>
-            <p className="text-red-600">
-              Erro: Dependência file-saver não encontrada. Verifique a instalação dos pacotes.
-            </p>
-          </div>
+      );
+    }
+    
+    if (typeof saveAs === 'undefined') {
+      console.error('❌ saveAs não definido');
+      return (
+        <div className="p-8 text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Erro: file-saver não encontrado</h1>
+          <p>A dependência file-saver não está disponível.</p>
         </div>
+      );
+    }
+    
+    console.log('✅ Dependências OK, renderizando componente...');
+    
+  } catch (error) {
+    console.error('❌ Erro ao verificar dependências:', error);
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-2xl font-bold text-red-600 mb-4">Erro Crítico</h1>
+        <p>Erro ao verificar dependências: {error.message}</p>
       </div>
     );
   }

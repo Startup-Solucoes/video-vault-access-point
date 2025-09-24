@@ -58,6 +58,7 @@ export const AdminToolsView = () => {
   ];
 
   const handleToolClick = (toolId: string) => {
+    console.log(`🎯 handleToolClick chamado com: ${toolId}`);
     if (toolId === 'advertisements' || toolId === 'file-converter' || toolId === 'whatsapp-generator' || toolId === 'product-calculator' || toolId === 'excel-wizard') {
       console.log(`Navegando para ${toolId}...`);
       setCurrentView(toolId);
@@ -142,6 +143,7 @@ export const AdminToolsView = () => {
         );
 
       case 'excel-wizard':
+        console.log('🎯 Renderizando Excel Wizard...');
         return (
           <div className="space-y-6">
             <div className="flex items-center space-x-4">
