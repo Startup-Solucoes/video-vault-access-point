@@ -9,6 +9,10 @@ import { toast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
+console.log('📦 Verificando dependências:');
+console.log('- XLSX:', typeof XLSX !== 'undefined' ? 'OK' : 'UNDEFINED');
+console.log('- saveAs:', typeof saveAs !== 'undefined' ? 'OK' : 'UNDEFINED');
+
 type ProcessingFunction = 'split' | 'merge' | 'analyze' | 'format';
 
 interface ProcessingConfig {
@@ -29,6 +33,43 @@ interface ProcessingConfig {
 }
 
 export const ExcelWizardView = () => {
+  console.log('🧪 ExcelWizardView renderizado com sucesso');
+  
+  // Verificar se as dependências estão disponíveis
+  if (typeof XLSX === 'undefined') {
+    console.error('❌ Dependência XLSX não encontrada');
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center space-x-3">
+          <FileSpreadsheet className="h-8 w-8 text-red-500" />
+          <div>
+            <h1 className="text-2xl font-bold">Excel Wizard - Erro</h1>
+            <p className="text-red-600">
+              Erro: Dependência XLSX não encontrada. Verifique a instalação dos pacotes.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (typeof saveAs === 'undefined') {
+    console.error('❌ Dependência file-saver não encontrada');
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center space-x-3">
+          <FileSpreadsheet className="h-8 w-8 text-red-500" />
+          <div>
+            <h1 className="text-2xl font-bold">Excel Wizard - Erro</h1>
+            <p className="text-red-600">
+              Erro: Dependência file-saver não encontrada. Verifique a instalação dos pacotes.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedData, setProcessedData] = useState<any>(null);
@@ -84,6 +125,10 @@ export const ExcelWizardView = () => {
   }, []);
 
   const readExcelFile = async (file: File): Promise<XLSX.WorkBook> => {
+    if (!XLSX) {
+      throw new Error('Dependência XLSX não disponível');
+    }
+    
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -92,6 +137,7 @@ export const ExcelWizardView = () => {
           const workbook = XLSX.read(data, { type: 'array' });
           resolve(workbook);
         } catch (error) {
+          console.error('❌ Erro ao ler arquivo Excel:', error);
           reject(error);
         }
       };
@@ -331,6 +377,17 @@ export const ExcelWizardView = () => {
   };
 
   const downloadFile = (file: { name: string; blob: Blob }) => {
+    if (!saveAs) {
+      console.error('❌ Dependência file-saver não disponível');
+      toast({
+        title: "Erro",
+        description: "Não foi possível fazer o download. Dependência file-saver não encontrada.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    console.log('📥 Fazendo download do arquivo:', file.name);
     saveAs(file.blob, file.name);
   };
 
