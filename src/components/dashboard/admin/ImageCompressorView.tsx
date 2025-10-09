@@ -73,19 +73,33 @@ export const ImageCompressorView: React.FC<ImageCompressorViewProps> = ({ onBack
 
         ctx.drawImage(img, 0, 0);
 
-        // Sempre usar JPEG para melhor compressão (PNG não comprime bem)
-        const outputType = 'image/jpeg';
+        // Detectar se a imagem tem transparência
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        let hasTransparency = false;
         
-        // Determinar qualidade baseada no tamanho original
+        for (let i = 3; i < data.length; i += 4) {
+          if (data[i] < 255) {
+            hasTransparency = true;
+            break;
+          }
+        }
+
+        // Se tem transparência, manter PNG. Caso contrário, usar JPEG para melhor compressão
+        const outputType = hasTransparency ? 'image/png' : 'image/jpeg';
+        
+        // Determinar qualidade baseada no tamanho original (apenas para JPEG)
         const fileSizeMB = imageFile.originalSize / (1024 * 1024);
         let quality = 0.85;
         
-        if (fileSizeMB > 5) {
-          quality = 0.3; // Imagens muito grandes precisam de compressão agressiva
-        } else if (fileSizeMB > 2) {
-          quality = 0.5; // Para imagens > 2MB, começar com compressão média
-        } else if (fileSizeMB > 1) {
-          quality = 0.7;
+        if (!hasTransparency) {
+          if (fileSizeMB > 5) {
+            quality = 0.3; // Imagens muito grandes precisam de compressão agressiva
+          } else if (fileSizeMB > 2) {
+            quality = 0.5; // Para imagens > 2MB, começar com compressão média
+          } else if (fileSizeMB > 1) {
+            quality = 0.7;
+          }
         }
         
         // Função recursiva para tentar diferentes qualidades até atingir < 1MB para imagens grandes
@@ -99,8 +113,8 @@ export const ImageCompressorView: React.FC<ImageCompressorViewProps> = ({ onBack
 
               const compressedSizeMB = blob.size / (1024 * 1024);
               
-              // Se imagem original era > 2MB, garantir que compressa para < 1MB
-              if (fileSizeMB > 2 && compressedSizeMB > 1 && currentQuality > 0.15 && attempts < 5) {
+              // Se imagem original era > 2MB, garantir que compressa para < 1MB (apenas JPEG)
+              if (!hasTransparency && fileSizeMB > 2 && compressedSizeMB > 1 && currentQuality > 0.15 && attempts < 5) {
                 // Reduzir qualidade progressivamente
                 const newQuality = currentQuality - 0.1;
                 tryCompress(newQuality, attempts + 1);
@@ -194,8 +208,9 @@ export const ImageCompressorView: React.FC<ImageCompressorViewProps> = ({ onBack
 
     completedImages.forEach((imageFile, index) => {
       if (imageFile.compressedBlob) {
-        const extension = imageFile.file.name.split('.').pop();
-        const baseName = imageFile.file.name.replace(`.${extension}`, '');
+        // Detectar o tipo correto baseado no blob comprimido
+        const extension = imageFile.compressedBlob.type === 'image/png' ? 'png' : 'jpg';
+        const baseName = imageFile.file.name.replace(/\.[^/.]+$/, '');
         folder?.file(`${baseName}_compressed.${extension}`, imageFile.compressedBlob);
       }
     });
