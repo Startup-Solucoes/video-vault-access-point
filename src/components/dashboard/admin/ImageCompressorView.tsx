@@ -76,15 +76,25 @@ export const ImageCompressorView: React.FC<ImageCompressorViewProps> = ({ onBack
         // Determinar o tipo de saída baseado no tipo original
         const outputType = imageFile.file.type === 'image/png' ? 'image/png' : 'image/jpeg';
         
-        // Tentar diferentes níveis de qualidade até atingir boa compressão
+        // Determinar qualidade baseada no tamanho original
+        const fileSizeMB = imageFile.originalSize / (1024 * 1024);
         let quality = 0.85;
+        
+        if (fileSizeMB > 2) {
+          // Para imagens > 2MB, aplicar compressão agressiva para ficar < 1MB
+          quality = 0.4;
+        } else if (fileSizeMB > 1) {
+          quality = 0.6;
+        }
         
         canvas.toBlob(
           (blob) => {
             if (blob) {
-              // Se a compressão não reduziu o suficiente, tentar com qualidade menor
-              if (blob.size >= imageFile.originalSize * 0.9 && quality > 0.6) {
-                quality = 0.75;
+              const compressedSizeMB = blob.size / (1024 * 1024);
+              
+              // Se ainda está acima de 1MB e original era > 2MB, tentar compressão ainda mais agressiva
+              if (fileSizeMB > 2 && compressedSizeMB > 1 && quality > 0.2) {
+                quality = 0.3;
                 canvas.toBlob(
                   (blob2) => {
                     if (blob2) {
