@@ -8,6 +8,7 @@ import { FileConverterView } from './FileConverterView';
 import { WhatsAppLinkGenerator } from './WhatsAppLinkGenerator';
 import { ProductPriceCalculator } from './ProductPriceCalculator';
 import { ExcelWizardView } from './ExcelWizardView';
+import { ImageCompressorView } from './ImageCompressorView';
 
 export const AdminToolsView = () => {
   const [currentView, setCurrentView] = useState<string>('tools');
@@ -18,6 +19,13 @@ export const AdminToolsView = () => {
       title: 'Gerenciamento de Anúncios',
       description: 'Gerencie anúncios e campanhas publicitárias do sistema',
       icon: Megaphone,
+      available: true
+    },
+    {
+      id: 'image-compressor',
+      title: 'Compressor de Imagens',
+      description: 'Reduza o peso de imagens em massa sem perder qualidade',
+      icon: FileImage,
       available: true
     },
     {
@@ -59,7 +67,7 @@ export const AdminToolsView = () => {
 
   const handleToolClick = (toolId: string) => {
     console.log(`🎯 handleToolClick chamado com: ${toolId}`);
-    if (toolId === 'advertisements' || toolId === 'file-converter' || toolId === 'whatsapp-generator' || toolId === 'product-calculator' || toolId === 'excel-wizard') {
+    if (toolId === 'advertisements' || toolId === 'image-compressor' || toolId === 'file-converter' || toolId === 'whatsapp-generator' || toolId === 'product-calculator' || toolId === 'excel-wizard') {
       console.log(`Navegando para ${toolId}...`);
       setCurrentView(toolId);
     }
@@ -88,6 +96,9 @@ export const AdminToolsView = () => {
             <AdvertisementDisplay />
           </div>
         );
+      
+      case 'image-compressor':
+        return <ImageCompressorView onBack={handleBackToTools} />;
       
       case 'file-converter':
         return (
