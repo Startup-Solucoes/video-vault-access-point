@@ -73,49 +73,47 @@ export const ImageCompressorView: React.FC<ImageCompressorViewProps> = ({ onBack
 
         ctx.drawImage(img, 0, 0);
 
-        // Determinar o tipo de saída baseado no tipo original
-        const outputType = imageFile.file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        // Sempre usar JPEG para melhor compressão (PNG não comprime bem)
+        const outputType = 'image/jpeg';
         
         // Determinar qualidade baseada no tamanho original
         const fileSizeMB = imageFile.originalSize / (1024 * 1024);
         let quality = 0.85;
         
-        if (fileSizeMB > 2) {
-          // Para imagens > 2MB, aplicar compressão agressiva para ficar < 1MB
-          quality = 0.4;
+        if (fileSizeMB > 5) {
+          quality = 0.3; // Imagens muito grandes precisam de compressão agressiva
+        } else if (fileSizeMB > 2) {
+          quality = 0.5; // Para imagens > 2MB, começar com compressão média
         } else if (fileSizeMB > 1) {
-          quality = 0.6;
+          quality = 0.7;
         }
         
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
+        // Função recursiva para tentar diferentes qualidades até atingir < 1MB para imagens grandes
+        const tryCompress = (currentQuality: number, attempts: number = 0): void => {
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Falha na compressão'));
+                return;
+              }
+
               const compressedSizeMB = blob.size / (1024 * 1024);
               
-              // Se ainda está acima de 1MB e original era > 2MB, tentar compressão ainda mais agressiva
-              if (fileSizeMB > 2 && compressedSizeMB > 1 && quality > 0.2) {
-                quality = 0.3;
-                canvas.toBlob(
-                  (blob2) => {
-                    if (blob2) {
-                      resolve(blob2);
-                    } else {
-                      reject(new Error('Falha na compressão'));
-                    }
-                  },
-                  outputType,
-                  quality
-                );
+              // Se imagem original era > 2MB, garantir que compressa para < 1MB
+              if (fileSizeMB > 2 && compressedSizeMB > 1 && currentQuality > 0.15 && attempts < 5) {
+                // Reduzir qualidade progressivamente
+                const newQuality = currentQuality - 0.1;
+                tryCompress(newQuality, attempts + 1);
               } else {
                 resolve(blob);
               }
-            } else {
-              reject(new Error('Falha na compressão'));
-            }
-          },
-          outputType,
-          quality
-        );
+            },
+            outputType,
+            currentQuality
+          );
+        };
+        
+        tryCompress(quality);
       };
       img.onerror = () => reject(new Error('Falha ao carregar imagem'));
       img.src = imageFile.preview;
