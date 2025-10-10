@@ -18,8 +18,9 @@ export const useClientSelector = () => {
         .from('profiles')
         .select('id, email, full_name') // Apenas campos necessários
         .eq('role', 'client')
+        .eq('is_deleted', false) // Filtrar apenas clientes ativos
         .order('full_name', { ascending: true })
-        .limit(50); // Limite para evitar queries muito grandes
+        .limit(100); // Limite para evitar queries muito grandes
 
       if (error) {
         console.error('Erro ao buscar clientes:', error);

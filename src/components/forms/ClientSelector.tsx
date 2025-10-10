@@ -60,9 +60,9 @@ export const ClientSelector = forwardRef<ClientSelectorRef, ClientSelectorProps>
 
     const handleModalOpen = () => {
       console.log('Abrindo modal de seleção de clientes - buscando dados frescos');
+      setModalOpen(true);
       // Buscar dados frescos sempre que abrir o modal
       fetchClients();
-      setModalOpen(true);
     };
 
     const handleModalClose = (open: boolean) => {

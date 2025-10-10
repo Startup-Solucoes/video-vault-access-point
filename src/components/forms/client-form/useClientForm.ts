@@ -1,10 +1,12 @@
 
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
 import { ClientFormData, validateClientForm } from './clientFormValidation';
 import { createUser, getErrorMessage } from './userCreationService';
 
 export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open: boolean) => void) => {
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState<ClientFormData>({
     full_name: '',
     email: '',
@@ -45,6 +47,10 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
     try {
       await createUser({ formData, logoFile });
       
+      // Invalidar cache do React Query para atualizar todas as listas de clientes
+      console.log('✅ Cliente criado - invalidando cache...');
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      
       // Resetar formulário
       resetForm();
       
@@ -53,13 +59,13 @@ export const useClientForm = (onClientCreated?: () => void, onOpenChange?: (open
         onOpenChange(false);
       }
       
-      // Aguardar um pouco e chamar callback para atualizar lista
+      // Chamar callback para atualizar listas que não usam React Query
       if (onClientCreated) {
         console.log('Chamando callback para atualizar lista...');
-        // Aguardar para garantir que o banco sincronizou com a logo
+        // Aguardar para garantir que o banco sincronizou
         setTimeout(() => {
           onClientCreated();
-        }, 1500);
+        }, 500);
       }
     } catch (error: any) {
       console.error('=== ERRO NO CADASTRO ===');
