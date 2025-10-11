@@ -62,6 +62,7 @@ export const ImageCompressorView: React.FC<ImageCompressorViewProps> = ({ onBack
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
+        // Manter dimensões originais
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
         
@@ -73,7 +74,7 @@ export const ImageCompressorView: React.FC<ImageCompressorViewProps> = ({ onBack
 
         ctx.drawImage(img, 0, 0);
 
-        // Detectar se a imagem tem transparência
+        // Detectar se a imagem tem transparência real
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
         let hasTransparency = false;
@@ -85,49 +86,55 @@ export const ImageCompressorView: React.FC<ImageCompressorViewProps> = ({ onBack
           }
         }
 
-        // Se tem transparência, manter PNG. Caso contrário, usar JPEG para melhor compressão
-        const outputType = hasTransparency ? 'image/png' : 'image/jpeg';
+        // Usar qualidade fixa de 0.8 (80%) para todas as imagens
+        const quality = 0.8;
         
-        // Determinar qualidade baseada no tamanho original (apenas para JPEG)
-        const fileSizeMB = imageFile.originalSize / (1024 * 1024);
-        let quality = 0.85;
+        // Se tem transparência, converter para JPEG com fundo branco para máxima compressão
+        let outputType: 'image/jpeg' | 'image/png' = 'image/jpeg';
         
-        if (!hasTransparency) {
-          if (fileSizeMB > 5) {
-            quality = 0.3; // Imagens muito grandes precisam de compressão agressiva
-          } else if (fileSizeMB > 2) {
-            quality = 0.5; // Para imagens > 2MB, começar com compressão média
-          } else if (fileSizeMB > 1) {
-            quality = 0.7;
+        // Se tiver transparência, criar fundo branco
+        if (hasTransparency) {
+          // Criar novo canvas com fundo branco
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = canvas.height;
+          const tempCtx = tempCanvas.getContext('2d');
+          
+          if (tempCtx) {
+            // Preencher com branco
+            tempCtx.fillStyle = '#FFFFFF';
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            // Desenhar imagem por cima
+            tempCtx.drawImage(canvas, 0, 0);
+            
+            // Usar o canvas temporário
+            tempCanvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  reject(new Error('Falha na compressão'));
+                  return;
+                }
+                resolve(blob);
+              },
+              outputType,
+              quality
+            );
+            return;
           }
         }
         
-        // Função recursiva para tentar diferentes qualidades até atingir < 1MB para imagens grandes
-        const tryCompress = (currentQuality: number, attempts: number = 0): void => {
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) {
-                reject(new Error('Falha na compressão'));
-                return;
-              }
-
-              const compressedSizeMB = blob.size / (1024 * 1024);
-              
-              // Se imagem original era > 2MB, garantir que compressa para < 1MB (apenas JPEG)
-              if (!hasTransparency && fileSizeMB > 2 && compressedSizeMB > 1 && currentQuality > 0.15 && attempts < 5) {
-                // Reduzir qualidade progressivamente
-                const newQuality = currentQuality - 0.1;
-                tryCompress(newQuality, attempts + 1);
-              } else {
-                resolve(blob);
-              }
-            },
-            outputType,
-            currentQuality
-          );
-        };
-        
-        tryCompress(quality);
+        // Para imagens sem transparência, comprimir direto
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Falha na compressão'));
+              return;
+            }
+            resolve(blob);
+          },
+          outputType,
+          quality
+        );
       };
       img.onerror = () => reject(new Error('Falha ao carregar imagem'));
       img.src = imageFile.preview;
