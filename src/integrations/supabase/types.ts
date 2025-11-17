@@ -320,22 +320,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      check_user_exists: {
-        Args: { user_email: string }
-        Returns: boolean
-      }
-      delete_user_completely: {
-        Args: { user_email: string }
-        Returns: Json
-      }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      check_user_exists: { Args: { user_email: string }; Returns: boolean }
+      delete_user_completely: { Args: { user_email: string }; Returns: Json }
+      get_current_user_role: { Args: never; Returns: string }
+      is_admin: { Args: never; Returns: boolean }
       log_security_event: {
         Args: {
           p_action: string
