@@ -27,7 +27,8 @@ export const categories = [
   'Serviços',
   'Estoques',
   'Contatos',
-  'Logística'
+  'Logística',
+  'Frente de caixa'
 ];
 
 export const platforms = [
