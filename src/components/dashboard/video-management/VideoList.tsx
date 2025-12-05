@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useClientData } from '@/hooks/useClientData';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,39 +15,97 @@ interface VideoListProps {
 
 type SortOption = 'name-asc' | 'name-desc' | 'videos-asc' | 'videos-desc' | 'date-asc' | 'date-desc';
 
+const STORAGE_KEY = 'videolist-state';
+
+const getSavedState = () => {
+  try {
+    const saved = sessionStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error('Erro ao recuperar estado:', e);
+  }
+  return { sortBy: 'name-asc', searchTerm: '', scrollPosition: 0 };
+};
+
+const saveState = (sortBy: SortOption, searchTerm: string, scrollPosition: number) => {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ sortBy, searchTerm, scrollPosition }));
+  } catch (e) {
+    console.error('Erro ao salvar estado:', e);
+  }
+};
+
 export const VideoList = ({ onClientSelect }: VideoListProps) => {
   const { clients, isLoading } = useClientData();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('videos-desc');
+  const savedState = getSavedState();
+  const [searchTerm, setSearchTerm] = useState(savedState.searchTerm || '');
+  const [sortBy, setSortBy] = useState<SortOption>(savedState.sortBy || 'name-asc');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const hasRestoredScroll = useRef(false);
+
+  // Salvar estado quando mudar
+  useEffect(() => {
+    const scrollPosition = window.scrollY;
+    saveState(sortBy, searchTerm, scrollPosition);
+  }, [sortBy, searchTerm]);
+
+  // Salvar posição do scroll periodicamente
+  useEffect(() => {
+    const handleScroll = () => {
+      saveState(sortBy, searchTerm, window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [sortBy, searchTerm]);
+
+  // Restaurar posição do scroll após carregar
+  useEffect(() => {
+    if (!isLoading && !hasRestoredScroll.current && savedState.scrollPosition > 0) {
+      setTimeout(() => {
+        window.scrollTo(0, savedState.scrollPosition);
+        hasRestoredScroll.current = true;
+      }, 100);
+    }
+  }, [isLoading]);
 
   // Buscar contagem de vídeos por cliente diretamente da tabela video_permissions
-  const { data: videoCountsByClient = {}, isLoading: isLoadingVideoCounts } = useQuery({
+  const { data: videoCountsByClient = {}, isLoading: isLoadingVideoCounts, refetch: refetchCounts } = useQuery({
     queryKey: ['video-counts-by-client'],
     queryFn: async () => {
       console.log('📊 VideoList - Buscando contagem de vídeos por cliente...');
       
+      // Buscar todas as permissões de vídeo agrupadas por client_id
       const { data, error } = await supabase
         .from('video_permissions')
-        .select('client_id')
-        .order('client_id');
+        .select('client_id, video_id');
 
       if (error) {
         console.error('❌ Erro ao buscar contagem de vídeos:', error);
         throw error;
       }
 
-      // Contar vídeos por cliente
+      // Contar vídeos únicos por cliente
       const counts: Record<string, number> = {};
       data?.forEach(permission => {
         counts[permission.client_id] = (counts[permission.client_id] || 0) + 1;
       });
 
       console.log('✅ VideoList - Contagem de vídeos por cliente:', counts);
+      console.log('✅ VideoList - Total de permissões:', data?.length);
       return counts;
     },
-    staleTime: 2 * 60 * 1000, // 2 minutos
-    gcTime: 5 * 60 * 1000 // 5 minutos
+    staleTime: 30 * 1000, // 30 segundos para atualizar mais frequentemente
+    gcTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnMount: true // Sempre refetch ao montar
   });
+
+  // Handler para selecionar cliente salvando a posição do scroll
+  const handleClientSelect = (clientId: string, clientName: string, clientLogoUrl?: string) => {
+    saveState(sortBy, searchTerm, window.scrollY);
+    onClientSelect(clientId, clientName, clientLogoUrl);
+  };
 
   console.log('📋 VideoList - Todos os clientes:', clients.length);
   console.log('📋 VideoList - Contagens carregadas:', Object.keys(videoCountsByClient).length);
@@ -245,7 +303,7 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
               key={client.id}
               client={client}
               videoCount={videoCount}
-              onClientSelect={onClientSelect}
+              onClientSelect={handleClientSelect}
             />
           ))}
         </div>
