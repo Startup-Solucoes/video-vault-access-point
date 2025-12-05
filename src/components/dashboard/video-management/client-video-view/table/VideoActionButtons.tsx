@@ -31,7 +31,7 @@ export const VideoActionButtons = ({
         variant="outline" 
         size="sm"
         onClick={() => onEditVideo(videoId)}
-        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30"
       >
         <Edit className="h-4 w-4" />
       </Button>
@@ -40,7 +40,7 @@ export const VideoActionButtons = ({
         variant="outline" 
         size="sm"
         onClick={() => window.open(videoUrl, '_blank')}
-        className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+        className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
       >
         <Eye className="h-4 w-4" />
       </Button>
