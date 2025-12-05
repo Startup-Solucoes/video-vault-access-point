@@ -91,7 +91,8 @@ export const ClientCard = ({ client, videoCount, onClientSelect }: ClientCardPro
                 </TooltipTrigger>
                 <TooltipContent 
                   side="bottom" 
-                  className="bg-popover text-popover-foreground border shadow-lg p-3 max-w-xs"
+                  sideOffset={8}
+                  className="bg-popover text-popover-foreground border shadow-lg p-3 max-w-xs animate-fade-in data-[state=closed]:animate-fade-out"
                 >
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
