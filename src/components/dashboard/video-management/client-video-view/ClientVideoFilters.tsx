@@ -1,24 +1,25 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X, Tag, CheckSquare, Square, ArrowUpDown } from 'lucide-react';
-import { getCategoryTextColor } from '@/utils/categoryColors';
+import { Search, Filter, X, Tag, CheckSquare, Square, ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { CategoryMultiSelect } from './CategoryMultiSelect';
+import { cn } from '@/lib/utils';
 
 interface ClientVideoFiltersProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
+  selectedCategories: string[];
+  toggleCategory: (category: string) => void;
+  selectAllCategories: () => void;
+  clearCategories: () => void;
   availableCategories: string[];
   videoCategoryCounts: Record<string, number>;
   totalVideos: number;
   filteredVideos: number;
   showFilters: boolean;
   setShowFilters: (show: boolean) => void;
-  // Adicionando props para seleção
   selectedVideos: string[];
   allVideosSelected: boolean;
   onSelectAllVisible: () => void;
@@ -28,8 +29,10 @@ interface ClientVideoFiltersProps {
 export const ClientVideoFilters = ({
   searchTerm,
   setSearchTerm,
-  selectedCategory,
-  setSelectedCategory,
+  selectedCategories,
+  toggleCategory,
+  selectAllCategories,
+  clearCategories,
   availableCategories,
   videoCategoryCounts,
   totalVideos,
@@ -41,20 +44,21 @@ export const ClientVideoFilters = ({
   onSelectAllVisible,
   onShowReorderMode
 }: ClientVideoFiltersProps) => {
-  const hasActiveFilters = searchTerm || selectedCategory;
+  const [showCategoryPanel, setShowCategoryPanel] = useState(true);
+  const hasActiveFilters = searchTerm || selectedCategories.length > 0;
   const hasSelectedVideos = selectedVideos.length > 0;
 
   const clearAllFilters = () => {
     setSearchTerm('');
-    setSelectedCategory('');
+    clearCategories();
   };
 
   return (
     <Card className="border-0 shadow-sm bg-white">
-      <CardContent className="p-4">
-        {/* Linha principal com busca, filtros e controles */}
+      <CardContent className="p-4 space-y-4">
+        {/* Linha principal com busca e controles */}
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
-          {/* Busca - ocupa mais espaço */}
+          {/* Busca */}
           <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
@@ -65,90 +69,92 @@ export const ClientVideoFilters = ({
             />
           </div>
 
-          {/* Filtros e controles lado a lado */}
-          <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 w-full lg:w-auto">
-            {/* Filtro de categoria */}
-            <div className="min-w-0 w-full sm:w-48">
-              <Select value={selectedCategory || 'all'} onValueChange={(value) => setSelectedCategory(value === 'all' ? '' : value)}>
-                <SelectTrigger className="bg-white border-gray-200">
-                  <div className="flex items-center gap-2">
-                    <Tag className="h-4 w-4 text-gray-500" />
-                    <SelectValue placeholder="Categoria" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="bg-white border-gray-200 shadow-lg z-50">
-                  <SelectItem value="all">
-                    <span className="font-medium">Todas ({totalVideos})</span>
-                  </SelectItem>
-                  {availableCategories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      <span className={`font-medium ${getCategoryTextColor(category)}`}>
-                        {category} ({videoCategoryCounts[category] || 0})
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Controles de ação */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onSelectAllVisible}
-                className={`${allVideosSelected ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white'} flex items-center gap-2`}
-              >
-                {allVideosSelected ? (
-                  <CheckSquare className="h-4 w-4" />
-                ) : (
-                  <Square className="h-4 w-4" />
-                )}
-                <span className="hidden sm:inline">
-                  {allVideosSelected ? 'Desmarcar Todos' : 'Selecionar Todos'}
+          {/* Controles de ação */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Toggle do painel de categorias */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCategoryPanel(!showCategoryPanel)}
+              className={cn(
+                "flex items-center gap-2",
+                selectedCategories.length > 0 
+                  ? "bg-blue-50 border-blue-200 text-blue-700" 
+                  : "bg-white"
+              )}
+            >
+              <Tag className="h-4 w-4" />
+              <span className="hidden sm:inline">Categorias</span>
+              {selectedCategories.length > 0 && (
+                <span className="bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem]">
+                  {selectedCategories.length}
                 </span>
-                <span className="sm:hidden">
-                  {allVideosSelected ? 'Desmarcar' : 'Selecionar'}
-                </span>
-              </Button>
+              )}
+              {showCategoryPanel ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </Button>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onShowReorderMode}
-                className="bg-white flex items-center gap-2"
-              >
-                <ArrowUpDown className="h-4 w-4" />
-                <span className="hidden sm:inline">Reordenar</span>
-              </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onSelectAllVisible}
+              className={cn(
+                "flex items-center gap-2",
+                allVideosSelected ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white"
+              )}
+            >
+              {allVideosSelected ? (
+                <CheckSquare className="h-4 w-4" />
+              ) : (
+                <Square className="h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">
+                {allVideosSelected ? 'Desmarcar' : 'Selecionar'}
+              </span>
+            </Button>
 
-              {/* Contador de resultados */}
-              <div className="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border whitespace-nowrap">
-                <span className="font-medium">{filteredVideos}</span> de <span className="font-medium">{totalVideos}</span>
-              </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowReorderMode}
+              className="bg-white flex items-center gap-2"
+            >
+              <ArrowUpDown className="h-4 w-4" />
+              <span className="hidden sm:inline">Reordenar</span>
+            </Button>
+
+            {/* Contador de resultados */}
+            <div className="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border whitespace-nowrap">
+              <span className="font-medium">{filteredVideos}</span> de <span className="font-medium">{totalVideos}</span>
             </div>
           </div>
-
-          {/* Toggle de filtros - apenas mobile */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-            className="lg:hidden bg-white w-full sm:w-auto"
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            {showFilters ? 'Ocultar' : 'Mostrar'} Filtros
-          </Button>
         </div>
+
+        {/* Painel de categorias expansível */}
+        {showCategoryPanel && (
+          <div className="pt-3 border-t border-gray-100">
+            <CategoryMultiSelect
+              availableCategories={availableCategories}
+              selectedCategories={selectedCategories}
+              videoCategoryCounts={videoCategoryCounts}
+              onToggleCategory={toggleCategory}
+              onSelectAll={selectAllCategories}
+              onClearAll={clearCategories}
+            />
+          </div>
+        )}
 
         {/* Área de controles adicionais - aparece quando há seleções ou filtros ativos */}
         {(hasActiveFilters || hasSelectedVideos) && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="pt-3 border-t border-gray-100">
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
               {/* Tags de filtros ativos */}
               {hasActiveFilters && (
                 <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-xs font-medium text-gray-500">Filtros:</span>
+                  <span className="text-xs font-medium text-gray-500">Filtros ativos:</span>
                   {searchTerm && (
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
                       "{searchTerm.length > 15 ? searchTerm.substring(0, 15) + '...' : searchTerm}"
@@ -157,10 +163,20 @@ export const ClientVideoFilters = ({
                       </button>
                     </span>
                   )}
-                  {selectedCategory && (
+                  {selectedCategories.length > 0 && selectedCategories.length <= 3 && (
+                    selectedCategories.map(cat => (
+                      <span key={cat} className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md">
+                        {cat}
+                        <button onClick={() => toggleCategory(cat)} className="hover:bg-green-200 rounded-full p-0.5">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))
+                  )}
+                  {selectedCategories.length > 3 && (
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md">
-                      {selectedCategory}
-                      <button onClick={() => setSelectedCategory('')} className="hover:bg-green-200 rounded-full p-0.5">
+                      {selectedCategories.length} categorias
+                      <button onClick={clearCategories} className="hover:bg-green-200 rounded-full p-0.5">
                         <X className="h-3 w-3" />
                       </button>
                     </span>
