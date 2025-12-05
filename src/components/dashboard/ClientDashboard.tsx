@@ -125,7 +125,7 @@ export const ClientDashboard = ({ sharedVideoId: propSharedVideoId, onVideoOpene
       />
       
       <div className="flex-1 min-h-screen overflow-x-hidden">
-        <main className="p-6 w-full bg-white/70 backdrop-blur-sm min-h-screen overflow-x-hidden rounded-md">
+        <main className="p-6 w-full bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm min-h-screen overflow-x-hidden rounded-md">
           {renderMainContent()}
         </main>
       </div>

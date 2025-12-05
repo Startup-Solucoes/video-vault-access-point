@@ -39,7 +39,7 @@ export const AdminDashboard = () => {
       <div className="flex items-center justify-center py-12">
         <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
-          <span className="text-gray-600">Carregando dashboard...</span>
+          <span className="text-muted-foreground">Carregando dashboard...</span>
         </div>
       </div>
     );
@@ -84,14 +84,14 @@ export const AdminDashboard = () => {
   };
 
   return (
-    <div className={`min-h-screen w-full bg-gradient-to-br from-gray-50 via-white to-blue-50 ${isMobile ? 'pt-16' : ''}`}>
+    <div className={`min-h-screen w-full bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950 ${isMobile ? 'pt-16' : ''}`}>
       <div className="flex h-screen w-full">
         {/* Sidebar */}
         <AdminSidebar currentView={activeTab} onViewChange={setActiveTab} stats={stats} />
 
         {/* Main Content */}
         <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto bg-gray-100">
+          <div className="h-full overflow-y-auto bg-gray-100 dark:bg-gray-900/50">
             <div className="p-4 md:p-6">
               {renderMainContent()}
             </div>

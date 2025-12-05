@@ -19,36 +19,36 @@ export const AdminOverview = ({
   onTabChange
 }: AdminOverviewProps) => {
   const handleNavigateToClients = () => {
-    onTabChange('videos'); // Navega para gerenciamento de vídeos
+    onTabChange('videos');
   };
 
   const handleNavigateToVideos = () => {
-    onTabChange('videos'); // Navega para gerenciamento de vídeos
+    onTabChange('videos');
   };
 
   const handleNavigateToAdvertisements = () => {
-    onTabChange('tools'); // Navega para ferramentas (anúncios)
+    onTabChange('tools');
   };
 
   return (
     <div className="space-y-6">
       {/* Header com ações rápidas */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
               Painel Administrativo
             </h1>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Gerencie vídeos, clientes e visualize estatísticas do sistema
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button onClick={onVideoFormOpen} className="text-white shadow-md bg-gray-700 hover:bg-gray-600">
+            <Button onClick={onVideoFormOpen} className="text-white shadow-md bg-gray-700 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500">
               <Plus className="mr-2 h-4 w-4" />
               Novo Vídeo
             </Button>
-            <Button variant="outline" onClick={onClientFormOpen} className="border-blue-200 text-blue-700 hover:bg-blue-50">
+            <Button variant="outline" onClick={onClientFormOpen} className="border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950">
               <Plus className="mr-2 h-4 w-4" />
               Novo Cliente
             </Button>
