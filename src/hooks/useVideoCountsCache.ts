@@ -7,57 +7,29 @@ const VIDEO_COUNTS_KEY = 'video-counts-by-client';
 export const useVideoCountsCache = () => {
   const queryClient = useQueryClient();
 
-  // Query para buscar contagem de vídeos
+  // Query otimizada usando RPC que faz agregação no banco
   const { data, isLoading, refetch } = useQuery({
     queryKey: [VIDEO_COUNTS_KEY],
     queryFn: async () => {
-      console.log('📊 useVideoCountsCache - Buscando contagem de vídeos...');
+      console.log('📊 useVideoCountsCache - Buscando contagem via RPC...');
       
-      // Buscar TODAS as permissões (Supabase limita a 1000 por padrão)
-      // Usar range para buscar em lotes
-      const allPermissions: { client_id: string }[] = [];
-      let from = 0;
-      const batchSize = 1000;
-      let hasMore = true;
+      const { data: counts, error } = await supabase
+        .rpc('get_video_counts_by_client');
 
-      while (hasMore) {
-        const { data: batch, error: batchError } = await supabase
-          .from('video_permissions')
-          .select('client_id')
-          .range(from, from + batchSize - 1);
-
-        if (batchError) {
-          console.error('❌ Erro ao buscar permissões:', batchError);
-          throw batchError;
-        }
-
-        if (batch && batch.length > 0) {
-          allPermissions.push(...batch);
-          from += batchSize;
-          hasMore = batch.length === batchSize;
-        } else {
-          hasMore = false;
-        }
+      if (error) {
+        console.error('❌ Erro ao buscar contagem de vídeos:', error);
+        throw error;
       }
 
-      const permissions = allPermissions;
-
-      console.log('📊 useVideoCountsCache - Permissões encontradas:', permissions?.length);
-
-      // Contar vídeos por cliente
-      const counts: Record<string, number> = {};
-      permissions?.forEach(permission => {
-        if (permission.client_id) {
-          counts[permission.client_id] = (counts[permission.client_id] || 0) + 1;
-        }
+      // Converter array para objeto { client_id: video_count }
+      const countsMap: Record<string, number> = {};
+      counts?.forEach((row: { client_id: string; video_count: number }) => {
+        countsMap[row.client_id] = row.video_count;
       });
 
-      console.log('✅ useVideoCountsCache - Contagem atualizada:', Object.keys(counts).length, 'clientes');
-      console.log('📊 useVideoCountsCache - Sample counts:', 
-        Object.entries(counts).slice(0, 3).map(([id, count]) => `${id.substring(0, 8)}...: ${count}`)
-      );
+      console.log('✅ useVideoCountsCache - Contagem:', Object.keys(countsMap).length, 'clientes');
       
-      return counts;
+      return countsMap;
     },
     staleTime: 30 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -65,50 +37,29 @@ export const useVideoCountsCache = () => {
     refetchOnWindowFocus: true
   });
 
-  // Memoize the video counts object
-  const videoCountsByClient = useMemo(() => {
-    console.log('📊 videoCountsByClient memo - data:', data ? Object.keys(data).length : 0, 'clientes');
-    return data || {};
-  }, [data]);
+  const videoCountsByClient = useMemo(() => data || {}, [data]);
 
-  // Função para invalidar o cache manualmente
   const invalidateVideoCountsCache = useCallback(() => {
     console.log('🔄 Invalidando cache de contagem de vídeos...');
     queryClient.invalidateQueries({ queryKey: [VIDEO_COUNTS_KEY] });
   }, [queryClient]);
 
-  // Configurar listener de Realtime para mudanças em video_permissions
+  // Listener Realtime
   useEffect(() => {
-    console.log('🔌 Configurando listener realtime para video_permissions...');
-    
     const channel = supabase
       .channel('video-counts-changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'video_permissions'
-        },
-        (payload) => {
-          console.log('📡 Mudança detectada em video_permissions:', payload.eventType);
-          invalidateVideoCountsCache();
-        }
+        { event: '*', schema: 'public', table: 'video_permissions' },
+        () => invalidateVideoCountsCache()
       )
-      .subscribe((status) => {
-        console.log('📡 Status do canal realtime:', status);
-      });
+      .subscribe();
 
-    return () => {
-      console.log('🔌 Removendo listener realtime de video_permissions...');
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [invalidateVideoCountsCache]);
 
-  // Função auxiliar para obter contagem - usando useMemo para estabilizar
   const getClientVideoCount = useCallback((clientId: string): number => {
-    const count = videoCountsByClient[clientId] || 0;
-    return count;
+    return videoCountsByClient[clientId] || 0;
   }, [videoCountsByClient]);
 
   return {
