@@ -51,10 +51,27 @@ export const ClientVideoMainView = ({
   const [isEditClientDialogOpen, setIsEditClientDialogOpen] = useState(false);
   const [currentClientName, setCurrentClientName] = useState(initialClientName);
   const [currentClientLogoUrl, setCurrentClientLogoUrl] = useState(initialClientLogoUrl);
+  
+  // Estados de filtro
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
   const handleClientUpdated = (newName: string, newLogoUrl?: string) => {
     setCurrentClientName(newName);
     setCurrentClientLogoUrl(newLogoUrl);
+  };
+
+  // Handler para mudança de categoria (reseta para página 1)
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    onPageChange(1);
+  };
+
+  // Handler para mudança de busca (reseta para página 1)
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term);
+    onPageChange(1);
   };
 
   // Calcular contagem de vídeos por categoria
@@ -66,6 +83,25 @@ export const ClientVideoMainView = ({
     });
     return counts;
   }, [videos]);
+
+  // Filtrar vídeos por categoria e termo de busca
+  const filteredVideos = useMemo(() => {
+    return videos.filter(video => {
+      const matchesCategory = !selectedCategory || video.category === selectedCategory;
+      const matchesSearch = !searchTerm.trim() || 
+        video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        video.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [videos, selectedCategory, searchTerm]);
+
+  // Paginar os vídeos filtrados
+  const filteredPaginatedVideos = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredVideos.slice(start, start + itemsPerPage);
+  }, [filteredVideos, currentPage, itemsPerPage]);
+
+  const filteredTotalPages = Math.ceil(filteredVideos.length / itemsPerPage);
 
   return (
     <div className="space-y-6">
@@ -84,16 +120,16 @@ export const ClientVideoMainView = ({
       />
 
       <ClientVideoFilters
-        searchTerm=""
-        setSearchTerm={() => {}}
-        selectedCategory=""
-        setSelectedCategory={() => {}}
+        searchTerm={searchTerm}
+        setSearchTerm={handleSearchChange}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={handleCategoryChange}
         availableCategories={categories}
         videoCategoryCounts={videoCategoryCounts}
         totalVideos={videos.length}
-        filteredVideos={videos.length}
-        showFilters={false}
-        setShowFilters={() => {}}
+        filteredVideos={filteredVideos.length}
+        showFilters={showFilters}
+        setShowFilters={setShowFilters}
         selectedVideos={selectedVideos}
         allVideosSelected={allVisibleVideosSelected}
         onSelectAllVisible={onSelectAllVisible}
@@ -101,9 +137,9 @@ export const ClientVideoMainView = ({
       />
 
       <ClientVideoContent
-        videos={videos}
-        paginatedVideos={paginatedVideos}
-        totalPages={totalPages}
+        videos={filteredVideos}
+        paginatedVideos={filteredPaginatedVideos}
+        totalPages={filteredTotalPages}
         selectedVideos={selectedVideos}
         allVisibleVideosSelected={allVisibleVideosSelected}
         currentPage={currentPage}
