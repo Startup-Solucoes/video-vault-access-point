@@ -1,13 +1,11 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useClientData } from '@/hooks/useClientData';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useVideoCountsCache } from '@/hooks/useVideoCountsCache';
 import { ClientCard } from './ClientCard';
 import { SearchBar } from './SearchBar';
 import { Video, Search, ArrowUpDown, Users, Calendar, Hash } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 
 interface VideoListProps {
   onClientSelect: (clientId: string, clientName: string, clientLogoUrl?: string) => void;
@@ -70,36 +68,8 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
     }
   }, [isLoading]);
 
-  // Buscar contagem de vídeos por cliente diretamente da tabela video_permissions
-  const { data: videoCountsByClient = {}, isLoading: isLoadingVideoCounts, refetch: refetchCounts } = useQuery({
-    queryKey: ['video-counts-by-client'],
-    queryFn: async () => {
-      console.log('📊 VideoList - Buscando contagem de vídeos por cliente...');
-      
-      // Buscar todas as permissões de vídeo agrupadas por client_id
-      const { data, error } = await supabase
-        .from('video_permissions')
-        .select('client_id, video_id');
-
-      if (error) {
-        console.error('❌ Erro ao buscar contagem de vídeos:', error);
-        throw error;
-      }
-
-      // Contar vídeos únicos por cliente
-      const counts: Record<string, number> = {};
-      data?.forEach(permission => {
-        counts[permission.client_id] = (counts[permission.client_id] || 0) + 1;
-      });
-
-      console.log('✅ VideoList - Contagem de vídeos por cliente:', counts);
-      console.log('✅ VideoList - Total de permissões:', data?.length);
-      return counts;
-    },
-    staleTime: 30 * 1000, // 30 segundos para atualizar mais frequentemente
-    gcTime: 5 * 60 * 1000, // 5 minutos
-    refetchOnMount: true // Sempre refetch ao montar
-  });
+  // Usar hook com cache e realtime para contagem de vídeos
+  const { videoCountsByClient, isLoading: isLoadingVideoCounts, getClientVideoCount } = useVideoCountsCache();
 
   // Handler para selecionar cliente salvando a posição do scroll
   const handleClientSelect = (clientId: string, clientName: string, clientLogoUrl?: string) => {
@@ -109,12 +79,6 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
 
   console.log('📋 VideoList - Todos os clientes:', clients.length);
   console.log('📋 VideoList - Contagens carregadas:', Object.keys(videoCountsByClient).length);
-
-  const getClientVideoCount = (clientId: string) => {
-    const count = videoCountsByClient[clientId] || 0;
-    console.log(`📊 VideoList - Cliente ${clientId}: ${count} vídeos`);
-    return count;
-  };
 
   // Mostrar APENAS clientes (role = 'client') - não incluir admins
   const getClientsWithVideoCount = () => {
