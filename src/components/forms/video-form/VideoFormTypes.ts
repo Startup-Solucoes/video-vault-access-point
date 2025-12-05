@@ -28,7 +28,8 @@ export const categories = [
   'Estoques',
   'Contatos',
   'Logística',
-  'Frente de caixa'
+  'Frente de caixa',
+  'Reuniões'
 ];
 
 export const platforms = [
