@@ -41,7 +41,7 @@ export const ClientVideoHeader = ({
   const hasSelectedVideos = selectedVideos.length > 0;
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card className="border-0 shadow-sm bg-card">
       <CardHeader className="pb-4">
         {/* Cabeçalho do cliente */}
         <div className="flex items-center justify-between">
@@ -50,18 +50,18 @@ export const ClientVideoHeader = ({
               <img
                 src={clientLogoUrl}
                 alt={`Logo ${clientName}`}
-                className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                className="w-12 h-12 rounded-lg object-cover border border-border"
               />
             )}
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold text-gray-900">{clientName}</h1>
+                <h1 className="text-2xl font-bold text-foreground">{clientName}</h1>
                 {onEditClientInfo && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={onEditClientInfo}
-                    className="text-gray-500 hover:text-gray-700 p-1"
+                    className="text-muted-foreground hover:text-foreground p-1"
                     title="Editar informações do cliente"
                   >
                     <Edit2 className="h-4 w-4" />
@@ -69,7 +69,7 @@ export const ClientVideoHeader = ({
                 )}
               </div>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
                   <Video className="h-3 w-3 mr-1" />
                   {videosCount} vídeos
                 </Badge>
@@ -82,13 +82,13 @@ export const ClientVideoHeader = ({
             <Button
               variant="outline"
               onClick={onToggleUsersManager}
-              className={showUsersManager ? 'bg-blue-50 border-blue-200 text-blue-700' : ''}
+              className={showUsersManager ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300' : ''}
             >
               <Users className="h-4 w-4 mr-2" />
               Gerenciar Usuários
             </Button>
             
-            <Button onClick={onAddVideo} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={onAddVideo} className="bg-blue-600 hover:bg-blue-700 text-white">
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Vídeo
             </Button>
@@ -99,12 +99,12 @@ export const ClientVideoHeader = ({
       {/* Ações em lote - aparece apenas quando há vídeos selecionados */}
       {hasSelectedVideos && (
         <CardContent className="pt-0">
-          <div className="flex items-center justify-between bg-blue-50 rounded-lg p-3 border border-blue-200">
+          <div className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
             <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+              <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100">
                 {selectedVideos.length} selecionado{selectedVideos.length > 1 ? 's' : ''}
               </Badge>
-              <span className="text-sm text-gray-600">Escolha uma ação:</span>
+              <span className="text-sm text-muted-foreground">Escolha uma ação:</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -112,7 +112,7 @@ export const ClientVideoHeader = ({
                 variant="outline"
                 size="sm"
                 onClick={onAssignToClients}
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30"
               >
                 <UserPlus className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">
@@ -127,7 +127,7 @@ export const ClientVideoHeader = ({
                 variant="outline"
                 size="sm"
                 onClick={onBulkDelete}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">

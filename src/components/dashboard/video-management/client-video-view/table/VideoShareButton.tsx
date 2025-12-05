@@ -30,7 +30,7 @@ export const VideoShareButton = ({ videoId }: VideoShareButtonProps) => {
       variant="outline" 
       size="sm"
       onClick={() => handleShareVideo(videoId)}
-      className="text-green-600 hover:text-green-700 hover:bg-green-50"
+      className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30"
       title="Copiar link de compartilhamento"
     >
       {copiedVideoId === videoId ? (

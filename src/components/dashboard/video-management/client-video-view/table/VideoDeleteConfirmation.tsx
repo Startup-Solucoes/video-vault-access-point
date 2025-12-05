@@ -35,7 +35,7 @@ export const VideoDeleteConfirmation = ({
           variant="outline" 
           size="sm"
           disabled={deletingVideoId === videoId}
-          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+          className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30"
         >
           <Trash2 className="h-4 w-4" />
         </Button>

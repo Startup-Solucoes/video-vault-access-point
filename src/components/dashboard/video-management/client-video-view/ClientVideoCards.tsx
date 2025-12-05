@@ -90,7 +90,7 @@ export const ClientVideoCards = ({
                     variant="outline" 
                     size="sm"
                     onClick={() => handleShareVideo(video.id)}
-                    className="text-green-600 hover:text-green-700 hover:bg-green-50 p-1.5 md:p-2 h-auto"
+                    className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30 p-1.5 md:p-2 h-auto"
                     title="Copiar link de compartilhamento"
                   >
                     {copiedVideoId === video.id ? (
@@ -104,7 +104,7 @@ export const ClientVideoCards = ({
                     variant="outline" 
                     size="sm"
                     onClick={() => onEditVideo(video.id)}
-                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-1.5 md:p-2 h-auto"
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1.5 md:p-2 h-auto"
                   >
                     <Edit className="h-3 w-3 md:h-4 md:w-4" />
                   </Button>
@@ -115,7 +115,7 @@ export const ClientVideoCards = ({
                         variant="outline" 
                         size="sm"
                         disabled={deletingVideoId === video.id}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1.5 md:p-2 h-auto"
+                        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 md:p-2 h-auto"
                       >
                         <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                       </Button>
@@ -145,9 +145,9 @@ export const ClientVideoCards = ({
 
               {/* Title and description */}
               <div>
-                <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 text-sm md:text-base">{video.title}</h3>
+                <h3 className="font-medium text-foreground mb-2 line-clamp-2 text-sm md:text-base">{video.title}</h3>
                 {video.description && (
-                  <p className="text-xs md:text-sm text-gray-500 line-clamp-3 mb-3">
+                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-3 mb-3">
                     {video.description}
                   </p>
                 )}
@@ -155,35 +155,35 @@ export const ClientVideoCards = ({
 
               {/* Category */}
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs md:text-sm font-medium text-gray-700 flex-shrink-0">Categoria:</span>
+                <span className="text-xs md:text-sm font-medium text-muted-foreground flex-shrink-0">Categoria:</span>
                 {video.category ? (
                   <Badge className={`text-xs font-semibold border-0 ${getCategoryColor(video.category)}`}>
                     {video.category}
                   </Badge>
                 ) : (
-                  <span className="text-gray-400 text-xs md:text-sm">Sem categoria</span>
+                  <span className="text-muted-foreground text-xs md:text-sm">Sem categoria</span>
                 )}
               </div>
 
               {/* Creation date only */}
-              <div className="flex items-start text-gray-600 gap-2 text-xs md:text-sm">
+              <div className="flex items-start text-muted-foreground gap-2 text-xs md:text-sm">
                 <Calendar className="h-3 w-3 md:h-4 md:w-4 mt-0.5 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <div className="font-medium">Criado em:</div>
+                  <div className="font-medium text-foreground">Criado em:</div>
                   <div className="break-words">{formatDate(video.created_at)}</div>
                 </div>
               </div>
 
               {/* Visualizations and View button */}
-              <div className="flex items-center justify-between pt-3 border-t gap-3">
-                <div className="flex items-center text-xs md:text-sm text-gray-600 min-w-0 flex-1">
+              <div className="flex items-center justify-between pt-3 border-t border-border gap-3">
+                <div className="flex items-center text-xs md:text-sm text-muted-foreground min-w-0 flex-1">
                   <Eye className="h-3 w-3 md:h-4 md:w-4 mr-1 flex-shrink-0" />
                   <span className="truncate">0 visualizações</span>
                 </div>
                 <Button 
                   variant="outline" 
                   size="sm"
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 h-auto flex-shrink-0"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 h-auto flex-shrink-0"
                   onClick={() => window.open(video.video_url, '_blank')}
                 >
                   <Eye className="h-3 w-3 mr-1" />
