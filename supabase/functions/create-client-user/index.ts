@@ -7,6 +7,35 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Função para verificar se o usuário é admin
+async function verifyAdmin(supabaseAdmin: any, authHeader: string | null): Promise<{ isAdmin: boolean; userId: string | null; error?: string }> {
+  if (!authHeader) {
+    return { isAdmin: false, userId: null, error: 'Token de autorização não fornecido' };
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  
+  const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+  
+  if (userError || !user) {
+    console.error('Erro ao verificar usuário:', userError);
+    return { isAdmin: false, userId: null, error: 'Token inválido ou expirado' };
+  }
+
+  const { data: profile, error: profileError } = await supabaseAdmin
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile) {
+    console.error('Erro ao buscar perfil:', profileError);
+    return { isAdmin: false, userId: user.id, error: 'Perfil não encontrado' };
+  }
+
+  return { isAdmin: profile.role === 'admin', userId: user.id };
+}
+
 // Generate a strong password with requirements
 const generatePassword = (): string => {
   const lowercase = 'abcdefghijklmnopqrstuvwxyz';
@@ -16,46 +45,55 @@ const generatePassword = (): string => {
   
   const length = 14;
   
-  // Ensure at least one character from each type
   let password = '';
   password += lowercase[Math.floor(Math.random() * lowercase.length)];
   password += uppercase[Math.floor(Math.random() * uppercase.length)];
   password += numbers[Math.floor(Math.random() * numbers.length)];
   password += specialChars[Math.floor(Math.random() * specialChars.length)];
   
-  // Fill the rest of the password
   const allChars = lowercase + uppercase + numbers + specialChars;
   for (let i = password.length; i < length; i++) {
     password += allChars[Math.floor(Math.random() * allChars.length)];
   }
   
-  // Shuffle the password
   return password.split('').sort(() => Math.random() - 0.5).join('');
 };
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Create admin client with service role
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       { auth: { persistSession: false } }
     )
 
+    // VERIFICAÇÃO DE ADMIN
+    const authHeader = req.headers.get('Authorization');
+    const { isAdmin, userId, error: authError } = await verifyAdmin(supabaseAdmin, authHeader);
+    
+    if (!isAdmin) {
+      console.error('🚫 Acesso negado - usuário não é admin:', userId);
+      return new Response(
+        JSON.stringify({ error: authError || 'Acesso negado. Apenas administradores podem criar usuários.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log('✅ Admin verificado:', userId);
+
     const requestBody = await req.json()
     console.log('📥 Dados recebidos:', requestBody)
 
     const { client_id, user_email, admin_id } = requestBody
 
-    if (!client_id || !user_email || !admin_id) {
-      console.error('❌ Campos obrigatórios faltando:', { client_id, user_email, admin_id })
+    if (!client_id || !user_email) {
+      console.error('❌ Campos obrigatórios faltando:', { client_id, user_email })
       return new Response(
-        JSON.stringify({ error: 'Campos obrigatórios: client_id, user_email e admin_id' }),
+        JSON.stringify({ error: 'Campos obrigatórios: client_id e user_email' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -63,22 +101,21 @@ serve(async (req) => {
     const email = user_email.toLowerCase().trim()
     const password = generatePassword()
 
-    console.log('👤 Criando usuário:', { email, client_id, admin_id })
+    console.log('👤 Criando usuário:', { email, client_id })
 
-    // Create the user in Supabase Auth WITHOUT sending confirmation email
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email: email,
       password: password,
-      email_confirm: true, // Confirma o email automaticamente
+      email_confirm: true,
       user_metadata: {
         role: 'client'
       }
     })
 
-    if (authError) {
-      console.error('❌ Erro de autenticação:', authError)
+    if (createError) {
+      console.error('❌ Erro de autenticação:', createError)
       
-      if (authError.message.includes('already registered')) {
+      if (createError.message.includes('already registered')) {
         return new Response(
           JSON.stringify({ error: 'Este e-mail já está registrado no sistema' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -86,7 +123,7 @@ serve(async (req) => {
       }
       
       return new Response(
-        JSON.stringify({ error: authError.message }),
+        JSON.stringify({ error: createError.message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -101,19 +138,17 @@ serve(async (req) => {
 
     console.log('✅ Usuário criado no Auth:', authData.user.id)
 
-    // Add to client_users table
     const { error: clientUserError } = await supabaseAdmin
       .from('client_users')
       .insert({
         client_id: client_id,
         user_email: email,
-        created_by: admin_id
+        created_by: admin_id || userId
       })
 
     if (clientUserError) {
       console.error('❌ Erro ao inserir client_users:', clientUserError)
       
-      // If adding to client_users fails, clean up the auth user
       if (authData.user) {
         await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
         console.log('🧹 Usuário removido do Auth devido ao erro')
@@ -132,8 +167,26 @@ serve(async (req) => {
       )
     }
 
+    // Log security event
+    try {
+      const userAgent = req.headers.get('user-agent') || 'Unknown';
+      const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'Unknown';
+      
+      await supabaseAdmin.rpc('log_security_event', {
+        p_action: 'client_user_created',
+        p_details: { 
+          client_id, 
+          user_email: email, 
+          created_by_admin: userId 
+        },
+        p_ip_address: clientIP,
+        p_user_agent: userAgent
+      });
+    } catch (logError) {
+      console.error('Erro ao registrar evento de segurança:', logError);
+    }
+
     console.log('✅ Usuário adicionado à tabela client_users')
-    console.log('📧 Email de confirmação NÃO enviado - conforme solicitado')
 
     return new Response(
       JSON.stringify({
@@ -143,7 +196,6 @@ serve(async (req) => {
           id: authData.user.id,
           email: authData.user.email
         },
-        // ⚠️ SECURITY: Retornar senha em texto plano apenas temporariamente
         // TODO: Implementar método mais seguro (ex: email ou token temporário)
         password: password
       }),
