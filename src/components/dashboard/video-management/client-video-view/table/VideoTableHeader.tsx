@@ -19,9 +19,8 @@ export const VideoTableHeader = ({ allSelected, onSelectAllVisible }: VideoTable
         </TableHead>
         <TableHead className="w-16">#</TableHead>
         <TableHead className="min-w-[250px]">Título</TableHead>
-        <TableHead className="w-32">Categoria</TableHead>
+        <TableHead className="w-40">Categoria</TableHead>
         <TableHead className="w-44">Data de Criação</TableHead>
-        <TableHead className="w-28">Visualizações</TableHead>
         <TableHead className="w-40">Ações</TableHead>
       </TableRow>
     </TableHeader>
