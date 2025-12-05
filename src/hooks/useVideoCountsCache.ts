@@ -13,14 +13,34 @@ export const useVideoCountsCache = () => {
     queryFn: async () => {
       console.log('📊 useVideoCountsCache - Buscando contagem de vídeos...');
       
-      const { data: permissions, error } = await supabase
-        .from('video_permissions')
-        .select('client_id');
+      // Buscar TODAS as permissões (Supabase limita a 1000 por padrão)
+      // Usar range para buscar em lotes
+      const allPermissions: { client_id: string }[] = [];
+      let from = 0;
+      const batchSize = 1000;
+      let hasMore = true;
 
-      if (error) {
-        console.error('❌ Erro ao buscar contagem de vídeos:', error);
-        throw error;
+      while (hasMore) {
+        const { data: batch, error: batchError } = await supabase
+          .from('video_permissions')
+          .select('client_id')
+          .range(from, from + batchSize - 1);
+
+        if (batchError) {
+          console.error('❌ Erro ao buscar permissões:', batchError);
+          throw batchError;
+        }
+
+        if (batch && batch.length > 0) {
+          allPermissions.push(...batch);
+          from += batchSize;
+          hasMore = batch.length === batchSize;
+        } else {
+          hasMore = false;
+        }
       }
+
+      const permissions = allPermissions;
 
       console.log('📊 useVideoCountsCache - Permissões encontradas:', permissions?.length);
 
