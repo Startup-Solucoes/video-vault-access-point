@@ -12,6 +12,7 @@ interface ClientVideoFiltersProps {
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
   availableCategories: string[];
+  videoCategoryCounts: Record<string, number>;
   totalVideos: number;
   filteredVideos: number;
   showFilters: boolean;
@@ -29,6 +30,7 @@ export const ClientVideoFilters = ({
   selectedCategory,
   setSelectedCategory,
   availableCategories,
+  videoCategoryCounts,
   totalVideos,
   filteredVideos,
   showFilters,
@@ -79,7 +81,7 @@ export const ClientVideoFilters = ({
                   </SelectItem>
                   {availableCategories.map((category) => (
                     <SelectItem key={category} value={category}>
-                      <span className="font-medium">{category}</span>
+                      <span className="font-medium">{category} ({videoCategoryCounts[category] || 0})</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
