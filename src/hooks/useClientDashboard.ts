@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useClientVideos } from '@/hooks/useClientVideos';
 import { useClientAdvertisements } from '@/hooks/useClientAdvertisements';
@@ -11,7 +11,7 @@ export const useClientDashboard = () => {
   const { advertisements } = useClientAdvertisements(profile?.id || '');
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedPlatform, setSelectedPlatform] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
 
@@ -24,7 +24,7 @@ export const useClientDashboard = () => {
     }));
   }, [rawVideos]);
 
-  // Filter videos based on search, category and platform
+  // Filter videos based on search, categories and platform
   const filteredVideos = useMemo(() => {
     let filtered = videos;
 
@@ -35,8 +35,9 @@ export const useClientDashboard = () => {
       );
     }
 
-    if (selectedCategory) {
-      filtered = filtered.filter(video => video.category === selectedCategory);
+    // Filtro de múltiplas categorias
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(video => selectedCategories.includes(video.category));
     }
 
     if (selectedPlatform) {
@@ -44,7 +45,7 @@ export const useClientDashboard = () => {
     }
 
     return filtered;
-  }, [videos, searchTerm, selectedCategory, selectedPlatform]);
+  }, [videos, searchTerm, selectedCategories, selectedPlatform]);
 
   // Get available categories from client videos
   const availableCategories = useMemo(() => {
@@ -52,15 +53,46 @@ export const useClientDashboard = () => {
     return [...new Set(videoCategories)].sort();
   }, [videos]);
 
+  // Contagem de vídeos por categoria
+  const videoCategoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    videos.forEach(video => {
+      if (video.category) {
+        counts[video.category] = (counts[video.category] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [videos]);
+
+  // Toggle de categoria individual
+  const toggleCategory = useCallback((category: string) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(category)) {
+        return prev.filter(c => c !== category);
+      }
+      return [...prev, category];
+    });
+  }, []);
+
+  // Selecionar todas as categorias
+  const selectAllCategories = useCallback(() => {
+    setSelectedCategories(availableCategories);
+  }, [availableCategories]);
+
+  // Limpar categorias
+  const clearCategories = useCallback(() => {
+    setSelectedCategories([]);
+  }, []);
+
   // Clear all filters
   const clearAllFilters = () => {
     setSearchTerm('');
-    setSelectedCategory('');
+    setSelectedCategories([]);
     setSelectedPlatform('');
   };
 
-  // Check if there are active filters - ensure this returns a boolean
-  const hasActiveFilters = Boolean(searchTerm || selectedCategory || selectedPlatform);
+  // Check if there are active filters
+  const hasActiveFilters = Boolean(searchTerm || selectedCategories.length > 0 || selectedPlatform);
 
   return {
     profile,
@@ -70,13 +102,16 @@ export const useClientDashboard = () => {
     isLoading,
     searchTerm,
     setSearchTerm,
-    selectedCategory,
-    setSelectedCategory,
+    selectedCategories,
+    toggleCategory,
+    selectAllCategories,
+    clearCategories,
     selectedPlatform,
     setSelectedPlatform,
     showFilters,
     setShowFilters,
     availableCategories,
+    videoCategoryCounts,
     clearAllFilters,
     hasActiveFilters
   };

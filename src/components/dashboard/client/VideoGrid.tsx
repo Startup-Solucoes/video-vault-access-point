@@ -8,10 +8,10 @@ interface VideoGridProps {
   videos: ClientVideo[];
   isLoading: boolean;
   searchTerm: string;
-  selectedCategory: string;
+  selectedCategories: string[];
 }
 
-export const VideoGrid = ({ videos, isLoading, searchTerm, selectedCategory }: VideoGridProps) => {
+export const VideoGrid = ({ videos, isLoading, searchTerm, selectedCategories }: VideoGridProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -24,7 +24,7 @@ export const VideoGrid = ({ videos, isLoading, searchTerm, selectedCategory }: V
   }
 
   if (videos.length === 0) {
-    const isFiltered = searchTerm || selectedCategory;
+    const isFiltered = searchTerm || selectedCategories.length > 0;
     
     return (
       <div className="text-center py-16">

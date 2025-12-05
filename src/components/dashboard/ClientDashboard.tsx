@@ -28,13 +28,16 @@ export const ClientDashboard = ({ sharedVideoId: propSharedVideoId, onVideoOpene
     isLoading,
     searchTerm,
     setSearchTerm,
-    selectedCategory,
-    setSelectedCategory,
+    selectedCategories,
+    toggleCategory,
+    selectAllCategories,
+    clearCategories,
     selectedPlatform,
     setSelectedPlatform,
     showFilters,
     setShowFilters,
     availableCategories,
+    videoCategoryCounts,
     clearAllFilters,
     hasActiveFilters
   } = useClientDashboard();
@@ -81,13 +84,16 @@ export const ClientDashboard = ({ sharedVideoId: propSharedVideoId, onVideoOpene
             <VideoSearchAndFilters 
               searchTerm={searchTerm} 
               setSearchTerm={setSearchTerm} 
-              selectedCategory={selectedCategory} 
-              setSelectedCategory={setSelectedCategory} 
+              selectedCategories={selectedCategories}
+              toggleCategory={toggleCategory}
+              selectAllCategories={selectAllCategories}
+              clearCategories={clearCategories}
               selectedPlatform={selectedPlatform} 
               setSelectedPlatform={setSelectedPlatform} 
               showFilters={showFilters} 
               setShowFilters={setShowFilters} 
-              availableCategories={availableCategories} 
+              availableCategories={availableCategories}
+              videoCategoryCounts={videoCategoryCounts}
               videos={videos} 
               filteredVideos={filteredVideos} 
               hasActiveFilters={hasActiveFilters} 
@@ -97,7 +103,7 @@ export const ClientDashboard = ({ sharedVideoId: propSharedVideoId, onVideoOpene
               videos={filteredVideos} 
               isLoading={isLoading} 
               searchTerm={searchTerm} 
-              selectedCategory={selectedCategory} 
+              selectedCategories={selectedCategories} 
             />
           </div>
         );
