@@ -51,8 +51,8 @@ export const ClientCard = ({ client, videoCount, onClientSelect }: ClientCardPro
                 onError={() => setImageError(true)}
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center border-2 border-blue-200">
-                <User className="h-10 w-10 text-blue-600" />
+              <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-xl flex items-center justify-center border-2 border-blue-200 dark:border-blue-700">
+                <User className="h-10 w-10 text-blue-600 dark:text-blue-400" />
               </div>
             )}
           </div>
@@ -67,7 +67,7 @@ export const ClientCard = ({ client, videoCount, onClientSelect }: ClientCardPro
           {/* Badge de Vídeos */}
           <Badge 
             variant="secondary" 
-            className="flex items-center space-x-1 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+            className="flex items-center space-x-1 bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
           >
             <Video className="h-3 w-3" />
             <span>{videoCount} vídeo{videoCount !== 1 ? 's' : ''}</span>
