@@ -10,13 +10,16 @@ import { ClientVideo } from '@/types/clientVideo';
 interface VideoSearchAndFiltersProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
+  selectedCategories: string[];
+  toggleCategory: (category: string) => void;
+  selectAllCategories: () => void;
+  clearCategories: () => void;
   selectedPlatform: string;
   setSelectedPlatform: (platform: string) => void;
   showFilters: boolean;
   setShowFilters: (show: boolean) => void;
   availableCategories: string[];
+  videoCategoryCounts: Record<string, number>;
   videos: ClientVideo[];
   filteredVideos: ClientVideo[];
   hasActiveFilters: boolean;
@@ -26,13 +29,16 @@ interface VideoSearchAndFiltersProps {
 export const VideoSearchAndFilters = ({
   searchTerm,
   setSearchTerm,
-  selectedCategory,
-  setSelectedCategory,
+  selectedCategories,
+  toggleCategory,
+  selectAllCategories,
+  clearCategories,
   selectedPlatform,
   setSelectedPlatform,
   showFilters,
   setShowFilters,
   availableCategories,
+  videoCategoryCounts,
   videos,
   filteredVideos,
   hasActiveFilters,
@@ -95,10 +101,12 @@ export const VideoSearchAndFilters = ({
             {/* Filtro de categorias */}
             <div className="flex-1 min-w-0">
               <CategoryFilter
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
+                selectedCategories={selectedCategories}
+                toggleCategory={toggleCategory}
+                selectAllCategories={selectAllCategories}
+                clearCategories={clearCategories}
                 availableCategories={availableCategories}
-                videos={videos}
+                videoCategoryCounts={videoCategoryCounts}
               />
             </div>
 
@@ -137,10 +145,10 @@ export const VideoSearchAndFilters = ({
                 </button>
               </span>
             )}
-            {selectedCategory && (
+            {selectedCategories.length > 0 && (
               <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md">
-                Categoria: {selectedCategory}
-                <button onClick={() => setSelectedCategory('')} className="hover:bg-green-200 rounded-full p-0.5">
+                Categorias: {selectedCategories.length} selecionada{selectedCategories.length > 1 ? 's' : ''}
+                <button onClick={clearCategories} className="hover:bg-green-200 rounded-full p-0.5">
                   <X className="h-3 w-3" />
                 </button>
               </span>
