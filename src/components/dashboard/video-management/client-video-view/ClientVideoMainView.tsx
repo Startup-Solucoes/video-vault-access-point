@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ClientVideoHeader } from './ClientVideoHeader';
 import { ClientVideoFilters } from './ClientVideoFilters';
 import { ClientVideoContent } from './ClientVideoContent';
 import { ClientVideoModals } from './ClientVideoModals';
 import { ClientInfoAdapter } from './ClientInfoAdapter';
 import { ClientVideoViewProps } from './types';
+import { categories } from '@/components/forms/video-form/VideoFormTypes';
 
 export const ClientVideoMainView = ({
   clientId,
@@ -56,6 +57,16 @@ export const ClientVideoMainView = ({
     setCurrentClientLogoUrl(newLogoUrl);
   };
 
+  // Calcular contagem de vídeos por categoria
+  const videoCategoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    videos.forEach(video => {
+      const category = video.category || 'Sem categoria';
+      counts[category] = (counts[category] || 0) + 1;
+    });
+    return counts;
+  }, [videos]);
+
   return (
     <div className="space-y-6">
       <ClientVideoHeader
@@ -77,7 +88,8 @@ export const ClientVideoMainView = ({
         setSearchTerm={() => {}}
         selectedCategory=""
         setSelectedCategory={() => {}}
-        availableCategories={[]}
+        availableCategories={categories}
+        videoCategoryCounts={videoCategoryCounts}
         totalVideos={videos.length}
         filteredVideos={videos.length}
         showFilters={false}
