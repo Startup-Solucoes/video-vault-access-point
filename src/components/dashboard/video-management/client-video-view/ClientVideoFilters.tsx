@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter, X, Tag, CheckSquare, Square, ArrowUpDown } from 'lucide-react';
+import { getCategoryTextColor } from '@/utils/categoryColors';
 
 interface ClientVideoFiltersProps {
   searchTerm: string;
@@ -81,7 +82,9 @@ export const ClientVideoFilters = ({
                   </SelectItem>
                   {availableCategories.map((category) => (
                     <SelectItem key={category} value={category}>
-                      <span className="font-medium">{category} ({videoCategoryCounts[category] || 0})</span>
+                      <span className={`font-medium ${getCategoryTextColor(category)}`}>
+                        {category} ({videoCategoryCounts[category] || 0})
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
