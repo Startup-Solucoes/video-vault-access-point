@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { ClientVideoHeader } from './ClientVideoHeader';
 import { ClientVideoFilters } from './ClientVideoFilters';
 import { ClientVideoContent } from './ClientVideoContent';
@@ -54,7 +54,7 @@ export const ClientVideoMainView = ({
   
   // Estados de filtro
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
   const handleClientUpdated = (newName: string, newLogoUrl?: string) => {
@@ -62,11 +62,28 @@ export const ClientVideoMainView = ({
     setCurrentClientLogoUrl(newLogoUrl);
   };
 
-  // Handler para mudança de categoria (reseta para página 1)
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
+  // Toggle de categoria individual (reseta para página 1)
+  const toggleCategory = useCallback((category: string) => {
+    setSelectedCategories(prev => {
+      const newCategories = prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category];
+      return newCategories;
+    });
     onPageChange(1);
-  };
+  }, [onPageChange]);
+
+  // Selecionar todas as categorias
+  const selectAllCategories = useCallback(() => {
+    setSelectedCategories([...categories]);
+    onPageChange(1);
+  }, [onPageChange]);
+
+  // Limpar todas as categorias
+  const clearCategories = useCallback(() => {
+    setSelectedCategories([]);
+    onPageChange(1);
+  }, [onPageChange]);
 
   // Handler para mudança de busca (reseta para página 1)
   const handleSearchChange = (term: string) => {
@@ -84,16 +101,18 @@ export const ClientVideoMainView = ({
     return counts;
   }, [videos]);
 
-  // Filtrar vídeos por categoria e termo de busca
+  // Filtrar vídeos por categorias selecionadas e termo de busca
   const filteredVideos = useMemo(() => {
     return videos.filter(video => {
-      const matchesCategory = !selectedCategory || video.category === selectedCategory;
+      // Se nenhuma categoria selecionada, mostra todas
+      const matchesCategory = selectedCategories.length === 0 || 
+        (video.category && selectedCategories.includes(video.category));
       const matchesSearch = !searchTerm.trim() || 
         video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         video.description?.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [videos, selectedCategory, searchTerm]);
+  }, [videos, selectedCategories, searchTerm]);
 
   // Paginar os vídeos filtrados
   const filteredPaginatedVideos = useMemo(() => {
@@ -122,8 +141,10 @@ export const ClientVideoMainView = ({
       <ClientVideoFilters
         searchTerm={searchTerm}
         setSearchTerm={handleSearchChange}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={handleCategoryChange}
+        selectedCategories={selectedCategories}
+        toggleCategory={toggleCategory}
+        selectAllCategories={selectAllCategories}
+        clearCategories={clearCategories}
         availableCategories={categories}
         videoCategoryCounts={videoCategoryCounts}
         totalVideos={videos.length}
