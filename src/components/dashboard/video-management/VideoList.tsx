@@ -164,19 +164,19 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
   return (
     <div className="space-y-6">
       {/* Cabeçalho com estatísticas e controles */}
-      <div className="bg-white rounded-lg border p-6 shadow-sm">
+      <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1">
-            <h3 className="text-xl font-semibold text-gray-900">
+            <h3 className="text-xl font-semibold text-foreground">
               Clientes ({filteredClients.length})
             </h3>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-green-500"></div>
                 <span>{clientsWithVideos.length} com vídeos</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                <div className="w-2 h-2 rounded-full bg-muted-foreground"></div>
                 <span>{clientsWithoutVideos.length} sem vídeos</span>
               </div>
             </div>
@@ -194,15 +194,15 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
             
             {/* Seletor de Ordenação */}
             <div className="flex items-center gap-2 min-w-0">
-              <div className="hidden sm:flex items-center gap-2 text-sm text-gray-600">
+              <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
                 <ArrowUpDown className="h-4 w-4" />
                 <span className="whitespace-nowrap">Ordenar:</span>
               </div>
               <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-                <SelectTrigger className="w-full sm:w-48 bg-white">
+                <SelectTrigger className="w-full sm:w-48 bg-card">
                   <SelectValue placeholder="Escolher ordenação..." />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
+                <SelectContent className="bg-card">
                   <SelectItem value="videos-desc">
                     <div className="flex items-center gap-2">
                       <Hash className="h-4 w-4 text-blue-500" />
@@ -248,12 +248,12 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
 
       {/* Resultados */}
       {filteredClients.length === 0 && searchTerm ? (
-        <div className="text-center py-12 bg-white rounded-lg border">
-          <Search className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <div className="text-center py-12 bg-card rounded-lg border border-border">
+          <Search className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+          <h3 className="text-lg font-medium text-foreground mb-2">
             Nenhum cliente encontrado
           </h3>
-          <p className="text-gray-500">
+          <p className="text-muted-foreground">
             Tente ajustar o termo de busca ou filtros
           </p>
         </div>
