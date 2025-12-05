@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useClientData } from '@/hooks/useClientData';
 import { useVideoCountsCache } from '@/hooks/useVideoCountsCache';
 import { ClientCard } from './ClientCard';
@@ -77,19 +77,18 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
     onClientSelect(clientId, clientName, clientLogoUrl);
   };
 
-  console.log('📋 VideoList - Todos os clientes:', clients.length);
-  console.log('📋 VideoList - Contagens carregadas:', Object.keys(videoCountsByClient).length);
+  // Debug logs
+  const countsLoaded = Object.keys(videoCountsByClient).length;
+  console.log('📋 VideoList - Clientes:', clients.length, '| Contagens:', countsLoaded, '| Loading:', isLoadingVideoCounts);
 
   // Mostrar APENAS clientes (role = 'client') - não incluir admins
-  const getClientsWithVideoCount = () => {
+  const getClientsWithVideoCount = useCallback(() => {
     // Filtrar apenas clientes não deletados e com role 'client'
     const activeClients = clients.filter(client => !client.is_deleted && client.role === 'client');
     
-    console.log('✅ Clientes (role=client) encontrados:', activeClients.length);
-    
     // Mapear todos os clientes com suas respectivas contagens de vídeo
     const clientsWithVideos = activeClients.map(client => {
-      const videoCount = getClientVideoCount(client.id);
+      const videoCount = videoCountsByClient[client.id] || 0;
       return { client, videoCount };
     });
 
@@ -109,13 +108,12 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
         case 'date-desc':
           return new Date(b.client.created_at || 0).getTime() - new Date(a.client.created_at || 0).getTime();
         default:
-          return b.videoCount - a.videoCount; // Fallback para videos-desc
+          return b.videoCount - a.videoCount;
       }
     });
 
-    console.log('✅ Clientes (role=client) com contagem:', clientsWithVideos.length);
     return clientsWithVideos;
-  };
+  }, [clients, videoCountsByClient, sortBy]);
 
   // Filtrar clientes com base no termo de busca
   const filteredClients = useMemo(() => {
@@ -130,7 +128,7 @@ export const VideoList = ({ onClientSelect }: VideoListProps) => {
       client.full_name.toLowerCase().includes(searchLower) ||
       client.email.toLowerCase().includes(searchLower)
     );
-  }, [clients, videoCountsByClient, searchTerm, sortBy]);
+  }, [getClientsWithVideoCount, searchTerm]);
 
   if (isLoading || isLoadingVideoCounts) {
     return (

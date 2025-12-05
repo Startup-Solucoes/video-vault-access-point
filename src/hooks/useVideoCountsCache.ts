@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -8,34 +8,48 @@ export const useVideoCountsCache = () => {
   const queryClient = useQueryClient();
 
   // Query para buscar contagem de vídeos
-  const { data: videoCountsByClient = {}, isLoading, refetch } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: [VIDEO_COUNTS_KEY],
     queryFn: async () => {
       console.log('📊 useVideoCountsCache - Buscando contagem de vídeos...');
       
-      const { data, error } = await supabase
+      const { data: permissions, error } = await supabase
         .from('video_permissions')
-        .select('client_id, video_id');
+        .select('client_id');
 
       if (error) {
         console.error('❌ Erro ao buscar contagem de vídeos:', error);
         throw error;
       }
 
-      // Contar vídeos únicos por cliente
+      console.log('📊 useVideoCountsCache - Permissões encontradas:', permissions?.length);
+
+      // Contar vídeos por cliente
       const counts: Record<string, number> = {};
-      data?.forEach(permission => {
-        counts[permission.client_id] = (counts[permission.client_id] || 0) + 1;
+      permissions?.forEach(permission => {
+        if (permission.client_id) {
+          counts[permission.client_id] = (counts[permission.client_id] || 0) + 1;
+        }
       });
 
       console.log('✅ useVideoCountsCache - Contagem atualizada:', Object.keys(counts).length, 'clientes');
+      console.log('📊 useVideoCountsCache - Sample counts:', 
+        Object.entries(counts).slice(0, 3).map(([id, count]) => `${id.substring(0, 8)}...: ${count}`)
+      );
+      
       return counts;
     },
-    staleTime: 30 * 1000, // 30 segundos
-    gcTime: 10 * 60 * 1000, // 10 minutos
-    refetchOnMount: true,
+    staleTime: 30 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnMount: 'always',
     refetchOnWindowFocus: true
   });
+
+  // Memoize the video counts object
+  const videoCountsByClient = useMemo(() => {
+    console.log('📊 videoCountsByClient memo - data:', data ? Object.keys(data).length : 0, 'clientes');
+    return data || {};
+  }, [data]);
 
   // Função para invalidar o cache manualmente
   const invalidateVideoCountsCache = useCallback(() => {
@@ -52,13 +66,12 @@ export const useVideoCountsCache = () => {
       .on(
         'postgres_changes',
         {
-          event: '*', // INSERT, UPDATE, DELETE
+          event: '*',
           schema: 'public',
           table: 'video_permissions'
         },
         (payload) => {
           console.log('📡 Mudança detectada em video_permissions:', payload.eventType);
-          // Invalidar cache quando houver mudanças
           invalidateVideoCountsCache();
         }
       )
@@ -72,9 +85,10 @@ export const useVideoCountsCache = () => {
     };
   }, [invalidateVideoCountsCache]);
 
-  // Função auxiliar para obter contagem de um cliente específico
+  // Função auxiliar para obter contagem - usando useMemo para estabilizar
   const getClientVideoCount = useCallback((clientId: string): number => {
-    return videoCountsByClient[clientId] || 0;
+    const count = videoCountsByClient[clientId] || 0;
+    return count;
   }, [videoCountsByClient]);
 
   return {
