@@ -24,21 +24,21 @@ export const AdminQuickActions = ({ stats, onTabChange }: AdminQuickActionsProps
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-100 dark:border-blue-900">
-            <span className="text-sm font-medium text-foreground">Clientes Totais</span>
-            <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+          <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800">
+            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Clientes Totais</span>
+            <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100">
               {stats?.totalClients || 0}
             </Badge>
           </div>
-          <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/50 rounded-lg border border-green-100 dark:border-green-900">
-            <span className="text-sm font-medium text-foreground">Vídeos Publicados</span>
-            <Badge variant="secondary" className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+          <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/30 rounded-lg border border-green-100 dark:border-green-800">
+            <span className="text-sm font-medium text-green-900 dark:text-green-100">Vídeos Publicados</span>
+            <Badge variant="secondary" className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100">
               {stats?.totalVideos || 0}
             </Badge>
           </div>
-          <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-950/50 rounded-lg border border-purple-100 dark:border-purple-900">
-            <span className="text-sm font-medium text-foreground">Permissões Ativas</span>
-            <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
+          <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg border border-purple-100 dark:border-purple-800">
+            <span className="text-sm font-medium text-purple-900 dark:text-purple-100">Permissões Ativas</span>
+            <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-100">
               {stats?.totalPermissions || 0}
             </Badge>
           </div>
