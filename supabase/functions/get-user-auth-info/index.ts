@@ -7,8 +7,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Função para verificar se o usuário é admin
+async function verifyAdmin(supabaseAdmin: any, authHeader: string | null): Promise<{ isAdmin: boolean; userId: string | null; error?: string }> {
+  if (!authHeader) {
+    return { isAdmin: false, userId: null, error: 'Token de autorização não fornecido' };
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  
+  const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+  
+  if (userError || !user) {
+    console.error('Erro ao verificar usuário:', userError);
+    return { isAdmin: false, userId: null, error: 'Token inválido ou expirado' };
+  }
+
+  const { data: profile, error: profileError } = await supabaseAdmin
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile) {
+    console.error('Erro ao buscar perfil:', profileError);
+    return { isAdmin: false, userId: user.id, error: 'Perfil não encontrado' };
+  }
+
+  return { isAdmin: profile.role === 'admin', userId: user.id };
+}
+
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -19,11 +47,30 @@ serve(async (req) => {
       throw new Error('Service role key not configured')
     }
 
-    // Create service role client to access auth.users
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      serviceRoleKey
+      serviceRoleKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
     )
+
+    // VERIFICAÇÃO DE ADMIN
+    const authHeader = req.headers.get('Authorization');
+    const { isAdmin, userId, error: authError } = await verifyAdmin(supabaseAdmin, authHeader);
+    
+    if (!isAdmin) {
+      console.error('🚫 Acesso negado - usuário não é admin:', userId);
+      return new Response(
+        JSON.stringify({ error: authError || 'Acesso negado. Apenas administradores podem acessar informações de autenticação.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log('✅ Admin verificado:', userId);
 
     const { user_id } = await req.json()
 
@@ -34,7 +81,6 @@ serve(async (req) => {
       )
     }
 
-    // Get user auth information using admin client
     const { data: user, error } = await supabaseAdmin.auth.admin.getUserById(user_id)
 
     if (error) {
