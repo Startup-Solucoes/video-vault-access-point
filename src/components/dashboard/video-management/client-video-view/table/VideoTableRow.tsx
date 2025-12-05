@@ -84,22 +84,21 @@ export const VideoTableRow = ({
               {categories[0]}
             </Badge>
             {hasMultipleCategories && (
-              <TooltipProvider>
+              <TooltipProvider delayDuration={100}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Badge 
-                      variant="secondary" 
-                      className="cursor-pointer text-xs px-1.5 py-0.5 bg-muted hover:bg-muted/80"
+                    <span 
+                      className="inline-flex items-center justify-center cursor-pointer text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground hover:bg-accent transition-colors"
                     >
                       +{categories.length - 1}
-                    </Badge>
+                    </span>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="p-2">
+                  <TooltipContent side="right" align="start" className="p-2 z-50">
                     <div className="flex flex-col gap-1.5">
                       {categories.slice(1).map((cat, idx) => (
                         <Badge 
                           key={idx} 
-                          className={`font-semibold border-0 text-xs ${getCategoryColor(cat)}`}
+                          className={`font-semibold border-0 text-xs whitespace-nowrap ${getCategoryColor(cat)}`}
                         >
                           {cat}
                         </Badge>
