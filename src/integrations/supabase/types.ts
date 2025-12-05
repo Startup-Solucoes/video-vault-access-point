@@ -323,6 +323,13 @@ export type Database = {
       check_user_exists: { Args: { user_email: string }; Returns: boolean }
       delete_user_completely: { Args: { user_email: string }; Returns: Json }
       get_current_user_role: { Args: never; Returns: string }
+      get_video_counts_by_client: {
+        Args: never
+        Returns: {
+          client_id: string
+          video_count: number
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
       log_security_event: {
         Args: {
